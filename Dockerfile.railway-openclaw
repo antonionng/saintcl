@@ -8,14 +8,13 @@ RUN corepack enable
 WORKDIR /app
 
 COPY openclaw-vendored/package.json ./package.json
-COPY openclaw-vendored/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY openclaw-vendored/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY openclaw-vendored/.npmrc ./.npmrc
 COPY openclaw-vendored/ui/package.json ./ui/package.json
 COPY openclaw-vendored/patches ./patches
 COPY openclaw-vendored/scripts ./scripts
 
-RUN NODE_OPTIONS=--max-old-space-size=2048 pnpm install --frozen-lockfile
+RUN NODE_OPTIONS=--max-old-space-size=2048 pnpm install --no-frozen-lockfile
 
 COPY openclaw-vendored/. .
 
