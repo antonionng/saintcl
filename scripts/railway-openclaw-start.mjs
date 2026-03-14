@@ -58,21 +58,41 @@ function mergeConfig(existingConfig, options) {
     config.agents && typeof config.agents === "object" && !Array.isArray(config.agents)
       ? { ...config.agents }
       : {};
-  const defaults =
+  const existingDefaults =
     agents.defaults && typeof agents.defaults === "object" && !Array.isArray(agents.defaults)
       ? { ...agents.defaults }
       : {};
-  const agent =
+  const legacyAgent =
     config.agent && typeof config.agent === "object" && !Array.isArray(config.agent)
       ? { ...config.agent }
+      : {};
+  const defaults = { ...legacyAgent, ...existingDefaults };
+  const models =
+    defaults.models && typeof defaults.models === "object" && !Array.isArray(defaults.models)
+      ? { ...defaults.models }
       : {};
 
   gateway.mode = gateway.mode || "local";
   defaults.workspace = defaults.workspace || options.workspaceDir;
 
-  if ((!agent.model || typeof agent.model !== "string") && options.defaultModel) {
-    agent.model = options.defaultModel;
+  const currentModel =
+    defaults.model && typeof defaults.model === "object" && !Array.isArray(defaults.model)
+      ? { ...defaults.model }
+      : {};
+  if (typeof defaults.model === "string" && !currentModel.primary) {
+    currentModel.primary = defaults.model;
   }
+  if (!currentModel.primary && options.defaultModel) {
+    currentModel.primary = options.defaultModel;
+  }
+  if (!Array.isArray(currentModel.fallbacks)) {
+    currentModel.fallbacks = [];
+  }
+  if (currentModel.primary && !models[currentModel.primary]) {
+    models[currentModel.primary] = {};
+  }
+  defaults.model = currentModel;
+  defaults.models = models;
 
   if (
     (!Array.isArray(controlUi.allowedOrigins) || controlUi.allowedOrigins.length === 0) &&
@@ -92,9 +112,8 @@ function mergeConfig(existingConfig, options) {
     delete controlUi.dangerouslyAllowHostHeaderOriginFallback;
   }
 
-  return {
+  const nextConfig = {
     ...config,
-    agent,
     agents: {
       ...agents,
       defaults,
@@ -106,6 +125,8 @@ function mergeConfig(existingConfig, options) {
       controlUi,
     },
   };
+  delete nextConfig.agent;
+  return nextConfig;
 }
 
 async function main() {
