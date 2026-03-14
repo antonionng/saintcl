@@ -1,0 +1,16 @@
+node_modules
+.next
+out
+build
+coverage
+runtime-data
+.git
+.vercel
+.env*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+openclaw-vendored/node_modules
+openclaw-vendored/.git
+openclaw-vendored/.artifacts
+openclaw-vendored/coverage

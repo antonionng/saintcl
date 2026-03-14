@@ -1,0 +1,2263 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Python for Data | AJB Online Training Deck</title>
+    <link rel="stylesheet" href="./assets/theme.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <span class="eyebrow">AJB Data and AI Programme</span>
+          <h1>Python for Data</h1>
+          <p>Three days. Online delivery. Banking analytics skills with practical notebooks, safe data handling, and leadership-ready outputs.</p>
+          <div class="brand-meta">
+            <span class="brand-chip">19 to 21 April 2026</span>
+            <span class="brand-chip">4 hours per day</span>
+          </div>
+        </div>
+
+        <section class="sidebar-panel">
+          <h2>Delivery Progress</h2>
+          <div class="day-progress">
+            <div class="day-row">
+              <strong>Day 1</strong>
+              <div class="progress-track"><span class="progress-fill" id="day1-fill"></span></div>
+            </div>
+            <div class="day-row">
+              <strong>Day 2</strong>
+              <div class="progress-track"><span class="progress-fill" id="day2-fill"></span></div>
+            </div>
+            <div class="day-row">
+              <strong>Day 3</strong>
+              <div class="progress-track"><span class="progress-fill" id="day3-fill"></span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="sidebar-panel">
+          <h3>Jump to Slide</h3>
+          <p class="hint-text">Use the navigator for live facilitation or to review the flow asynchronously.</p>
+          <div id="jump-list" class="jump-list"></div>
+        </section>
+
+        <section class="sidebar-panel">
+          <h3>Presenter Tips</h3>
+          <div class="keyboard-shortcuts">
+            <span class="mini-chip"><span class="kbd">←</span> Previous</span>
+            <span class="mini-chip"><span class="kbd">→</span> Next</span>
+            <span class="mini-chip"><span class="kbd">N</span> Notes</span>
+            <span class="mini-chip"><span class="kbd">O</span> Overview</span>
+            <span class="mini-chip"><span class="kbd">T</span> Clear timer</span>
+          </div>
+        </section>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="toolbar">
+            <span class="toolbar-chip">Current slide: <strong id="current-label">Welcome</strong></span>
+            <span class="toolbar-chip hidden-mobile">Interactive HTML deck</span>
+          </div>
+          <div class="toolbar">
+            <button id="toggle-overview" type="button">Overview</button>
+            <button id="toggle-notes" type="button">Notes</button>
+            <button id="prev-slide" type="button">Previous</button>
+            <button id="next-slide" type="button" class="primary">Next</button>
+          </div>
+        </header>
+
+        <div class="deck-frame">
+          <div class="deck">
+            <div class="slides">
+              <section class="slide hero-slide" id="slide-01" data-title="Welcome" data-day="1" data-type="Welcome">
+                <div class="slide-header">
+                  <div class="slide-kicker">
+                    <span class="eyebrow">Day 1 | Opening</span>
+                    <span class="pill">Online live session</span>
+                  </div>
+                  <h2>Python for Data in enterprise banking</h2>
+                  <p class="lede">A hands-on AJB-focused module that helps analysts, engineers, and AI teams move from raw extracts to clean data, trusted KPIs, and leadership-ready outputs.</p>
+                </div>
+                <div class="hero-grid">
+                  <div class="hero-panel">
+                    <div class="agenda-row">
+                      <span class="agenda-chip active">Python foundations</span>
+                      <span class="agenda-chip">NumPy and Pandas</span>
+                      <span class="agenda-chip">Charts and ML handoff</span>
+                    </div>
+                    <div class="metric-grid" style="margin-top: 24px">
+                      <div class="stat-card">
+                        <strong>Slides</strong>
+                        <span>78</span>
+                      </div>
+                      <div class="stat-card">
+                        <strong>Labs</strong>
+                        <span>8 core</span>
+                      </div>
+                      <div class="stat-card">
+                        <strong>Format</strong>
+                        <span>Online</span>
+                      </div>
+                      <div class="stat-card">
+                        <strong>Context</strong>
+                        <span>SAR + KSA</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="hero-panel">
+                    <strong class="eyebrow">What participants leave with</strong>
+                    <div class="callout-row" style="margin-top: 14px">
+                      <div class="callout">
+                        <strong>Notebook flow</strong>
+                        <span>Load, clean, validate, aggregate, export.</span>
+                      </div>
+                      <div class="callout">
+                        <strong>Leadership pack</strong>
+                        <span>KPIs, charts, assumptions, caveats.</span>
+                      </div>
+                      <div class="callout">
+                        <strong>ML-ready output</strong>
+                        <span>Features and handoff artefacts.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Open with energy and set the expectation that this is practical, paced for mixed ability, and grounded in banking work rather than generic coding theory.</p>
+                </div>
+                <div class="footer-bar">
+                  <strong>Python for Data</strong>
+                  <span>Welcome</span>
+                </div>
+              </section>
+
+              <section class="slide" id="slide-02" data-title="Why this module matters" data-day="1" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Context</span><span class="pill">Concept</span></div>
+                  <h2>Why this module matters for AJB</h2>
+                  <p class="lede">Python becomes valuable when it helps teams work faster, document logic clearly, and avoid manual spreadsheet bottlenecks in reporting and analytics.</p>
+                </div>
+                <div class="card-grid three">
+                  <div class="card fragment">
+                    <strong>Operations</strong>
+                    <p>Daily extracts, reconciliations, service issue analysis, and recurring data quality checks.</p>
+                  </div>
+                  <div class="card fragment">
+                    <strong>Risk and compliance</strong>
+                    <p>Transparent filters, explainable logic, traceable exceptions, and controlled use of data fields.</p>
+                  </div>
+                  <div class="card fragment">
+                    <strong>Data and AI teams</strong>
+                    <p>Clean analysis tables, clear definitions, and reusable preparation steps that support downstream ML work.</p>
+                  </div>
+                </div>
+                <div class="quote-card" style="margin-top: 22px">
+                  <p class="lede">This course is not about production deployment. It is about reliable analysis workflows that can stand up to scrutiny in a banking environment.</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Make the business case first. Participants should hear that Python is being framed as a practical daily tool, not a hobby or a purely technical exercise.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Context</span></div>
+              </section>
+
+              <section class="slide" id="slide-03" data-title="Learning outcomes" data-day="1" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Outcomes</span><span class="pill">Concept</span></div>
+                  <h2>Learning outcomes</h2>
+                </div>
+                <div class="slide-grid two-col">
+                  <div class="card">
+                    <ol class="numbered">
+                      <li>Load common bank extracts from CSV and Excel.</li>
+                      <li>Clean fields, validate schema, and document exclusions.</li>
+                      <li>Build repeatable logic with Python functions.</li>
+                      <li>Use Pandas and NumPy for aggregation and segmentation.</li>
+                    </ol>
+                  </div>
+                  <div class="card">
+                    <ol class="numbered" start="5">
+                      <li>Create clear charts for internal reporting packs.</li>
+                      <li>Export tables and charts with a consistent folder structure.</li>
+                      <li>Prepare a model-ready slice without leakage.</li>
+                      <li>Work with safe data handling habits in a bank context.</li>
+                    </ol>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Read these outcomes quickly, then ask the room which one would create the most immediate value in their current role.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Outcomes</span></div>
+              </section>
+
+              <section class="slide" id="slide-04" data-title="Working agreements" data-day="1" data-type="Facilitation">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Facilitation</span><span class="pill">Working norms</span></div>
+                  <h2>How we will work together online</h2>
+                </div>
+                <div class="card-grid four">
+                  <div class="card">
+                    <strong>Cameras and chat</strong>
+                    <p>Use chat for blockers and voice for debriefs.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Core then extension</strong>
+                    <p>Everyone completes the core path before stretch tasks.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Checkpoint rhythm</strong>
+                    <p>We pause after each lab to align on row counts and outputs.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Safe pace</strong>
+                    <p>We slow down when concepts affect day two and day three success.</p>
+                  </div>
+                </div>
+                <div class="poll-card" style="margin-top: 22px">
+                  <strong>Quick pulse check</strong>
+                  <p class="muted">Which statement best describes your starting point?</p>
+                  <div class="poll-options">
+                    <button class="poll-option" type="button">I am new to Python but comfortable with bank data.</button>
+                    <button class="poll-option" type="button">I have used notebooks and want stronger structure.</button>
+                    <button class="poll-option" type="button">I already code and want reusable patterns I can apply at work.</button>
+                  </div>
+                  <button class="mini-toggle" type="button" data-reveal-answer>Reveal facilitation response</button>
+                  <div class="poll-reveal">Use the answer mix to decide pairings for the first lab and whether to spend extra time on data types and functions.</div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>This slide sets the tone. Emphasise that the course is designed for mixed ability and that extension tasks are intentionally optional.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Facilitation</span></div>
+              </section>
+
+              <section class="slide" id="slide-05" data-title="Programme pathway" data-day="1" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Programme fit</span><span class="pill">Concept</span></div>
+                  <h2>Where this module sits in the AJB programme</h2>
+                </div>
+                <div class="timeline">
+                  <div class="timeline-card fragment">
+                    <strong>Module 1 | Python for Data</strong>
+                    <p>Data handling, reproducibility, cleaning, KPIs, reporting outputs.</p>
+                  </div>
+                  <div class="timeline-card fragment">
+                    <strong>Module 2 | Machine Learning Training</strong>
+                    <p>Supervised and unsupervised workflows built on better prepared datasets.</p>
+                  </div>
+                  <div class="timeline-card fragment">
+                    <strong>Module 3 | Neural Networks</strong>
+                    <p>Deeper modelling techniques where data preparation still matters.</p>
+                  </div>
+                </div>
+                <div class="note-box" style="margin-top: 18px">
+                  <p><strong>Message to participants:</strong> treat this module as the operating foundation. If the data discipline is weak here, everything later becomes harder.</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Reinforce continuity with the larger AI and data programme. This helps create urgency and clarity about why the foundations matter.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Programme fit</span></div>
+              </section>
+
+              <section class="slide" id="slide-06" data-title="Case thread kickoff" data-day="1" data-type="Case">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Case thread</span><span class="pill">Case study</span></div>
+                  <h2>Case thread kickoff: a leadership request arrives</h2>
+                </div>
+                <div class="mock-email">
+                  <header><span>From: Retail COO</span><span>Subject: Weekly retail performance cut</span></header>
+                  <h3>Need a quick regional view by channel and product family</h3>
+                  <p>Please produce an internal view of retail customer activity and fee contribution, identify branches that need investigation, and highlight any data quality issues that might change interpretation.</p>
+                  <p class="muted">Later asks will include month-on-month explanations and pack-ready outputs.</p>
+                </div>
+                <div class="callout-row" style="margin-top: 18px">
+                  <div class="callout fragment">
+                    <strong>What makes this realistic</strong>
+                    <span>It is focused, urgent, and still slightly ambiguous.</span>
+                  </div>
+                  <div class="callout fragment">
+                    <strong>What makes it useful</strong>
+                    <span>It creates a reason to learn every step of the workflow.</span>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Read the message aloud. Ask participants what is missing or ambiguous, and capture one or two questions they would ask the requestor.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Case study</span></div>
+              </section>
+
+              <section class="slide" id="slide-07" data-title="Data landscape" data-day="1" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Data model</span><span class="pill">Concept</span></div>
+                  <h2>The bank-shaped data we will use</h2>
+                </div>
+                <div class="diagram card">
+                  <div class="node-row">
+                    <div class="node">Customers</div>
+                    <span class="arrow">→</span>
+                    <div class="node">Accounts</div>
+                    <span class="arrow">→</span>
+                    <div class="node">Transactions</div>
+                    <span class="arrow">→</span>
+                    <div class="node">Reporting outputs</div>
+                  </div>
+                  <div class="node-row" style="margin-top: 20px">
+                    <div class="node">Branches</div>
+                    <span class="arrow">→</span>
+                    <div class="node">Regions</div>
+                    <span class="arrow">→</span>
+                    <div class="node">Leadership cut</div>
+                  </div>
+                </div>
+                <div class="table-like cols-4 table-card" style="margin-top: 18px">
+                  <div class="row head"><div>File</div><div>Grain</div><div>Typical keys</div><div>Main use</div></div>
+                  <div class="row"><div>customers.csv</div><div>Customer</div><div>customer_id</div><div>Segmentation</div></div>
+                  <div class="row"><div>accounts.csv</div><div>Account</div><div>account_id</div><div>Product uptake</div></div>
+                  <div class="row"><div>transactions.csv</div><div>Transaction</div><div>txn_id</div><div>Volumes and fees</div></div>
+                  <div class="row"><div>branches.csv</div><div>Branch</div><div>branch_id</div><div>Regional performance</div></div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Use this as the anchor for later join logic. Participants should hear clearly that grain matters before they touch Pandas.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Data model</span></div>
+              </section>
+
+              <section class="slide" id="slide-08" data-title="Governance guardrails" data-day="1" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Governance</span><span class="pill">Concept</span></div>
+                  <h2>Governance guardrails for the training labs</h2>
+                </div>
+                <div class="slide-grid two-col">
+                  <div class="card">
+                    <strong>Allowed in our training case</strong>
+                    <ul class="check-list">
+                      <li>Pseudonymised customer and account IDs.</li>
+                      <li>SAR values, channel codes, product families, regions.</li>
+                      <li>Only the fields required to answer the business question.</li>
+                    </ul>
+                  </div>
+                  <div class="card">
+                    <strong>Intentionally absent</strong>
+                    <ul class="check-list">
+                      <li>Names, national IDs, full card numbers, full addresses.</li>
+                      <li>Any live or customer-identifiable data.</li>
+                      <li>Uncontrolled exports and unnecessary columns.</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="note-box" style="margin-top: 18px">
+                  <p>We are reinforcing a simple habit: <strong>minimal-field thinking</strong>. Pull what you need, justify it, and document any exclusions.</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Keep this practical. The goal is not to teach the law. The goal is to teach safe analytic behaviour that is compatible with bank expectations.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Governance</span></div>
+              </section>
+
+              <section class="slide" id="slide-09" data-title="Online roadmap" data-day="1" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Roadmap</span><span class="pill">Concept</span></div>
+                  <h2>How the three days will flow</h2>
+                </div>
+                <div class="agenda-row">
+                  <span class="agenda-chip active">Day 1. Foundations and first-pass triage</span>
+                  <span class="agenda-chip">Day 2. Cleaning, joins, KPIs</span>
+                  <span class="agenda-chip">Day 3. Visuals, exceptions, ML handoff</span>
+                </div>
+                <div class="timeline" style="margin-top: 22px">
+                  <div class="timeline-card">
+                    <strong>Each block follows the same pattern</strong>
+                    <p>Concept frame, live demo, core lab, optional extension, debrief.</p>
+                  </div>
+                  <div class="timeline-card">
+                    <strong>Online energy management</strong>
+                    <p>Shorter teaching bursts, visible timers, frequent chat prompts, and tangible outputs after every activity.</p>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Show that the deck is intentionally structured for online delivery. That builds confidence before the more technical content begins.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Roadmap</span></div>
+              </section>
+
+              <section class="slide" id="slide-10" data-title="Environment and setup" data-day="1" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Setup</span><span class="pill">Demo</span></div>
+                  <h2>Environment and folder setup</h2>
+                </div>
+                <div class="slide-grid two-col">
+                  <div class="code-card">
+                    <strong>Starter setup</strong>
+                    <pre><code>python 3.11
+jupyter notebook
+numpy
+pandas
+matplotlib
+openpyxl
+
+python-training/
+  data/
+  notebooks/
+  outputs/</code></pre>
+                  </div>
+                  <div class="exercise-card">
+                    <strong>Facilitator checkpoint</strong>
+                    <ul class="check-list">
+                      <li>Everyone can open the notebook environment.</li>
+                      <li>Everyone can import the required packages.</li>
+                      <li>Everyone can see the shared data folder structure.</li>
+                    </ul>
+                    <button type="button" class="timer-button" data-minutes="4">Start 4-minute setup check</button>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Use this as a real live pause. Do not push ahead until the room is aligned, because day one setup issues create day two friction.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Demo</span></div>
+              </section>
+
+              <section class="slide" id="slide-11" data-title="Notebook workflow" data-day="1" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Workflow</span><span class="pill">Demo</span></div>
+                  <h2>Notebook workflow and reproducibility habits</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card fragment">
+                    <strong>Section 1</strong>
+                    <p>Imports, paths, display settings, and a clear run order.</p>
+                  </div>
+                  <div class="card fragment">
+                    <strong>Section 2</strong>
+                    <p>Loading, schema checks, and triage summaries before analysis.</p>
+                  </div>
+                  <div class="card fragment">
+                    <strong>Section 3</strong>
+                    <p>Transformations, outputs, and written assumptions in markdown cells.</p>
+                  </div>
+                </div>
+                <div class="callout-row" style="margin-top: 22px">
+                  <div class="callout">
+                    <strong>Good habit</strong>
+                    <span>Restart and run all before sharing or presenting results.</span>
+                  </div>
+                  <div class="callout">
+                    <strong>Bad habit</strong>
+                    <span>Relying on hidden state from cells you forgot you ran earlier.</span>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Show a notebook that is easy to scan. The main message is that order and clarity matter as much as getting a correct answer.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Workflow</span></div>
+              </section>
+
+              <section class="slide" id="slide-12" data-title="Variables and types" data-day="1" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Foundations</span><span class="pill">Concept</span></div>
+                  <h2>Python variables and data types in bank extracts</h2>
+                </div>
+                <div class="table-like cols-3 table-card">
+                  <div class="row head"><div>Field</div><div>Likely type</div><div>Risk if wrong</div></div>
+                  <div class="row"><div>amount_sar</div><div>float</div><div>Math fails or sorts incorrectly</div></div>
+                  <div class="row"><div>account_id</div><div>string</div><div>Leading zeros may disappear</div></div>
+                  <div class="row"><div>status</div><div>string</div><div>Filters become inconsistent</div></div>
+                  <div class="row"><div>posted_date</div><div>datetime</div><div>Time aggregation breaks</div></div>
+                </div>
+                <div class="note-box" style="margin-top: 20px">
+                  <p><strong>Rule of thumb:</strong> identifiers are rarely numbers just because they look numeric.</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>This is a key transition point for spreadsheet users. Explain why the wrong type can silently create wrong business answers.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Foundations</span></div>
+              </section>
+
+              <section class="slide" id="slide-13" data-title="Strings and mapping" data-day="1" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Foundations</span><span class="pill">Demo</span></div>
+                  <h2>Strings, trimming, and code tables</h2>
+                </div>
+                <div class="slide-grid two-col">
+                  <div class="code-card">
+                    <strong>Common string cleanup</strong>
+                    <pre><code>txns["channel_code"] = (
+    txns["channel_code"]
+      .str.strip()
+      .str.upper()
+)
+
+channel_map = {
+    "ATM": "ATM",
+    "MOB": "Mobile",
+    "BRN": "Branch"
+}</code></pre>
+                  </div>
+                  <div class="card">
+                    <strong>Banking examples</strong>
+                    <ul class="check-list">
+                      <li>Customer segments with inconsistent case.</li>
+                      <li>Merchant cities with trailing spaces.</li>
+                      <li>Channel codes needing mapping to friendly labels.</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Keep the demo concrete. Every participant has seen inconsistent labels in extracts. This creates immediate relevance.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Demo</span></div>
+              </section>
+
+              <section class="slide" id="slide-14" data-title="Triage checklist" data-day="1" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Triage</span><span class="pill">Concept</span></div>
+                  <h2>Core banking data triage checklist</h2>
+                </div>
+                <div class="card-grid four">
+                  <div class="card"><strong>Rows and columns</strong><p>Does the extract look complete?</p></div>
+                  <div class="card"><strong>Unique keys</strong><p>Can you trust the stated grain?</p></div>
+                  <div class="card"><strong>Null profile</strong><p>Which fields are unexpectedly blank?</p></div>
+                  <div class="card"><strong>Date range</strong><p>Does the period match the request?</p></div>
+                </div>
+                <div class="card-grid four" style="margin-top: 16px">
+                  <div class="card"><strong>Status mix</strong><p>Posted versus reversed or failed.</p></div>
+                  <div class="card"><strong>Amount sanity</strong><p>Zeros, negatives, and unusual spikes.</p></div>
+                  <div class="card"><strong>Code validity</strong><p>Unexpected channel or region values.</p></div>
+                  <div class="card"><strong>Reject logic</strong><p>Reason codes for excluded rows.</p></div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Tell the group this checklist becomes their opening move each time they receive a new extract.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Triage</span></div>
+              </section>
+
+              <section class="slide" id="slide-15" data-title="Safe CSV read" data-day="1" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Input</span><span class="pill">Demo</span></div>
+                  <h2>Reading CSV safely</h2>
+                </div>
+                <div class="slide-grid two-col">
+                  <div class="code-card">
+                    <pre><code>required = [
+    "txn_id", "account_id", "txn_ts",
+    "amount_sar", "channel", "status"
+]
+
+txns = pd.read_csv(
+    DATA_DIR / "transactions.csv",
+    dtype={"account_id": "string"},
+)
+
+missing = [c for c in required if c not in txns.columns]
+if missing:
+    raise ValueError(f"Missing columns: {missing}")</code></pre>
+                  </div>
+                  <div class="card">
+                    <strong>Why this matters</strong>
+                    <ul class="check-list">
+                      <li>Headers drift over time.</li>
+                      <li>Type inference can damage identifiers.</li>
+                      <li>Faster failure is safer than hidden downstream errors.</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Use the phrase fail clearly, not fail silently. It is simple language that lands well with both technical and non-technical participants.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Input</span></div>
+              </section>
+
+              <section class="slide" id="slide-16" data-title="Exercise A" data-day="1" data-type="Exercise">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Lab</span><span class="pill">Exercise</span></div>
+                  <h2>Exercise A: transaction extract triage</h2>
+                </div>
+                <div class="exercise-card">
+                  <div class="exercise-meta">
+                    <span class="mini-chip">Core + Extension</span>
+                    <span class="mini-chip">Expected output: triage_summary</span>
+                    <span class="mini-chip">Dataset: transactions.csv</span>
+                  </div>
+                  <div class="card-grid two">
+                    <div class="card">
+                      <strong>Core task</strong>
+                      <ul class="check-list">
+                        <li>Load the extract.</li>
+                        <li>Confirm row count and unique transaction count.</li>
+                        <li>Profile null rates and date range.</li>
+                      </ul>
+                    </div>
+                    <div class="card">
+                      <strong>Extension task</strong>
+                      <ul class="check-list">
+                        <li>Identify duplicates on <code>txn_id</code>.</li>
+                        <li>Create a rejects table with a <code>reason_code</code>.</li>
+                        <li>Write one observation in plain English.</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <button type="button" class="timer-button" data-minutes="12">Start 12-minute lab</button>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Circulate early. The main failure points will be path issues and uncertainty about how much output is enough.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Exercise</span></div>
+              </section>
+
+              <section class="slide" id="slide-17" data-title="Conditionals" data-day="1" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Logic</span><span class="pill">Concept</span></div>
+                  <h2>Conditionals for business rules</h2>
+                </div>
+                <div class="slide-grid two-col">
+                  <div class="card">
+                    <strong>Example rules</strong>
+                    <ul class="check-list">
+                      <li>Fee waived if account segment is premium.</li>
+                      <li>Transaction flagged if amount exceeds threshold.</li>
+                      <li>Channel categorised as digital or assisted.</li>
+                    </ul>
+                  </div>
+                  <div class="visual-card card">
+                    <strong>Decision pattern</strong>
+                    <div class="workflow" style="margin-top: 14px">
+                      <div class="node-row">
+                        <div class="node">Input record</div>
+                        <span class="arrow">→</span>
+                        <div class="node">Rule test</div>
+                        <span class="arrow">→</span>
+                        <div class="node">Outcome label</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Stress readability. Business rules should be understandable by someone reviewing the notebook later.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Logic</span></div>
+              </section>
+
+              <section class="slide" id="slide-18" data-title="Loops and batch checks" data-day="1" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Logic</span><span class="pill">Demo</span></div>
+                  <h2>Loops for batch checks across files</h2>
+                </div>
+                <div class="code-card">
+                  <pre><code>files = ["customers.csv", "accounts.csv", "transactions.csv"]
+
+for name in files:
+    df = pd.read_csv(DATA_DIR / name)
+    print(name, len(df), list(df.columns)[:4])</code></pre>
+                </div>
+                <div class="callout-row" style="margin-top: 18px">
+                  <div class="callout">
+                    <strong>Use loops when</strong>
+                    <span>You are repeating a simple task across multiple files or columns.</span>
+                  </div>
+                  <div class="callout">
+                    <strong>Move on later</strong>
+                    <span>By day two, many row-by-row tasks should become vectorised DataFrame operations.</span>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Keep the loop story narrow and practical. This is not the time for deep Python theory.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Logic</span></div>
+              </section>
+
+              <section class="slide" id="slide-19" data-title="Functions as building blocks" data-day="1" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Functions</span><span class="pill">Demo</span></div>
+                  <h2>Functions as reusable transformations</h2>
+                </div>
+                <div class="slide-grid two-col">
+                  <div class="code-card">
+                    <pre><code>def clean_amount(amount_text):
+    if pd.isna(amount_text):
+        return np.nan
+    cleaned = str(amount_text).replace(",", "").strip()
+    if cleaned == "":
+        return np.nan
+    return float(cleaned)</code></pre>
+                  </div>
+                  <div class="card">
+                    <strong>Function checklist</strong>
+                    <ul class="check-list">
+                      <li>Clear name and single job.</li>
+                      <li>Explicit input and output behaviour.</li>
+                      <li>Safe handling of blanks and bad values.</li>
+                      <li>Easy to test on small examples.</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>This is the moment to connect coding practice with auditability and team reuse.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Functions</span></div>
+              </section>
+
+              <section class="slide" id="slide-20" data-title="Helpful exceptions" data-day="1" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Resilience</span><span class="pill">Concept</span></div>
+                  <h2>Exceptions and error messages that help</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card">
+                    <strong>Good</strong>
+                    <p>Missing required columns: ['txn_ts', 'status']</p>
+                  </div>
+                  <div class="card">
+                    <strong>Weak</strong>
+                    <p>Something went wrong with the file.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Best next step</strong>
+                    <p>Quantify the issue and tell the user what to check first.</p>
+                  </div>
+                </div>
+                <div class="note-box" style="margin-top: 18px">
+                  <p>In a bank setting, error handling is not only about avoiding crashes. It is about making failure visible, explainable, and faster to fix.</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Keep this human. Participants will remember practical wording more than the mechanics of try and except.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Resilience</span></div>
+              </section>
+
+              <section class="slide" id="slide-21" data-title="Exercise B" data-day="1" data-type="Exercise">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Lab</span><span class="pill">Exercise</span></div>
+                  <h2>Exercise B: build a cleaning function</h2>
+                </div>
+                <div class="exercise-card">
+                  <div class="card-grid two">
+                    <div class="card">
+                      <strong>Core path</strong>
+                      <ul class="check-list">
+                        <li>Write <code>clean_amount()</code>.</li>
+                        <li>Handle commas, blanks, and invalid values.</li>
+                        <li>Apply the function to a sample amount column.</li>
+                      </ul>
+                    </div>
+                    <div class="card">
+                      <strong>Extension path</strong>
+                      <ul class="check-list">
+                        <li>Create <code>clean_channel()</code> using a mapping dictionary.</li>
+                        <li>Return a QC count of unmapped codes.</li>
+                        <li>Document assumptions in markdown.</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <button type="button" class="timer-button" data-minutes="10">Start 10-minute lab</button>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>During debrief, ask one participant to explain their function in plain English without reading code directly.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Exercise</span></div>
+              </section>
+
+              <section class="slide" id="slide-22" data-title="Knowledge check 1" data-day="1" data-type="Reflection">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Reflection</span><span class="pill">Knowledge check</span></div>
+                  <h2>Knowledge check: what matters most so far?</h2>
+                </div>
+                <div class="poll-card">
+                  <div class="poll-options">
+                    <button class="poll-option" type="button">Identifiers should usually remain strings.</button>
+                    <button class="poll-option" type="button">It is fine to skip schema checks if the file loaded successfully.</button>
+                    <button class="poll-option" type="button">A clear reject reason is useful when you exclude bad rows.</button>
+                  </div>
+                  <button class="mini-toggle" type="button" data-reveal-answer>Reveal debrief</button>
+                  <div class="poll-reveal">Correct thinking: statements one and three are good habits. File load success does not prove the schema is right.</div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Use this to surface misconceptions early. Ask participants to defend their chosen answer.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Knowledge check</span></div>
+              </section>
+
+              <section class="slide" id="slide-23" data-title="Metric definitions" data-day="1" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | KPI discipline</span><span class="pill">Concept</span></div>
+                  <h2>Banking metric definitions we will reuse later</h2>
+                </div>
+                <div class="card-grid four">
+                  <div class="card">
+                    <strong>Active accounts</strong>
+                    <p>Distinct open accounts with at least one posted transaction in period.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Transaction count</strong>
+                    <p>Posted transactions after reversals are excluded.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Fee revenue</strong>
+                    <p>Sum of <code>fee_sar</code> on included transactions.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Average ticket</strong>
+                    <p>Total amount divided by posted transaction count.</p>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Plant the phrase definition discipline. It is a theme that returns on days two and three.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>KPI discipline</span></div>
+              </section>
+
+              <section class="slide" id="slide-24" data-title="Case checkpoint" data-day="1" data-type="Case">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Case thread</span><span class="pill">Case checkpoint</span></div>
+                  <h2>What can we answer now?</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card">
+                    <strong>We can do</strong>
+                    <p>Load data, check quality, define output requirements, and prepare safe transformations.</p>
+                  </div>
+                  <div class="card">
+                    <strong>We cannot do yet</strong>
+                    <p>Produce full regional KPIs, joins, or month-level insights at scale.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Tomorrow</strong>
+                    <p>We move from rows and functions to DataFrames, joins, and regional summaries.</p>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>This checkpoint keeps the case thread alive and gives a sense of momentum.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Case checkpoint</span></div>
+              </section>
+
+              <section class="slide" id="slide-25" data-title="Optional Excel clinic" data-day="1" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Optional clinic</span><span class="pill">Demo</span></div>
+                  <h2>Optional extension clinic: reading Excel extracts</h2>
+                </div>
+                <div class="slide-grid two-col">
+                  <div class="code-card">
+                    <pre><code>customers = pd.read_excel(
+    DATA_DIR / "customers.xlsx",
+    sheet_name="customer_export",
+    dtype={"customer_id": "string"}
+)</code></pre>
+                  </div>
+                  <div class="card">
+                    <strong>Typical bank reality</strong>
+                    <ul class="check-list">
+                      <li>Different tabs for related tables.</li>
+                      <li>Header rows not always starting at row one.</li>
+                      <li>More manual formatting issues than CSV.</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Keep this short and optional. Use it only if the cohort has time and interest.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Optional clinic</span></div>
+              </section>
+
+              <section class="slide" id="slide-26" data-title="Day 1 close" data-day="1" data-type="Recap">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 1 | Close</span><span class="pill">Recap</span></div>
+                  <h2>Day 1 close and day 2 preview</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card">
+                    <strong>Today you built</strong>
+                    <p>Safe loads, first-pass triage, reusable cleaning logic, and practical notebook habits.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Save before tomorrow</strong>
+                    <p>Notebook, checkpoints, and one clean copy of the training data folder.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Tomorrow</strong>
+                    <p>Pandas, joins, grouping, monthly metrics, and quality artefacts.</p>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Finish on confidence. Participants should feel they have already achieved something tangible before the more demanding day two content.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 1</strong><span>Recap</span></div>
+              </section>
+
+              <section class="slide" id="slide-27" data-title="Day 2 restart" data-day="2" data-type="Recap">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Restart</span><span class="pill">Recap</span></div>
+                  <h2>Day 2 start: recap and environment sync</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card">
+                    <strong>Confirm</strong>
+                    <p>Notebooks open and yesterday imports still run.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Check</strong>
+                    <p>Training data paths are unchanged and outputs are saved.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Focus</strong>
+                    <p>Today is about tables, joins, and KPI construction.</p>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Do not assume continuity. A short technical reset protects the rest of the day.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Restart</span></div>
+              </section>
+
+              <section class="slide" id="slide-28" data-title="NumPy role" data-day="2" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | NumPy</span><span class="pill">Concept</span></div>
+                  <h2>The role of NumPy in bank data work</h2>
+                </div>
+                <div class="slide-grid two-col">
+                  <div class="card">
+                    <strong>What NumPy gives you</strong>
+                    <ul class="check-list">
+                      <li>Fast array operations for numeric logic.</li>
+                      <li>Useful building blocks inside Pandas workflows.</li>
+                      <li>Clearer thinking about vectorised operations.</li>
+                    </ul>
+                  </div>
+                  <div class="visual-card card">
+                    <strong>Typical use here</strong>
+                    <div class="node-row" style="margin-top: 18px">
+                      <div class="node">Amounts</div>
+                      <span class="arrow">→</span>
+                      <div class="node">Array logic</div>
+                      <span class="arrow">→</span>
+                      <div class="node">Fee bands</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Position NumPy as a helper, not the star of the day. The main workflow will still live in Pandas.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>NumPy</span></div>
+              </section>
+
+              <section class="slide" id="slide-29" data-title="Vectorised fee logic" data-day="2" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | NumPy</span><span class="pill">Demo</span></div>
+                  <h2>Demo: vectorised fee logic without loops</h2>
+                </div>
+                <div class="slide-grid two-col">
+                  <div class="code-card">
+                    <strong>Row-by-row thinking</strong>
+                    <pre><code>fees = []
+for amount in txns["amount_sar"]:
+    if amount &lt; 200:
+        fees.append(1.0)
+    else:
+        fees.append(2.5)</code></pre>
+                  </div>
+                  <div class="code-card">
+                    <strong>Vectorised thinking</strong>
+                    <pre><code>txns["fee_band"] = np.where(
+    txns["amount_sar"] &lt; 200,
+    "low",
+    "standard"
+)</code></pre>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>The business message is readability at scale. The code is shorter and better suited to table operations.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Demo</span></div>
+              </section>
+
+              <section class="slide" id="slide-30" data-title="Pandas mental model" data-day="2" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Pandas</span><span class="pill">Concept</span></div>
+                  <h2>Pandas mental model: tables with behaviour</h2>
+                </div>
+                <div class="diagram card">
+                  <div class="node-row">
+                    <div class="node">Series = column</div>
+                    <span class="arrow">→</span>
+                    <div class="node">DataFrame = table</div>
+                    <span class="arrow">→</span>
+                    <div class="node">Methods = operations</div>
+                  </div>
+                  <div class="callout-row" style="margin-top: 20px">
+                    <div class="callout"><strong>Rows</strong><span>Records at a chosen grain.</span></div>
+                    <div class="callout"><strong>Columns</strong><span>Fields with types.</span></div>
+                    <div class="callout"><strong>Index</strong><span>Useful for time-based work later.</span></div>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Give participants language they can use in debriefs. Series, DataFrame, and index should stop feeling abstract after this slide.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Pandas</span></div>
+              </section>
+
+              <section class="slide" id="slide-31" data-title="Loading multiple tables" data-day="2" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Pandas</span><span class="pill">Demo</span></div>
+                  <h2>Loading customers and accounts with the right types</h2>
+                </div>
+                <div class="code-card">
+                  <pre><code>customers = pd.read_csv(
+    DATA_DIR / "customers.csv",
+    dtype={"customer_id": "string"}
+)
+customers["onboarding_date"] = pd.to_datetime(
+    customers["onboarding_date"],
+    errors="coerce"
+)
+
+accounts = pd.read_csv(
+    DATA_DIR / "accounts.csv",
+    dtype={"account_id": "string", "customer_id": "string"}
+)</code></pre>
+                </div>
+                <div class="note-box" style="margin-top: 18px">
+                  <p>Notice the deliberate dtype choices for keys and the explicit datetime parsing. These are simple moves that avoid silent problems later.</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Slow down here for participants who are newer to notebooks. This is a key confidence builder before joins.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Pandas</span></div>
+              </section>
+
+              <section class="slide" id="slide-32" data-title="Missingness" data-day="2" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Data quality</span><span class="pill">Concept</span></div>
+                  <h2>Missingness in bank datasets</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card">
+                    <strong>Accept and flag</strong>
+                    <p>Optional fields that are not required for the analysis question.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Exclude with reason</strong>
+                    <p>Critical keys or dates missing for the metric you are building.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Investigate upstream</strong>
+                    <p>System migration effects, mapping issues, or extract defects.</p>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Teach participants not to treat every null in the same way. The right response depends on the field and the business question.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Data quality</span></div>
+              </section>
+
+              <section class="slide" id="slide-33" data-title="Standardising fields" data-day="2" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Cleaning</span><span class="pill">Demo</span></div>
+                  <h2>Demo: standardising region, city, product, and dates</h2>
+                </div>
+                <div class="slide-grid two-col">
+                  <div class="table-card">
+                    <strong>Before</strong>
+                    <div class="table-like cols-2">
+                      <div class="row"><div>Region</div><div>riyadh </div></div>
+                      <div class="row"><div>City</div><div>Jeddah</div></div>
+                      <div class="row"><div>Product</div><div>Cards </div></div>
+                    </div>
+                  </div>
+                  <div class="table-card">
+                    <strong>After</strong>
+                    <div class="table-like cols-2">
+                      <div class="row"><div>Region</div><div>Riyadh</div></div>
+                      <div class="row"><div>City</div><div>Jeddah</div></div>
+                      <div class="row"><div>Product</div><div>Cards</div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Use this to show that boring cleanup work is what enables believable reporting later.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Cleaning</span></div>
+              </section>
+
+              <section class="slide" id="slide-34" data-title="Exercise C" data-day="2" data-type="Exercise">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Lab</span><span class="pill">Exercise</span></div>
+                  <h2>Exercise C: customer table quality checks</h2>
+                </div>
+                <div class="exercise-card">
+                  <div class="card-grid two">
+                    <div class="card">
+                      <strong>Core task</strong>
+                      <ul class="check-list">
+                        <li>Check duplicates on <code>customer_id</code>.</li>
+                        <li>Profile nulls.</li>
+                        <li>List invalid region values.</li>
+                      </ul>
+                    </div>
+                    <div class="card">
+                      <strong>Extension task</strong>
+                      <ul class="check-list">
+                        <li>Create a pass or fail quality report.</li>
+                        <li>Export <code>dq_report.csv</code>.</li>
+                        <li>Note one likely upstream cause.</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <button type="button" class="timer-button" data-minutes="12">Start 12-minute lab</button>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Watch for participants who need help converting observations into a structured report output.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Exercise</span></div>
+              </section>
+
+              <section class="slide" id="slide-35" data-title="Filtering and slicing" data-day="2" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Analysis</span><span class="pill">Concept</span></div>
+                  <h2>Filtering and slicing that match banking questions</h2>
+                </div>
+                <div class="callout-row">
+                  <div class="callout fragment"><strong>Question</strong><span>Which active accounts drove fee revenue in Riyadh?</span></div>
+                  <div class="callout fragment"><strong>Filter set</strong><span>Posted transactions, active status, Riyadh region.</span></div>
+                  <div class="callout fragment"><strong>Output</strong><span>Clear numerator, denominator, and date range.</span></div>
+                </div>
+                <div class="note-box" style="margin-top: 18px">
+                  <p>Annotate filters in the notebook. Future reviewers should be able to see why a number was produced.</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Link filtering directly to the business question. This avoids technical commands becoming disconnected from business intent.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Analysis</span></div>
+              </section>
+
+              <section class="slide" id="slide-36" data-title="Groupby KPIs" data-day="2" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Aggregation</span><span class="pill">Demo</span></div>
+                  <h2>Groupby for branch and region metrics</h2>
+                </div>
+                <div class="code-card">
+                  <pre><code>branch_kpi = (
+    txns[txns["status"] == "POSTED"]
+      .groupby(["region", "branch_id"])
+      .agg(
+          txn_count=("txn_id", "count"),
+          total_fee_sar=("fee_sar", "sum"),
+          avg_ticket_sar=("amount_sar", "mean")
+      )
+      .reset_index()
+)</code></pre>
+                </div>
+                <div class="callout-row" style="margin-top: 18px">
+                  <div class="callout"><strong>Watch out</strong><span>Distinct counts versus row counts.</span></div>
+                  <div class="callout"><strong>Watch out</strong><span>Filters applied before aggregation.</span></div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>This is one of the most important slides in the whole course. Take time to explain each line and why it is in that order.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Aggregation</span></div>
+              </section>
+
+              <section class="slide" id="slide-37" data-title="Exercise D" data-day="2" data-type="Exercise">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Lab</span><span class="pill">Exercise</span></div>
+                  <h2>Exercise D: branch performance summary</h2>
+                </div>
+                <div class="exercise-card">
+                  <div class="card-grid two">
+                    <div class="card">
+                      <strong>Core task</strong>
+                      <ul class="check-list">
+                        <li>Calculate transaction count.</li>
+                        <li>Calculate total fee and average ticket.</li>
+                        <li>Export <code>branch_kpi.csv</code>.</li>
+                      </ul>
+                    </div>
+                    <div class="card">
+                      <strong>Extension task</strong>
+                      <ul class="check-list">
+                        <li>Add active customers as a distinct count.</li>
+                        <li>Rank branches within region.</li>
+                        <li>Write one interpretation sentence.</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <button type="button" class="timer-button" data-minutes="14">Start 14-minute lab</button>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Make sure the room aligns on the definition of active customer before they begin the extension path.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Exercise</span></div>
+              </section>
+
+              <section class="slide" id="slide-38" data-title="Join logic" data-day="2" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Joins</span><span class="pill">Concept</span></div>
+                  <h2>Joins in bank data: what can go wrong</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card">
+                    <strong>One to many</strong>
+                    <p>Customers to accounts. Accounts to transactions.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Join explosion risk</strong>
+                    <p>Duplicate keys create more rows than expected.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Safe habit</strong>
+                    <p>Check key uniqueness before merge.</p>
+                  </div>
+                </div>
+                <div class="visual-card card" style="margin-top: 18px">
+                  <div class="node-row">
+                    <div class="node">customers</div>
+                    <span class="arrow">1 → many</span>
+                    <div class="node">accounts</div>
+                    <span class="arrow">1 → many</span>
+                    <div class="node">transactions</div>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Ask the group why a branch summary could suddenly double after a join. Let them name duplication before you do.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Joins</span></div>
+              </section>
+
+              <section class="slide" id="slide-39" data-title="Join demo" data-day="2" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Joins</span><span class="pill">Demo</span></div>
+                  <h2>Demo: joining customers, accounts, and transactions</h2>
+                </div>
+                <div class="code-card">
+                  <pre><code>analysis_df = (
+    txns
+      .merge(accounts[["account_id", "customer_id", "product_family"]],
+             on="account_id", how="left")
+      .merge(customers[["customer_id", "region", "segment"]],
+             on="customer_id", how="left")
+)</code></pre>
+                </div>
+                <div class="note-box" style="margin-top: 18px">
+                  <p>Notice the selected column lists. We are joining only the fields needed for the analysis question.</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Link the selected column list back to safe data handling and performance hygiene at the same time.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Joins</span></div>
+              </section>
+
+              <section class="slide" id="slide-40" data-title="Exercise E" data-day="2" data-type="Exercise">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Lab</span><span class="pill">Exercise</span></div>
+                  <h2>Exercise E: regional product uptake</h2>
+                </div>
+                <div class="exercise-card">
+                  <div class="card-grid two">
+                    <div class="card">
+                      <strong>Core task</strong>
+                      <ul class="check-list">
+                        <li>Count accounts by region and product family.</li>
+                        <li>Compute within-region share.</li>
+                        <li>Export <code>uptake_summary.csv</code>.</li>
+                      </ul>
+                    </div>
+                    <div class="card">
+                      <strong>Extension task</strong>
+                      <ul class="check-list">
+                        <li>Add an open-month cohort view.</li>
+                        <li>Handle closed accounts explicitly.</li>
+                        <li>Export a second table for cohort analysis.</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <button type="button" class="timer-button" data-minutes="12">Start 12-minute lab</button>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>During debrief, ask which denominator each team used. That will quickly surface whether the share metric is truly comparable.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Exercise</span></div>
+              </section>
+
+              <section class="slide" id="slide-41" data-title="Leadership follow-up" data-day="2" data-type="Case">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Case thread</span><span class="pill">Case study</span></div>
+                  <h2>Leadership follow-up: what changed month on month?</h2>
+                </div>
+                <div class="chat-panel">
+                  <header><span>Internal chat</span><span>Follow-up request</span></header>
+                  <h3>Need a quick explanation of change</h3>
+                  <p>Thank you for the regional split. Please explain what shifted month on month, especially around fee contribution, channel mix, and branches that look unusual.</p>
+                </div>
+                <div class="callout-row" style="margin-top: 18px">
+                  <div class="callout fragment"><strong>New requirement</strong><span>Time-aware analysis.</span></div>
+                  <div class="callout fragment"><strong>New risk</strong><span>Comparing inconsistent periods.</span></div>
+                  <div class="callout fragment"><strong>Next move</strong><span>Create explicit reporting periods.</span></div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>This resets the case thread with more analytical depth and prepares the room for time-based aggregation.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Case study</span></div>
+              </section>
+
+              <section class="slide" id="slide-42" data-title="Time fields" data-day="2" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Time</span><span class="pill">Concept</span></div>
+                  <h2>Time fields and reporting periods</h2>
+                </div>
+                <div class="card-grid four">
+                  <div class="card"><strong>Day</strong><p>Useful for operational monitoring.</p></div>
+                  <div class="card"><strong>Week</strong><p>Useful for service and exception patterns.</p></div>
+                  <div class="card"><strong>Month</strong><p>Useful for management reporting.</p></div>
+                  <div class="card"><strong>Cut-off date</strong><p>Critical for ML handoff later.</p></div>
+                </div>
+                <div class="note-box" style="margin-top: 18px">
+                  <p>Always define the reporting period before interpreting movement. A difference in scope can look like a business change when it is really a date logic issue.</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Time definitions often sound simple but drive a lot of confusion. Spell out the importance of scope and consistency.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Time</span></div>
+              </section>
+
+              <section class="slide" id="slide-43" data-title="Monthly metrics demo" data-day="2" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Time</span><span class="pill">Demo</span></div>
+                  <h2>Demo: monthly metrics with explicit date logic</h2>
+                </div>
+                <div class="code-card">
+                  <pre><code>monthly = (
+    txns.assign(month=txns["txn_ts"].dt.to_period("M").astype(str))
+      .groupby("month")
+      .agg(
+          txn_count=("txn_id", "count"),
+          total_fee_sar=("fee_sar", "sum")
+      )
+      .reset_index()
+)</code></pre>
+                </div>
+                <div class="chart-card card" style="margin-top: 18px">
+                  <strong>Mini preview</strong>
+                  <div class="sparkline">
+                    <span style="height: 38%"></span>
+                    <span style="height: 48%"></span>
+                    <span style="height: 62%"></span>
+                    <span style="height: 58%"></span>
+                    <span style="height: 74%"></span>
+                    <span style="height: 88%"></span>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Link the code immediately to the leadership follow-up question so participants understand why the monthly table matters.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Time</span></div>
+              </section>
+
+              <section class="slide" id="slide-44" data-title="Pattern review exercise" data-day="2" data-type="Exercise">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Lab</span><span class="pill">Exercise</span></div>
+                  <h2>Exercise: transaction pattern review by channel and region</h2>
+                </div>
+                <div class="exercise-card">
+                  <div class="card-grid two">
+                    <div class="card">
+                      <strong>Core path</strong>
+                      <ul class="check-list">
+                        <li>Create a channel mix summary by region.</li>
+                        <li>Identify one month with a visible shift.</li>
+                        <li>Write a first interpretation draft.</li>
+                      </ul>
+                    </div>
+                    <div class="card">
+                      <strong>Extension path</strong>
+                      <ul class="check-list">
+                        <li>Identify outlier branches.</li>
+                        <li>Use a simple threshold or z-score style approach.</li>
+                        <li>Prepare to explain the logic clearly.</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <button type="button" class="timer-button" data-minutes="13">Start 13-minute lab</button>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Encourage interpretation with caution. Numbers alone are not enough if period definitions or data quality are uncertain.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Exercise</span></div>
+              </section>
+
+              <section class="slide" id="slide-45" data-title="Validation patterns" data-day="2" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Validation</span><span class="pill">Concept</span></div>
+                  <h2>Simple validation patterns that improve trust</h2>
+                </div>
+                <div class="card-grid four">
+                  <div class="card"><strong>Range checks</strong><p>Amounts and dates in expected bounds.</p></div>
+                  <div class="card"><strong>Allowed values</strong><p>Status and channel codes from approved lists.</p></div>
+                  <div class="card"><strong>Referential checks</strong><p>Every account links to a customer.</p></div>
+                  <div class="card"><strong>Reason codes</strong><p>Every rejection is explainable.</p></div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Remind the room that these are analytics-focused checks. We are not claiming a full governance framework.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Validation</span></div>
+              </section>
+
+              <section class="slide" id="slide-46" data-title="QC report demo" data-day="2" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Validation</span><span class="pill">Demo</span></div>
+                  <h2>Demo: a lightweight QC report artefact</h2>
+                </div>
+                <div class="table-card">
+                  <div class="table-like cols-4">
+                    <div class="row head"><div>Check</div><div>Status</div><div>Count</div><div>Note</div></div>
+                    <div class="row"><div>Missing customer_id</div><div>Fail</div><div>7</div><div>Migration issue suspected</div></div>
+                    <div class="row"><div>Invalid region</div><div>Fail</div><div>3</div><div>Review mapping table</div></div>
+                    <div class="row"><div>Duplicate txn_id</div><div>Pass</div><div>0</div><div>No action</div></div>
+                  </div>
+                </div>
+                <div class="note-box" style="margin-top: 18px">
+                  <p>Even a simple report like this helps leadership understand what was excluded and why.</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Frame this as a credibility tool. It does not slow the analysis down. It protects the interpretation.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Validation</span></div>
+              </section>
+
+              <section class="slide" id="slide-47" data-title="Performance hygiene" data-day="2" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Optional clinic</span><span class="pill">Demo</span></div>
+                  <h2>Optional extension: performance hygiene</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card">
+                    <strong>Dtypes</strong>
+                    <p>Use category or string carefully for repeated labels and IDs.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Selective columns</strong>
+                    <p>Load only what you need for the question.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Chunked reads</strong>
+                    <p>Useful when a large file should be processed in pieces.</p>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Keep this brief. The aim is to seed good habits, not turn the session into a performance tuning class.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Optional clinic</span></div>
+              </section>
+
+              <section class="slide" id="slide-48" data-title="Day 2 recap" data-day="2" data-type="Recap">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Recap</span><span class="pill">Recap</span></div>
+                  <h2>What changed from day 1 to day 2?</h2>
+                </div>
+                <div class="card-grid two">
+                  <div class="card">
+                    <strong>Yesterday</strong>
+                    <ul class="check-list">
+                      <li>Load files and understand types.</li>
+                      <li>Write small cleaning functions.</li>
+                      <li>Establish safe notebook habits.</li>
+                    </ul>
+                  </div>
+                  <div class="card">
+                    <strong>Today</strong>
+                    <ul class="check-list">
+                      <li>Build DataFrames and joins.</li>
+                      <li>Construct region and branch KPIs.</li>
+                      <li>Create time-based summaries and QC artefacts.</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Ask participants what failed today and why. This creates learning from mistakes rather than hiding them.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Recap</span></div>
+              </section>
+
+              <section class="slide" id="slide-49" data-title="Deliverables preview" data-day="2" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Preview</span><span class="pill">Concept</span></div>
+                  <h2>Tomorrow's deliverables: what a leadership pack needs</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card"><strong>Table</strong><p>Compact KPI summary with clear definitions.</p></div>
+                  <div class="card"><strong>Chart</strong><p>Trend and ranking visuals that support a decision.</p></div>
+                  <div class="card"><strong>Narrative</strong><p>A short explanation with drivers and caveats.</p></div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>This builds anticipation for day three and helps participants understand why today's preparation work matters.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Preview</span></div>
+              </section>
+
+              <section class="slide" id="slide-50" data-title="Knowledge check 2" data-day="2" data-type="Reflection">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Reflection</span><span class="pill">Knowledge check</span></div>
+                  <h2>Knowledge check: joins, groupby, and missingness</h2>
+                </div>
+                <div class="poll-card">
+                  <div class="poll-options">
+                    <button class="poll-option" type="button">If a join creates more rows than expected, key duplication is one likely cause.</button>
+                    <button class="poll-option" type="button">Null values should always be filled before analysis.</button>
+                    <button class="poll-option" type="button">A metric is trustworthy even if the filter set is not documented.</button>
+                  </div>
+                  <button class="mini-toggle" type="button" data-reveal-answer>Reveal debrief</button>
+                  <div class="poll-reveal">The first statement is the strongest. Null handling depends on context, and undocumented filters weaken trust.</div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Use the debrief to reinforce the connection between technical correctness and explainability.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Knowledge check</span></div>
+              </section>
+
+              <section class="slide" id="slide-51" data-title="Save state" data-day="2" data-type="Recap">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Close</span><span class="pill">Recap</span></div>
+                  <h2>Day 2 close: save state for the final day</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card"><strong>Save</strong><p>Your joined analysis DataFrame or the code that recreates it.</p></div>
+                  <div class="card"><strong>Export</strong><p>Today's quality and KPI outputs into the outputs folder.</p></div>
+                  <div class="card"><strong>Prepare</strong><p>Be ready to turn results into charts and a narrative tomorrow.</p></div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Encourage participants not to rely on memory. A clean saved state makes day three smoother.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Close</span></div>
+              </section>
+
+              <section class="slide" id="slide-52" data-title="Large files clinic" data-day="2" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 2 | Optional clinic</span><span class="pill">Demo</span></div>
+                  <h2>Optional clinic: handling larger files safely</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card"><strong>Read fewer columns</strong><p>Less memory, faster iteration, safer field selection.</p></div>
+                  <div class="card"><strong>Chunk processing</strong><p>Useful for repeated summary logic on large extracts.</p></div>
+                  <div class="card"><strong>Parquet concept</strong><p>Efficient storage for prepared analysis tables.</p></div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Only cover this if the cohort is progressing well. It is a useful extension, not a required objective.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 2</strong><span>Optional clinic</span></div>
+              </section>
+
+              <section class="slide" id="slide-53" data-title="Day 3 launch" data-day="3" data-type="Recap">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Restart</span><span class="pill">Recap</span></div>
+                  <h2>Day 3 start: from analysis to decision-ready outputs</h2>
+                </div>
+                <div class="agenda-row">
+                  <span class="agenda-chip active">Charts</span>
+                  <span class="agenda-chip active">Exceptions</span>
+                  <span class="agenda-chip active">Leadership narrative</span>
+                  <span class="agenda-chip active">ML handoff</span>
+                </div>
+                <div class="note-box" style="margin-top: 18px">
+                  <p>Today we make the work usable by decision makers. We are not just calculating numbers. We are packaging insight responsibly.</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Frame the day as a shift from analyst workflow to communication and handoff quality.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Restart</span></div>
+              </section>
+
+              <section class="slide" id="slide-54" data-title="Final request" data-day="3" data-type="Case">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Case thread</span><span class="pill">Case study</span></div>
+                  <h2>Case thread final request: leadership pack expectation</h2>
+                </div>
+                <div class="mock-email">
+                  <header><span>From: Retail COO</span><span>Priority: High</span></header>
+                  <h3>Please package this for management review</h3>
+                  <p>I need a compact summary of regional performance, branch exceptions, a channel view, and a short interpretation of what changed. Keep the output leadership-ready and note any caveats.</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Reinforce that the final deliverable is not just charts. It is a coherent internal pack with logic, caveats, and clear outputs.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Case study</span></div>
+              </section>
+
+              <section class="slide" id="slide-55" data-title="Visual principles" data-day="3" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Visuals</span><span class="pill">Concept</span></div>
+                  <h2>Visualisation principles for banking reporting</h2>
+                </div>
+                <div class="card-grid four">
+                  <div class="card"><strong>Use fewer charts</strong><p>Only include visuals that support a decision.</p></div>
+                  <div class="card"><strong>Label clearly</strong><p>Titles, units, and definitions remove ambiguity.</p></div>
+                  <div class="card"><strong>Avoid clutter</strong><p>Internal reports still need visual discipline.</p></div>
+                  <div class="card"><strong>State caveats</strong><p>Especially when data quality affects interpretation.</p></div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>This is not a design lecture. Keep the focus on clarity and decision support for management audiences.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Visuals</span></div>
+              </section>
+
+              <section class="slide" id="slide-56" data-title="Matplotlib basics" data-day="3" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Visuals</span><span class="pill">Demo</span></div>
+                  <h2>Demo: Matplotlib basics for KPI charts</h2>
+                </div>
+                <div class="slide-grid two-col">
+                  <div class="chart-card card">
+                    <strong>Monthly transaction count</strong>
+                    <div class="chart-bars">
+                      <div class="bar" style="height: 40%"></div>
+                      <div class="bar" style="height: 52%"></div>
+                      <div class="bar" style="height: 64%"></div>
+                      <div class="bar" style="height: 59%"></div>
+                      <div class="bar" style="height: 74%"></div>
+                      <div class="bar" style="height: 88%"></div>
+                    </div>
+                    <div class="bar-labels"><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span></div>
+                  </div>
+                  <div class="chart-card card">
+                    <strong>Top branches by fee</strong>
+                    <div class="chart-bars">
+                      <div class="bar gold" style="height: 86%"></div>
+                      <div class="bar alt" style="height: 73%"></div>
+                      <div class="bar" style="height: 66%"></div>
+                      <div class="bar alt" style="height: 56%"></div>
+                    </div>
+                    <div class="bar-labels"><span>B-104</span><span>B-201</span><span>B-313</span><span>B-118</span></div>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Walk through the idea of one trend chart and one ranking chart because that is exactly what the final pack will need.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Visuals</span></div>
+              </section>
+
+              <section class="slide" id="slide-57" data-title="Pack charts exercise" data-day="3" data-type="Exercise">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Lab</span><span class="pill">Exercise</span></div>
+                  <h2>Exercise F: build the pack charts</h2>
+                </div>
+                <div class="exercise-card">
+                  <div class="card-grid two">
+                    <div class="card">
+                      <strong>Core task</strong>
+                      <ul class="check-list">
+                        <li>Create one line or trend chart.</li>
+                        <li>Create one branch ranking chart.</li>
+                        <li>Keep titles and labels management-ready.</li>
+                      </ul>
+                    </div>
+                    <div class="card">
+                      <strong>Extension task</strong>
+                      <ul class="check-list">
+                        <li>Add annotations to key points.</li>
+                        <li>Export PNG files with clear names.</li>
+                        <li>Prepare to explain why each chart belongs in the pack.</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <button type="button" class="timer-button" data-minutes="14">Start 14-minute lab</button>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>During debrief, ask why they selected those two visuals rather than any others.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Exercise</span></div>
+              </section>
+
+              <section class="slide" id="slide-58" data-title="Time series interpretation" data-day="3" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Interpretation</span><span class="pill">Concept</span></div>
+                  <h2>Interpreting time series with caution</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card"><strong>Possible driver</strong><p>Campaign or product push.</p></div>
+                  <div class="card"><strong>Possible driver</strong><p>Operational disruption at a branch or channel.</p></div>
+                  <div class="card"><strong>Possible driver</strong><p>Data timing, reversals, or posting lag.</p></div>
+                </div>
+                <div class="note-box" style="margin-top: 18px">
+                  <p>Good analysts explain patterns with confidence and humility at the same time. State what you know and what still needs confirmation.</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>This is where you coach narrative quality, not just analytical output.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Interpretation</span></div>
+              </section>
+
+              <section class="slide" id="slide-59" data-title="Rolling windows" data-day="3" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Time patterns</span><span class="pill">Demo</span></div>
+                  <h2>Demo: rolling windows and moving averages</h2>
+                </div>
+                <div class="code-card">
+                  <pre><code>monthly["txn_ma_3"] = (
+    monthly["txn_count"]
+      .rolling(window=3, min_periods=1)
+      .mean()
+)</code></pre>
+                </div>
+                <div class="chart-card card" style="margin-top: 18px">
+                  <strong>What it helps with</strong>
+                  <ul class="check-list tight">
+                    <li>Smoothing volatile month-to-month movement.</li>
+                    <li>Spotting directional shifts without overreacting to one point.</li>
+                    <li>Supporting calmer management discussion.</li>
+                  </ul>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Explain rolling windows visually before dwelling on the exact code.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Time patterns</span></div>
+              </section>
+
+              <section class="slide" id="slide-60" data-title="Exceptions exercise" data-day="3" data-type="Exercise">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Lab</span><span class="pill">Exercise</span></div>
+                  <h2>Exercise G: alert-style branch exceptions</h2>
+                </div>
+                <div class="exercise-card">
+                  <div class="card-grid two">
+                    <div class="card">
+                      <strong>Core path</strong>
+                      <ul class="check-list">
+                        <li>Create rule-based flags for unusual behaviour.</li>
+                        <li>Use transparent thresholds.</li>
+                        <li>Export <code>exceptions.csv</code>.</li>
+                      </ul>
+                    </div>
+                    <div class="card">
+                      <strong>Extension path</strong>
+                      <ul class="check-list">
+                        <li>Use percentile thresholds by region.</li>
+                        <li>Rank exceptions for investigation.</li>
+                        <li>Document the rule logic in plain English.</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <button type="button" class="timer-button" data-minutes="12">Start 12-minute lab</button>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>During debrief, insist on transparency. If a participant cannot explain the flag logic, it is not ready for management or monitoring discussions.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Exercise</span></div>
+              </section>
+
+              <section class="slide" id="slide-61" data-title="ML handoff concept" data-day="3" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Handoff</span><span class="pill">Concept</span></div>
+                  <h2>Preparing a dataset for ML handoff</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card">
+                    <strong>Features</strong>
+                    <p>Numeric or categorical fields that describe recent behaviour.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Cut-off discipline</strong>
+                    <p>Features must only use information known before the prediction point.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Artefacts</strong>
+                    <p>Schema, data dictionary, and validation notes should travel with the table.</p>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Connect this directly to the next module so the handoff feels practical and relevant.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Handoff</span></div>
+              </section>
+
+              <section class="slide" id="slide-62" data-title="Feature engineering demo" data-day="3" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Handoff</span><span class="pill">Demo</span></div>
+                  <h2>Demo: simple feature engineering</h2>
+                </div>
+                <div class="code-card">
+                  <pre><code>features = customer_window.assign(
+    txn_count_30d=customer_window.groupby("customer_id")["txn_id"].transform("count"),
+    avg_ticket_30d=customer_window.groupby("customer_id")["amount_sar"].transform("mean"),
+    digital_share_30d=customer_window.groupby("customer_id")["is_digital"].transform("mean"),
+)</code></pre>
+                </div>
+                <div class="note-box" style="margin-top: 18px">
+                  <p>Always ask: could this feature accidentally look into the future? If yes, stop and redesign it.</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Keep this grounded. We are not building a model today. We are building a cleaner handoff for a later modelling step.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Handoff</span></div>
+              </section>
+
+              <section class="slide" id="slide-63" data-title="Feature table exercise" data-day="3" data-type="Exercise">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Lab</span><span class="pill">Exercise</span></div>
+                  <h2>Exercise H: build the ML-ready feature table</h2>
+                </div>
+                <div class="exercise-card">
+                  <div class="card-grid two">
+                    <div class="card">
+                      <strong>Core path</strong>
+                      <ul class="check-list">
+                        <li>Create customer-level features.</li>
+                        <li>Export <code>features.csv</code> or <code>features.parquet</code>.</li>
+                        <li>Keep a clear cut-off date.</li>
+                      </ul>
+                    </div>
+                    <div class="card">
+                      <strong>Extension path</strong>
+                      <ul class="check-list">
+                        <li>Add validation checks.</li>
+                        <li>Create a data dictionary.</li>
+                        <li>List one potential leakage risk avoided.</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <button type="button" class="timer-button" data-minutes="14">Start 14-minute lab</button>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>The debrief should focus on feature meaning and leakage awareness, not just successful export.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Exercise</span></div>
+              </section>
+
+              <section class="slide" id="slide-64" data-title="Monitoring sensitivity" data-day="3" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Sensitivity</span><span class="pill">Concept</span></div>
+                  <h2>Compliance sensitivity: monitoring and segmentation</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card"><strong>Analytics can support monitoring</strong><p>Segmentation and exception logic can help teams prioritise review.</p></div>
+                  <div class="card"><strong>Documentation matters</strong><p>Criteria should be explainable and consistently applied.</p></div>
+                  <div class="card"><strong>Scope discipline</strong><p>This training does not build production monitoring systems.</p></div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Handle this carefully. The point is awareness, not operational design.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Sensitivity</span></div>
+              </section>
+
+              <section class="slide" id="slide-65" data-title="Saudi governance reminder" data-day="3" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Governance</span><span class="pill">Concept</span></div>
+                  <h2>Saudi-specific governance reminder</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card"><strong>Data minimisation</strong><p>Use only the fields needed for the question.</p></div>
+                  <div class="card"><strong>Pseudonymised IDs</strong><p>Keep outputs free of direct personal identifiers.</p></div>
+                  <div class="card"><strong>Controlled exports</strong><p>Save only the artefacts required for the training exercise.</p></div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Keep the emphasis on safe classroom behaviour and good professional instincts.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Governance</span></div>
+              </section>
+
+              <section class="slide" id="slide-66" data-title="Pack export demo" data-day="3" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Outputs</span><span class="pill">Demo</span></div>
+                  <h2>Exporting outputs for a leadership pack</h2>
+                </div>
+                <div class="slide-grid two-col">
+                  <div class="code-card">
+                    <pre><code>OUTPUT_DIR = Path("outputs/day3_pack")
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+branch_kpi.to_csv(OUTPUT_DIR / "branch_kpi.csv", index=False)
+exceptions.to_csv(OUTPUT_DIR / "exceptions.csv", index=False)
+plt.savefig(OUTPUT_DIR / "monthly_txn_count.png", dpi=150)</code></pre>
+                  </div>
+                  <div class="card">
+                    <strong>Folder pattern</strong>
+                    <ul class="check-list">
+                      <li>Tables in CSV or Excel.</li>
+                      <li>Charts in PNG.</li>
+                      <li>One final workbook if needed.</li>
+                      <li>Simple names that others can understand.</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Model disciplined naming and folder structure. It makes review easier and looks professional.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Outputs</span></div>
+              </section>
+
+              <section class="slide" id="slide-67" data-title="Pack artefacts exercise" data-day="3" data-type="Exercise">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Lab</span><span class="pill">Exercise</span></div>
+                  <h2>Exercise: generate the final pack artefacts</h2>
+                </div>
+                <div class="exercise-card">
+                  <div class="card-grid two">
+                    <div class="card">
+                      <strong>Core output set</strong>
+                      <ul class="check-list">
+                        <li>One summary table.</li>
+                        <li>Two charts.</li>
+                        <li>One exceptions file.</li>
+                      </ul>
+                    </div>
+                    <div class="card">
+                      <strong>Extension output set</strong>
+                      <ul class="check-list">
+                        <li>Add a QC appendix tab.</li>
+                        <li>Add a data dictionary or assumptions note.</li>
+                        <li>Prepare a one-minute explanation.</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <button type="button" class="timer-button" data-minutes="12">Start 12-minute lab</button>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>This is where the training starts to feel like a real work product. Encourage neat output structure.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Exercise</span></div>
+              </section>
+
+              <section class="slide" id="slide-68" data-title="Writing the interpretation" data-day="3" data-type="Concept">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Communication</span><span class="pill">Concept</span></div>
+                  <h2>Writing the interpretation for management</h2>
+                </div>
+                <div class="card-grid three">
+                  <div class="card">
+                    <strong>Finding</strong>
+                    <p>State the main movement clearly.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Driver</strong>
+                    <p>Explain what likely caused it.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Caveat</strong>
+                    <p>State what could change the interpretation.</p>
+                  </div>
+                </div>
+                <div class="message-panel" style="margin-top: 18px">
+                  <h3>Simple narrative template</h3>
+                  <p>Fee contribution increased month on month, driven mainly by higher digital transaction volumes in Riyadh and Makkah regions. Branch B-201 stands out as an exception due to unusually low digital share. Interpretation should be treated with caution because three branch records required manual region standardisation.</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Model concise writing. Leadership-ready does not mean long. It means clear and decision-oriented.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Communication</span></div>
+              </section>
+
+              <section class="slide" id="slide-69" data-title="Questions for data owners" data-day="3" data-type="Reflection">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Reflection</span><span class="pill">Discussion</span></div>
+                  <h2>What would you ask the data owner next?</h2>
+                </div>
+                <div class="question-list card">
+                  <p>Which fields have known quality issues?</p>
+                  <p>Has the extraction logic changed recently?</p>
+                  <p>Are there timing effects around posting or reversal?</p>
+                  <p>Which business definitions does management already use?</p>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>This helps shift participants from code execution to stakeholder-aware analysis.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Discussion</span></div>
+              </section>
+
+              <section class="slide" id="slide-70" data-title="Packaging logic" data-day="3" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Optional clinic</span><span class="pill">Demo</span></div>
+                  <h2>Optional extension: packaging notebook logic as functions</h2>
+                </div>
+                <div class="code-card">
+                  <pre><code>def build_branch_kpi(transactions_df):
+    required = ["txn_id", "branch_id", "fee_sar", "amount_sar", "status"]
+    missing = [c for c in required if c not in transactions_df.columns]
+    if missing:
+        raise ValueError(f"Missing columns: {missing}")
+    return (
+        transactions_df[transactions_df["status"] == "POSTED"]
+          .groupby("branch_id")
+          .agg(txn_count=("txn_id", "count"))
+          .reset_index()
+    )</code></pre>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>This is a useful bridge for more advanced participants who want to take the logic beyond a single notebook.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Optional clinic</span></div>
+              </section>
+
+              <section class="slide" id="slide-71" data-title="Simple unit checks" data-day="3" data-type="Demo">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Optional clinic</span><span class="pill">Demo</span></div>
+                  <h2>Optional extension: simple unit checks</h2>
+                </div>
+                <div class="code-card">
+                  <pre><code>sample = pd.DataFrame(
+    {"amount_sar": ["120", "1,250", ""]}
+)
+cleaned = sample["amount_sar"].apply(clean_amount)
+
+assert cleaned.iloc[0] == 120.0
+assert cleaned.iloc[1] == 1250.0
+assert pd.isna(cleaned.iloc[2])</code></pre>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Keep this lightweight. The main message is that small tests can protect important transformation logic.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Optional clinic</span></div>
+              </section>
+
+              <section class="slide" id="slide-72" data-title="Pack preview" data-day="3" data-type="Case">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Case thread</span><span class="pill">Case study</span></div>
+                  <h2>Case thread closure: sample leadership-ready slide</h2>
+                </div>
+                <div class="slide-grid two-col">
+                  <div class="chart-card card">
+                    <strong>Regional fee contribution trend</strong>
+                    <div class="sparkline">
+                      <span style="height: 32%"></span>
+                      <span style="height: 46%"></span>
+                      <span style="height: 58%"></span>
+                      <span style="height: 64%"></span>
+                      <span style="height: 76%"></span>
+                    </div>
+                    <p class="muted">Digital channels now drive a larger share of fee growth.</p>
+                  </div>
+                  <div class="message-panel">
+                    <h3>Management commentary</h3>
+                    <p>Fee contribution improved, led by digital transactions in the central and western regions. Branch B-201 and B-118 require follow-up due to volatility and low digital mix. Interpret with care because three records were excluded due to missing branch mappings.</p>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Show the cohort that their technical work can be translated into something decision-ready and concise.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Case study</span></div>
+              </section>
+
+              <section class="slide" id="slide-73" data-title="Downstream handoffs" data-day="3" data-type="Reflection">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Handoffs</span><span class="pill">Discussion</span></div>
+                  <h2>Where the notebook outputs go next</h2>
+                </div>
+                <div class="diagram card">
+                  <div class="node-row">
+                    <div class="node">Notebook outputs</div>
+                    <span class="arrow">→</span>
+                    <div class="node">BI and reporting</div>
+                    <span class="arrow">→</span>
+                    <div class="node">ML experimentation</div>
+                    <span class="arrow">→</span>
+                    <div class="node">Operational follow-up</div>
+                  </div>
+                  <div class="callout-row" style="margin-top: 20px">
+                    <div class="callout"><strong>Required handoff artefacts</strong><span>Schema, definitions, QC notes, assumptions.</span></div>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>End the technical journey by reminding the room that outputs only matter if another team can use them confidently.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Handoffs</span></div>
+              </section>
+
+              <section class="slide" id="slide-74" data-title="Final knowledge check" data-day="3" data-type="Reflection">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Reflection</span><span class="pill">Knowledge check</span></div>
+                  <h2>Final knowledge check</h2>
+                </div>
+                <div class="poll-card">
+                  <div class="poll-options">
+                    <button class="poll-option" type="button">A feature table should use information available before the cut-off date.</button>
+                    <button class="poll-option" type="button">A good leadership chart needs every possible label and annotation.</button>
+                    <button class="poll-option" type="button">An exceptions file is stronger when its flag logic is transparent.</button>
+                  </div>
+                  <button class="mini-toggle" type="button" data-reveal-answer>Reveal debrief</button>
+                  <div class="poll-reveal">The strongest practices are one and three. Leadership charts should be selective and readable, not overloaded.</div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Use this to bring the whole module together: data discipline, communication quality, and explainable logic.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Knowledge check</span></div>
+              </section>
+
+              <section class="slide" id="slide-75" data-title="Skills inventory" data-day="3" data-type="Recap">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Recap</span><span class="pill">Recap</span></div>
+                  <h2>Course recap: your skills inventory</h2>
+                </div>
+                <div class="card-grid four">
+                  <div class="card"><strong>Load</strong><p>Read structured files safely.</p></div>
+                  <div class="card"><strong>Clean</strong><p>Standardise fields and document exclusions.</p></div>
+                  <div class="card"><strong>Aggregate</strong><p>Produce KPIs and regional summaries.</p></div>
+                  <div class="card"><strong>Communicate</strong><p>Package charts and narrative for leadership.</p></div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Ask each participant to name one technique they can apply immediately in their current role.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Recap</span></div>
+              </section>
+
+              <section class="slide" id="slide-76" data-title="Cheat sheet" data-day="3" data-type="Reference">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Reference</span><span class="pill">Reference</span></div>
+                  <h2>One-slide cheat sheet: common patterns</h2>
+                </div>
+                <div class="table-like cols-4 table-card">
+                  <div class="row head"><div>Task</div><div>Pattern</div><div>Output</div><div>Reminder</div></div>
+                  <div class="row"><div>Read</div><div><code>pd.read_csv()</code></div><div>DataFrame</div><div>Check schema</div></div>
+                  <div class="row"><div>Clean</div><div><code>.str.strip()</code></div><div>Standard fields</div><div>Keep raw if needed</div></div>
+                  <div class="row"><div>Join</div><div><code>.merge()</code></div><div>Analysis table</div><div>Check key uniqueness</div></div>
+                  <div class="row"><div>Aggregate</div><div><code>.groupby().agg()</code></div><div>KPI table</div><div>Define filters</div></div>
+                  <div class="row"><div>Export</div><div><code>.to_csv()</code></div><div>Pack artefact</div><div>Name clearly</div></div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>Tell participants this slide is meant to be useful after the course, not just during it.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Reference</span></div>
+              </section>
+
+              <section class="slide" id="slide-77" data-title="Failure modes" data-day="3" data-type="Reference">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Reference</span><span class="pill">Reference</span></div>
+                  <h2>Common failure modes and fixes</h2>
+                </div>
+                <div class="table-like cols-3 table-card">
+                  <div class="row head"><div>Symptom</div><div>Likely cause</div><div>First fix</div></div>
+                  <div class="row"><div>Account IDs changed format</div><div>Numeric dtype inference</div><div>Read as string</div></div>
+                  <div class="row"><div>Join produced too many rows</div><div>Duplicate keys</div><div>Check uniqueness before merge</div></div>
+                  <div class="row"><div>Date parsing created blanks</div><div>Mixed formats</div><div>Use <code>errors="coerce"</code> and quantify loss</div></div>
+                  <div class="row"><div>Groupby output looks wrong</div><div>Wrong filters or denominator</div><div>Restate the business definition</div></div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>This slide increases resilience and makes the course feel practical after delivery.</p>
+                </div>
+                <div class="footer-bar"><strong>Day 3</strong><span>Reference</span></div>
+              </section>
+
+              <section class="slide" id="slide-78" data-title="Close and next steps" data-day="3" data-type="Close">
+                <div class="slide-header">
+                  <div class="slide-kicker"><span class="eyebrow">Day 3 | Close</span><span class="pill">Close</span></div>
+                  <h2>Close and next-module linkage</h2>
+                  <p class="lede">You now have the foundations to move from raw extracts to trusted analysis outputs, while keeping definitions, caveats, and governance in view.</p>
+                </div>
+                <div class="card-grid three">
+                  <div class="card">
+                    <strong>Produced here</strong>
+                    <p>KPI tables, charts, QC notes, and a feature-ready analysis table.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Feeds next</strong>
+                    <p>Machine learning workflows that depend on cleaner, better-defined data.</p>
+                  </div>
+                  <div class="card">
+                    <strong>Professional habit</strong>
+                    <p>Always pair technical output with definitions, assumptions, and caveats.</p>
+                  </div>
+                </div>
+                <div class="speaker-notes">
+                  <h4>Speaker Notes</h4>
+                  <p>End on confidence and continuity. The room should feel ready for the next module, not exhausted by the close.</p>
+                </div>
+                <div class="footer-bar">
+                  <strong>Thank you</strong>
+                  <span>Python for Data complete</span>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <footer class="bottombar">
+          <div class="notes-panel">
+            <span class="toolbar-chip">Slide <strong id="current-counter">1 / 78</strong></span>
+            <span class="toolbar-chip hidden-mobile">Use next to reveal fragments first, then advance</span>
+          </div>
+          <div class="timer-panel">
+            <div class="timer-display">
+              <span id="timer-status">Ready for live facilitation</span>
+              <span id="session-timer" class="toolbar-chip timer-pill">No timer</span>
+            </div>
+            <div class="progress-bar" aria-hidden="true" style="margin-left: auto; margin-top: 10px">
+              <span id="progress-fill"></span>
+            </div>
+          </div>
+        </footer>
+      </main>
+    </div>
+
+    <script src="./assets/deck.js"></script>
+  </body>
+</html>

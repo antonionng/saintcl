@@ -1,0 +1,14 @@
+customer_id,onboarding_date,region,city,segment,kyc_status
+C1001,2023-01-15,Riyadh,Riyadh,Mass,Complete
+C1002,2023-02-11,Riyadh,Al Kharj,Affluent,Complete
+C1003,2023-03-07,Makkah,Jeddah,Mass,Pending
+C1004,2023-03-29,Eastern,Dammam,SME,Complete
+C1005,2023-04-08,Eastern,Khobar,Mass,Complete
+C1005,2023-04-08,Riydh,Khobar,Mass,Complete
+C1006,2023-04-14,Madinah,Madinah,Affluent,Review
+C1007,2023-05-03,Asir,Abha,Mass,Complete
+C1008,2023-05-11,Makkah,Taif,SME,
+C1009,2023-06-05,Riyadh,Riyadh,Private,Complete
+C1010,2023-06-18,Eastern,Dammam,Mass,Complete
+C1011,2023-07-09,Makkah,Jeddah,Affluent,Complete
+C1012,2023-07-22,Madinah,Madinah,Mass,Pending
