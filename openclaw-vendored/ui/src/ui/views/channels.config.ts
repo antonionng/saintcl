@@ -3,6 +3,7 @@ import type { ConfigUiHints } from "../types.ts";
 import { formatChannelExtraValue, resolveChannelConfigValue } from "./channel-config-extras.ts";
 import type { ChannelsProps } from "./channels.types.ts";
 import { analyzeConfigSchema, renderNode, schemaType, type JsonSchema } from "./config-form.ts";
+import { pathKey } from "./config-form.shared.ts";
 
 type ChannelConfigFormProps = {
   channelId: string;
@@ -56,6 +57,136 @@ function resolveChannelValue(
   return resolveChannelConfigValue(config, channelId) ?? {};
 }
 
+function collectChannelUnsupportedPaths(channelId: string, paths: string[]) {
+  const prefix = `channels.${channelId}`;
+  return paths.filter((entry) => entry === prefix || entry.startsWith(`${prefix}.`));
+}
+
+function pruneUnsupportedSchemaNode(params: {
+  schema: JsonSchema;
+  path: Array<string | number>;
+  unsupported: Set<string>;
+}): { schema: JsonSchema | null; prunedPaths: string[] } {
+  const key = pathKey(params.path);
+  if (key && params.unsupported.has(key)) {
+    return { schema: null, prunedPaths: [key] };
+  }
+
+  const type =
+    schemaType(params.schema) ??
+    (params.schema.properties || params.schema.additionalProperties ? "object" : undefined);
+
+  if (type === "object") {
+    const next: JsonSchema = { ...params.schema };
+    const prunedPaths: string[] = [];
+    const nextProps: Record<string, JsonSchema> = {};
+    next.type = params.schema.type ?? "object";
+
+    for (const [propKey, propSchema] of Object.entries(params.schema.properties ?? {})) {
+      const result = pruneUnsupportedSchemaNode({
+        schema: propSchema,
+        path: [...params.path, propKey],
+        unsupported: params.unsupported,
+      });
+      if (result.schema) {
+        nextProps[propKey] = result.schema;
+      }
+      prunedPaths.push(...result.prunedPaths);
+    }
+
+    next.properties = nextProps;
+
+    if (params.schema.additionalProperties && typeof params.schema.additionalProperties === "object") {
+      const result = pruneUnsupportedSchemaNode({
+        schema: params.schema.additionalProperties,
+        path: [...params.path, "*"],
+        unsupported: params.unsupported,
+      });
+      next.additionalProperties = result.schema ?? false;
+      prunedPaths.push(...result.prunedPaths);
+    }
+
+    return { schema: next, prunedPaths };
+  }
+
+  if (type === "array") {
+    const items = Array.isArray(params.schema.items) ? params.schema.items[0] : params.schema.items;
+    if (!items) {
+      return { schema: params.schema, prunedPaths: [] };
+    }
+
+    const result = pruneUnsupportedSchemaNode({
+      schema: items,
+      path: [...params.path, "*"],
+      unsupported: params.unsupported,
+    });
+
+    if (!result.schema) {
+      return { schema: null, prunedPaths: result.prunedPaths };
+    }
+
+    return {
+      schema: {
+        ...params.schema,
+        type: params.schema.type ?? "array",
+        items: Array.isArray(params.schema.items) ? [result.schema] : result.schema,
+      },
+      prunedPaths: result.prunedPaths,
+    };
+  }
+
+  return { schema: params.schema, prunedPaths: [] };
+}
+
+export function pruneChannelSchemaForForm(params: { channelId: string; schema: unknown }) {
+  const analysis = analyzeConfigSchema(params.schema);
+  const normalized = analysis.schema;
+  if (!normalized) {
+    return {
+      schema: null,
+      unsupportedPaths: analysis.unsupportedPaths,
+      hiddenAdvancedFields: false,
+    };
+  }
+
+  const node = resolveSchemaNode(normalized, ["channels", params.channelId]);
+  if (!node) {
+    return {
+      schema: null,
+      unsupportedPaths: analysis.unsupportedPaths,
+      hiddenAdvancedFields: false,
+    };
+  }
+
+  // If the node has no type info and no properties, it resolved to the channels
+  // additionalProperties fallback (passthrough wildcard) rather than a real channel
+  // schema. Treat it as unavailable so the UI shows a clear "Raw mode" message
+  // instead of the cryptic "Unsupported type" renderer error.
+  const hasType = schemaType(node) !== undefined;
+  const hasProperties = node.properties != null && Object.keys(node.properties).length > 0;
+  const hasEnum = Array.isArray(node.enum) && node.enum.length > 0;
+  if (!hasType && !hasProperties && !hasEnum) {
+    return {
+      schema: null,
+      unsupportedPaths: analysis.unsupportedPaths,
+      hiddenAdvancedFields: false,
+    };
+  }
+
+  const unsupportedPaths = collectChannelUnsupportedPaths(params.channelId, analysis.unsupportedPaths);
+  const pruned = pruneUnsupportedSchemaNode({
+    schema: node,
+    path: ["channels", params.channelId],
+    unsupported: new Set(unsupportedPaths),
+  });
+
+  return {
+    schema: pruned.schema,
+    unsupportedPaths: analysis.unsupportedPaths,
+    hiddenAdvancedFields: pruned.prunedPaths.length > 0,
+  };
+}
+
 const EXTRA_CHANNEL_FIELDS = ["groupPolicy", "streamMode", "dmPolicy"] as const;
 
 function renderExtraChannelFields(value: Record<string, unknown>) {
@@ -83,17 +214,13 @@ function renderExtraChannelFields(value: Record<string, unknown>) {
 }
 
 export function renderChannelConfigForm(props: ChannelConfigFormProps) {
-  const analysis = analyzeConfigSchema(props.schema);
-  const normalized = analysis.schema;
-  if (!normalized) {
+  const prepared = pruneChannelSchemaForForm({
+    channelId: props.channelId,
+    schema: props.schema,
+  });
+  if (!prepared.schema) {
     return html`
-      <div class="callout danger">Schema unavailable. Use Raw.</div>
-    `;
-  }
-  const node = resolveSchemaNode(normalized, ["channels", props.channelId]);
-  if (!node) {
-    return html`
-      <div class="callout danger">Channel config schema unavailable.</div>
+      <div class="callout danger">Channel config is only editable in Raw mode.</div>
     `;
   }
   const configValue = props.configValue ?? {};
@@ -101,17 +228,26 @@ export function renderChannelConfigForm(props: ChannelConfigFormProps) {
   return html`
     <div class="config-form">
       ${renderNode({
-        schema: node,
+        schema: prepared.schema,
         value,
         path: ["channels", props.channelId],
         hints: props.uiHints,
-        unsupported: new Set(analysis.unsupportedPaths),
+        unsupported: new Set(prepared.unsupportedPaths),
         disabled: props.disabled,
         showLabel: false,
         onPatch: props.onPatch,
       })}
     </div>
     ${renderExtraChannelFields(value)}
+    ${
+      prepared.hiddenAdvancedFields
+        ? html`
+            <div class="callout" style="margin-top: 12px;">
+              Some advanced ${props.channelId} settings are only available in Raw mode.
+            </div>
+          `
+        : null
+    }
   `;
 }
 

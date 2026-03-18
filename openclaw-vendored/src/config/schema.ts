@@ -419,7 +419,10 @@ function stripChannelSchema(schema: ConfigSchema): ConfigSchema {
   }
   const channelsNode = asSchemaObject(root.properties.channels);
   if (channelsNode) {
-    channelsNode.properties = {};
+    // Preserve built-in channel properties (telegram, whatsapp, discord, etc.) from
+    // the base Zod schema so the Control UI form renderer can show their config fields.
+    // Only clear `required` and set additionalProperties=true so extension channel plugins
+    // can still be merged/added on top via applyChannelSchemas.
     channelsNode.required = [];
     channelsNode.additionalProperties = true;
   }
