@@ -94,6 +94,10 @@ const BASE_METHODS = [
   "agent.identity.get",
   "agent.wait",
   "browser.request",
+  "terminal.start",
+  "terminal.input",
+  "terminal.resize",
+  "terminal.kill",
   // WebChat WebSocket-native chat methods
   "chat.history",
   "chat.abort",
@@ -124,5 +128,8 @@ export const GATEWAY_EVENTS = [
   "voicewake.changed",
   "exec.approval.requested",
   "exec.approval.resolved",
+  "terminal.data",
+  "terminal.exit",
+  "terminal.error",
   GATEWAY_EVENT_UPDATE_AVAILABLE,
 ];

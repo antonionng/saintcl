@@ -52,6 +52,25 @@
   grid-template-rows: 0 1fr;
 }
 
+.shell--embedded {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 1fr;
+  grid-template-areas: "content";
+}
+
+.shell--embedded .topbar,
+.shell--embedded .nav {
+  display: none;
+}
+
+.shell--embedded .content {
+  padding-top: 0;
+}
+
+.shell--embedded .content > * + * {
+  margin-top: 0;
+}
+
 .shell--onboarding .topbar {
   display: none;
 }
@@ -117,15 +136,19 @@
 }
 
 .brand-logo {
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
 }
 
 .brand-logo img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .brand-text {

@@ -1,10 +1,9 @@
 import { notFound } from "next/navigation";
-import { ScrollText } from "lucide-react";
 
-import { EmptyState } from "@/components/dashboard/empty-state";
 import { PageHeader } from "@/components/dashboard/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getAgentLogs, getCurrentOrg, getVisibleAgentForSession } from "@/lib/dal";
+import { SessionLogTail } from "@/components/dashboard/session-log-tail";
+import { getCurrentOrg, getVisibleAgentForSession } from "@/lib/dal";
+import { buildAgentSessionKey } from "@/lib/openclaw/session-keys";
 
 export default async function AgentLogsPage({
   params,
@@ -18,46 +17,17 @@ export default async function AgentLogsPage({
 
   const agent = await getVisibleAgentForSession(id, session);
   if (!agent) notFound();
-
-  const logs = await getAgentLogs(session.org.id, agent.id, 50);
+  const sessionKey = buildAgentSessionKey(agent.openclaw_agent_id);
 
   return (
     <div className="space-y-8">
       <PageHeader
         eyebrow="Realtime logs"
         title={`${agent.name} logs`}
-        description="Gateway events and agent activity stream. Connect Supabase Realtime for live updates."
+        description="Near-real-time request metrics and activity stream for this agent's primary session."
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Event feed</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {logs.length === 0 ? (
-            <EmptyState
-              icon={ScrollText}
-              title="No logs yet"
-              description="Logs will appear here once this agent starts processing messages through a connected channel."
-            />
-          ) : (
-            <div className="space-y-3">
-              {logs.map((entry) => (
-                <div
-                  key={entry.id}
-                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
-                >
-                  <div className="flex items-center justify-between gap-4 text-xs uppercase tracking-[0.2em] text-zinc-500">
-                    <span>{entry.role ?? "system"}</span>
-                    <span>{new Date(entry.created_at).toLocaleTimeString()}</span>
-                  </div>
-                  <p className="mt-3 text-sm leading-7 text-zinc-300">{entry.message}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <SessionLogTail sessionKey={sessionKey} title="Agent session" />
     </div>
   );
 }

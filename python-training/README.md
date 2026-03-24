@@ -5,7 +5,7 @@ This folder contains the full `Python for Data` training pack for AJB online del
 ## Contents
 - `index.html`: interactive browser-based training deck
 - `assets/theme.css`: visual system and slide styling
-- `assets/deck.js`: navigation, notes, fragments, polls, and timers
+- `assets/deck.js`: navigation, fragments, polls, self-checks, and timers
 - `data/`: synthetic banking datasets used in the labs
 - `notebooks/`: companion notebooks for each training day
 - `facilitator-guide.md`: pacing, debrief prompts, and delivery notes
@@ -21,10 +21,9 @@ python3 -m http.server 8000
 
 Then visit `http://localhost:8000/`.
 
-## Presenter Controls
+## Deck Controls
 - `Right Arrow` or `Space`: next fragment or next slide
 - `Left Arrow`: previous fragment or previous slide
-- `N`: toggle speaker notes
 - `O`: toggle overview sidebar
 - `T`: clear the active exercise timer
 
@@ -32,7 +31,7 @@ Then visit `http://localhost:8000/`.
 - Use the deck on the main screen.
 - Keep the relevant notebook open in a second window.
 - Run labs after the corresponding exercise slides.
-- Use the notes toggle when rehearsing or when a co-facilitator is present.
+- Use the built-in timers and self-check controls during challenge blocks.
 
 ## Output Folders
 - `outputs/day1/`

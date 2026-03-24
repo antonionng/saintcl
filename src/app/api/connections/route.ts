@@ -4,13 +4,11 @@ import { z } from "zod";
 import { assertCanSpend, recordUsageCharge, usagePricing } from "@/lib/billing/usage";
 import { getCurrentOrg } from "@/lib/dal";
 import { env, isOpenClawConfigured } from "@/lib/env";
-import { OpenClawClient } from "@/lib/openclaw/client";
 import { appendRuntimeAuditEvent } from "@/lib/openclaw/log-sync";
-import { ensureTenantRuntime, startTenantRuntime } from "@/lib/openclaw/runtime-manager";
-import { buildRuntimeDescriptor } from "@/lib/openclaw/paths";
+import { getOrgModelCatalogState } from "@/lib/openclaw/model-governance";
+import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { insertChannelMetadata } from "@/lib/openclaw/runtime-store";
 import { getChannels } from "@/lib/dal";
-import { resolveTenantGatewayTarget } from "@/lib/openclaw/tenant-gateway";
 
 const connectChannelSchema = z.discriminatedUnion("type", [
   z.object({
@@ -28,11 +26,21 @@ const connectChannelSchema = z.discriminatedUnion("type", [
 ]);
 
 export async function GET(request: Request) {
+  const session = await getCurrentOrg();
+  if (!session) {
+    return NextResponse.json({ error: { message: "Not authenticated" } }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
-  const orgId = searchParams.get("orgId");
+  const orgId = searchParams.get("orgId") ?? session.org.id;
+  if (orgId !== session.org.id) {
+    return NextResponse.json({ error: { message: "Organization mismatch." } }, { status: 403 });
+  }
+
   if (!orgId) {
     return NextResponse.json({ data: [] });
   }
+
   const channels = await getChannels(orgId);
   return NextResponse.json({ data: channels });
 }
@@ -48,31 +56,34 @@ export async function POST(request: Request) {
       { status: 503 },
     );
   }
+  if (!session.capabilities.canManageAgents) {
+    return NextResponse.json({ error: { message: "Agent access required." } }, { status: 403 });
+  }
 
   const payload = connectChannelSchema.parse(await request.json());
   if (payload.orgId !== session.org.id) {
     return NextResponse.json({ error: { message: "Organization mismatch." } }, { status: 403 });
   }
 
-  await assertCanSpend(payload.orgId, usagePricing.channelConnect);
-  const hostedTarget = await resolveTenantGatewayTarget(payload.orgId);
-  const usesHostedGateway = Boolean(env.openClawGatewayUrl);
-  const runtime = usesHostedGateway
-    ? buildRuntimeDescriptor(payload.orgId)
-    : await ensureTenantRuntime(payload.orgId, { orgId: payload.orgId });
-  const activeRuntime = usesHostedGateway
-    ? null
-    : await startTenantRuntime(payload.orgId);
-  const openClaw = usesHostedGateway
-    ? new OpenClawClient(
-        hostedTarget
-          ? {
-              gatewayUrl: hostedTarget.wsUrl,
-              gatewayToken: hostedTarget.token,
-            }
-          : undefined,
-      )
-    : new OpenClawClient(activeRuntime ?? undefined);
+  if (!session.isSuperAdmin) {
+    await assertCanSpend(payload.orgId, usagePricing.channelConnect);
+  }
+  const { snapshot } = await getOrgModelCatalogState(payload.orgId);
+  const { client: openClaw, runtime } = await getTenantOpenClawClient(payload.orgId, {
+    orgId: payload.orgId,
+    defaultModel: snapshot.defaultModel,
+    approvedModels: snapshot.approvedModels.map((entry) => ({
+      id: entry.id,
+      label: entry.label,
+    })),
+  });
+  await openClaw.applyModelGovernance({
+    defaultModel: snapshot.defaultModel,
+    approvedModels: snapshot.approvedModels.map((entry) => ({
+      id: entry.id,
+      label: entry.label,
+    })),
+  });
 
   if (payload.type === "telegram") {
     await openClaw.connectTelegram({ agentId: payload.agentId, botToken: payload.botToken });
@@ -96,17 +107,19 @@ export async function POST(request: Request) {
     });
   }
 
-  await recordUsageCharge({
-    orgId: payload.orgId,
-    userId: session.userId,
-    agentId: payload.agentId,
-    eventType: "usage_channel_connect",
-    amountCents: usagePricing.channelConnect,
-    description: `Connected ${payload.type} channel`,
-    metadata: { type: payload.type },
-  });
+  if (!session.isSuperAdmin) {
+    await recordUsageCharge({
+      orgId: payload.orgId,
+      userId: session.userId,
+      agentId: payload.agentId,
+      eventType: "usage_channel_connect",
+      amountCents: usagePricing.channelConnect,
+      description: `Connected ${payload.type} channel`,
+      metadata: { type: payload.type },
+    });
+  }
 
-  if (!usesHostedGateway) {
+  if (!env.openClawGatewayUrl && runtime) {
     await appendRuntimeAuditEvent(runtime, "channel.connected", {
       orgId: payload.orgId,
       agentId: payload.agentId,
@@ -117,7 +130,7 @@ export async function POST(request: Request) {
   return NextResponse.json({
     data: {
       ...payload,
-      gatewayPort: activeRuntime?.gatewayPort ?? null,
+      gatewayPort: runtime?.gatewayPort ?? null,
       status: "pending",
     },
   });

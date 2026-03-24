@@ -1,19 +1,23 @@
 import type { CurrentOrgSession, OrgCapabilities, OrgRole } from "../types";
 
-export function getRoleCapabilities(role: OrgRole): OrgCapabilities {
-  const isAdmin = role === "owner" || role === "admin";
+export function getRoleCapabilities(role: OrgRole, options?: { isSuperAdmin?: boolean }): OrgCapabilities {
+  const isAdmin = options?.isSuperAdmin || role === "owner" || role === "admin";
   return {
     canManageBilling: isAdmin,
     canManagePolicies: isAdmin,
-    canManageAgents: true,
+    canManageAgents: isAdmin,
     canViewAllAgents: isAdmin,
     canManageConsole: isAdmin,
     canManageAdminTools: isAdmin,
   };
 }
 
-export function isAdminRole(role?: string | null) {
-  return role === "owner" || role === "admin";
+export function isAdminRole(role?: string | null, options?: { isSuperAdmin?: boolean }) {
+  return options?.isSuperAdmin || role === "owner" || role === "admin";
+}
+
+export function getAuthenticatedHomePath(role?: string | null, options?: { isSuperAdmin?: boolean }) {
+  return isAdminRole(role, options) ? "/dashboard" : "/workspace";
 }
 
 export function canSessionAccessAssignment(

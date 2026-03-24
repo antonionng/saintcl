@@ -6,6 +6,16 @@ as $$
   select nullif(auth.jwt() ->> 'org_role', '')
 $$;
 
+alter table if exists public.audit_logs
+  add column if not exists details jsonb not null default '{}'::jsonb;
+
+alter table if exists public.audit_logs
+  drop constraint if exists audit_logs_org_id_fkey;
+
+alter table if exists public.audit_logs
+  add constraint audit_logs_org_id_fkey
+  foreign key (org_id) references public.orgs(id) on delete cascade not valid;
+
 create or replace function public.is_org_admin()
 returns boolean
 language sql

@@ -1,10 +1,16 @@
 import { redirect } from "next/navigation";
 
-import { AutoBootstrapAgent } from "@/components/dashboard/auto-bootstrap-agent";
-import { DashboardSidebar } from "@/components/dashboard/sidebar";
-import { getCurrentOrg } from "@/lib/dal";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { isAdminRole } from "@/lib/access";
+import {
+  getCurrentOrg,
+  getCurrentUserProfile,
+  getCurrentUserWorkspaces,
+  getVisibleAgentsForSession,
+} from "@/lib/dal";
 import { isOpenClawConfigured, isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
+import type { WorkspaceMembership } from "@/types";
 
 export default async function DashboardLayout({
   children,
@@ -12,10 +18,18 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }>) {
   let orgName: string | null = null;
+  let email: string | null = null;
+  let displayName: string | null = null;
+  let avatarUrl: string | null = null;
+  let orgLogoUrl: string | null = null;
+  let role: string | null = null;
+  let currentOrgId: string | null = null;
+  let workspaces: WorkspaceMembership[] = [];
+  let visibleAgents: Array<{ id: string; name: string }> = [];
   let capabilities = {
     canManageBilling: false,
     canManagePolicies: false,
-    canManageAgents: true,
+    canManageAgents: false,
     canViewAllAgents: false,
     canManageConsole: false,
     canManageAdminTools: false,
@@ -32,26 +46,49 @@ export default async function DashboardLayout({
     }
 
     const result = await getCurrentOrg();
-    orgName = result?.org.name ?? null;
-    capabilities = result?.capabilities ?? capabilities;
+    if (!result) {
+      redirect("/login");
+    }
+
+    orgName = result.org.name ?? null;
+    orgLogoUrl = result.org.logoUrl ?? null;
+    email = result.email ?? null;
+    role = result.role ?? null;
+    currentOrgId = result.org.id ?? null;
+    capabilities = result.capabilities ?? capabilities;
+
+    if (result.role && !isAdminRole(result.role, { isSuperAdmin: result.isSuperAdmin })) {
+      redirect("/workspace");
+    }
+
+    const [profile, workspaceMemberships, nextVisibleAgents] = await Promise.all([
+      getCurrentUserProfile(),
+      getCurrentUserWorkspaces(),
+      getVisibleAgentsForSession(result),
+    ]);
+    workspaces = workspaceMemberships;
+    visibleAgents = nextVisibleAgents.map((agent) => ({
+      id: agent.id,
+      name: agent.name,
+    }));
+    displayName = profile?.displayName ?? null;
+    avatarUrl = profile?.avatarUrl ?? null;
   }
 
   const platformStatus = {
     supabase: isSupabaseConfigured(),
     openclaw: isOpenClawConfigured(),
     orgName,
+    orgLogoUrl,
+    email,
+    displayName,
+    avatarUrl,
+    role,
+    currentOrgId,
+    workspaces,
+    visibleAgents,
     capabilities,
   };
 
-  return (
-    <div className="grid min-h-screen bg-black lg:grid-cols-[280px_1fr]">
-      <DashboardSidebar platformStatus={platformStatus} />
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent_28%)]">
-        <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 py-8 sm:px-8 lg:px-10">
-          <AutoBootstrapAgent />
-          {children}
-        </div>
-      </div>
-    </div>
-  );
+  return <DashboardShell platformStatus={platformStatus}>{children}</DashboardShell>;
 }

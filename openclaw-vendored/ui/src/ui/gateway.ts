@@ -116,6 +116,7 @@ export type GatewayBrowserClientOptions = {
 
 // 4008 = application-defined code (browser rejects 1008 "Policy Violation")
 const CONNECT_FAILED_CLOSE_CODE = 4008;
+const KEEPALIVE_INTERVAL_MS = 25_000;
 
 export class GatewayBrowserClient {
   private ws: WebSocket | null = null;
@@ -125,6 +126,7 @@ export class GatewayBrowserClient {
   private connectNonce: string | null = null;
   private connectSent = false;
   private connectTimer: number | null = null;
+  private keepaliveTimer: number | null = null;
   private backoffMs = 800;
   private pendingConnectError: GatewayErrorInfo | undefined;
 
@@ -137,6 +139,7 @@ export class GatewayBrowserClient {
 
   stop() {
     this.closed = true;
+    this.clearKeepalive();
     this.ws?.close();
     this.ws = null;
     this.pendingConnectError = undefined;
@@ -158,6 +161,7 @@ export class GatewayBrowserClient {
       const reason = String(ev.reason ?? "");
       const connectError = this.pendingConnectError;
       this.pendingConnectError = undefined;
+      this.clearKeepalive();
       this.ws = null;
       this.flushPending(new Error(`gateway closed (${ev.code}): ${reason}`));
       this.opts.onClose?.({ code: ev.code, reason, error: connectError });
@@ -184,6 +188,32 @@ export class GatewayBrowserClient {
       p.reject(err);
     }
     this.pending.clear();
+  }
+
+  private clearKeepalive() {
+    if (this.keepaliveTimer !== null) {
+      window.clearTimeout(this.keepaliveTimer);
+      this.keepaliveTimer = null;
+    }
+  }
+
+  private scheduleKeepalive() {
+    this.clearKeepalive();
+    if (this.closed || !this.connected) {
+      return;
+    }
+    this.keepaliveTimer = window.setTimeout(() => {
+      if (this.closed || !this.connected) {
+        return;
+      }
+      void this.request("health", { probe: false })
+        .catch(() => {
+          // Connection close handling already drives reconnect state.
+        })
+        .finally(() => {
+          this.scheduleKeepalive();
+        });
+    }, KEEPALIVE_INTERVAL_MS);
   }
 
   private async sendConnect() {
@@ -291,6 +321,7 @@ export class GatewayBrowserClient {
           });
         }
         this.backoffMs = 800;
+        this.scheduleKeepalive();
         this.opts.onHello?.(hello);
       })
       .catch((err: unknown) => {

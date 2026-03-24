@@ -449,6 +449,9 @@ describe("buildAgentSystemPrompt", () => {
     expect(prompt).toContain("config.schema.lookup");
     expect(prompt).toContain("config.apply");
     expect(prompt).toContain("config.patch");
+    expect(prompt).toContain(
+      "When calling config.patch, always pass a `raw` object string that contains the exact subtree to merge.",
+    );
     expect(prompt).toContain("update.run");
     expect(prompt).not.toContain("Use config.schema to");
     expect(prompt).not.toContain("config.schema, config.apply");

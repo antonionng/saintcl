@@ -16,6 +16,30 @@ const signDevicePayloadMock = vi.hoisted(() =>
   vi.fn(async (_privateKeyBase64Url: string, _payload: string) => "signature"),
 );
 
+function createStorageMock(): Storage {
+  const store = new Map<string, string>();
+  return {
+    get length() {
+      return store.size;
+    },
+    clear() {
+      store.clear();
+    },
+    getItem(key: string) {
+      return store.get(key) ?? null;
+    },
+    key(index: number) {
+      return Array.from(store.keys())[index] ?? null;
+    },
+    removeItem(key: string) {
+      store.delete(key);
+    },
+    setItem(key: string, value: string) {
+      store.set(key, String(value));
+    },
+  };
+}
+
 type HandlerMap = {
   close: MockWebSocketHandler[];
   error: MockWebSocketHandler[];
@@ -94,7 +118,13 @@ describe("GatewayBrowserClient", () => {
       publicKey: "public-key", // pragma: allowlist secret
     });
 
-    window.localStorage.clear();
+    vi.stubGlobal("window", globalThis as Window & typeof globalThis);
+    vi.stubGlobal("localStorage", createStorageMock());
+    vi.stubGlobal(
+      "navigator",
+      { platform: "test-platform", userAgent: "vitest", language: "en-US" } as Navigator,
+    );
+    localStorage.clear();
     vi.stubGlobal("WebSocket", MockWebSocket);
 
     storeDeviceAuthToken({
@@ -106,6 +136,7 @@ describe("GatewayBrowserClient", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
   });
 
@@ -165,5 +196,44 @@ describe("GatewayBrowserClient", () => {
     expect(signDevicePayloadMock).toHaveBeenCalledWith("private-key", expect.any(String));
     const signedPayload = signDevicePayloadMock.mock.calls[0]?.[1];
     expect(signedPayload).toContain("|stored-device-token|nonce-1");
+  });
+
+  it("sends periodic health keepalives after connect succeeds", async () => {
+    vi.useFakeTimers();
+
+    const client = new GatewayBrowserClient({
+      url: "ws://127.0.0.1:18789",
+      token: "shared-auth-token",
+    });
+
+    client.start();
+    const ws = getLatestWebSocket();
+    ws.emitOpen();
+    ws.emitMessage({
+      type: "event",
+      event: "connect.challenge",
+      payload: { nonce: "nonce-1" },
+    });
+    await vi.waitFor(() => expect(ws.sent.length).toBeGreaterThan(0));
+
+    const connectFrame = JSON.parse(ws.sent.at(-1) ?? "{}") as { id?: string };
+    ws.emitMessage({
+      type: "res",
+      id: connectFrame.id,
+      ok: true,
+      payload: {
+        type: "hello-ok",
+        protocol: 3,
+      },
+    });
+
+    await vi.advanceTimersByTimeAsync(25_000);
+
+    const healthFrame = JSON.parse(ws.sent.at(-1) ?? "{}") as {
+      method?: string;
+      params?: { probe?: boolean };
+    };
+    expect(healthFrame.method).toBe("health");
+    expect(healthFrame.params).toEqual({ probe: false });
   });
 });

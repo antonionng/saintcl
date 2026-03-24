@@ -16,7 +16,7 @@
 ## Pre-session Checklist
 - Open `index.html` in a browser and confirm keyboard navigation works.
 - Confirm the notebooks open in Jupyter with the supplied data files.
-- Test the timer buttons and notes toggle in the deck.
+- Test the timer buttons, polls, and self-check interactions in the deck.
 - Confirm the `outputs/` folders are writable.
 - Prepare breakout pairing guidance for mixed-ability participants.
 
@@ -57,6 +57,7 @@
 - Charts are part of the answer, not the whole answer.
 - Exceptions logic must be transparent.
 - Handoff quality matters for BI, reporting, and ML teams.
+- The capstone should feel like a real executive brief, not a classroom recap.
 
 ### Where to slow down
 - Chart selection and title writing.
@@ -67,6 +68,7 @@
 - Why did you choose those visuals for management?
 - What caveat most changes your interpretation?
 - Which feature would you trust least in an ML handoff and why?
+- What action should leadership take first based on your brief?
 
 ## Suggested Timing
 ### Day 1
@@ -85,7 +87,7 @@
 - Restart and charting basics: 40 minutes
 - Exceptions and pack outputs: 80 minutes
 - ML handoff and interpretation: 70 minutes
-- Final recap and discussion: 50 minutes
+- Case studio and executive brief presentations: 50 minutes
 
 ## Mixed Ability Guidance
 - Pair a confident coder with a participant who is newer to Python for the first lab of each day.

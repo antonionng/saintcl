@@ -12,6 +12,9 @@ const openClawConsoleOrigin = wsToHttp(process.env.OPENCLAW_GATEWAY_URL) ?? "htt
 
 const nextConfig: NextConfig = {
   typedRoutes: false,
+  experimental: {
+    webSockets: true,
+  } as NextConfig["experimental"] & { webSockets: true },
   async rewrites() {
     return [
       {

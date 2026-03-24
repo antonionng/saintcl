@@ -1,9 +1,9 @@
 import path from "node:path";
 
-import { env } from "@/lib/env";
-import type { OpenClawRuntimeDescriptor, OpenClawRuntimePaths } from "@/lib/openclaw/runtime-types";
+import { env } from "../env";
+import type { OpenClawRuntimeDescriptor, OpenClawRuntimePaths } from "./runtime-types";
 
-function slugify(value: string) {
+export function slugifyPathSegment(value: string) {
   return value
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -44,7 +44,7 @@ export function getOpenClawRuntimeBasePath() {
 }
 
 export function getTenantRuntimePaths(orgId: string): OpenClawRuntimePaths {
-  const tenantSlug = slugify(orgId);
+  const tenantSlug = slugifyPathSegment(orgId);
   const root = path.join(getOpenClawRuntimeBasePath(), tenantSlug);
 
   return {
@@ -59,8 +59,33 @@ export function getTenantRuntimePaths(orgId: string): OpenClawRuntimePaths {
   };
 }
 
-export function getAgentWorkspacePath(orgId: string, agentId: string) {
-  return path.join(getTenantRuntimePaths(orgId).workspaceRoot, slugify(agentId));
+export function getHostedWorkspaceBasePath() {
+  if (env.openClawWorkspaceDir) {
+    return path.isAbsolute(env.openClawWorkspaceDir)
+      ? env.openClawWorkspaceDir
+      : path.resolve(env.openClawWorkspaceDir);
+  }
+
+  return "/data/workspace";
+}
+
+export function getGatewayWorkspaceRoot(
+  orgId: string,
+  options?: { source?: "runtime" | "env" },
+) {
+  if (options?.source === "env") {
+    return path.join(getHostedWorkspaceBasePath(), slugifyPathSegment(orgId));
+  }
+
+  return getTenantRuntimePaths(orgId).workspaceRoot;
+}
+
+export function getAgentWorkspacePath(
+  orgId: string,
+  agentId: string,
+  options?: { source?: "runtime" | "env" },
+) {
+  return path.join(getGatewayWorkspaceRoot(orgId, options), slugifyPathSegment(agentId));
 }
 
 export function buildRuntimeDescriptor(
@@ -71,7 +96,7 @@ export function buildRuntimeDescriptor(
   const gatewayPort = overrides?.gatewayPort ?? hashToPort(orgId, env.openClawBasePort);
 
   return {
-    id: `rt_${slugify(orgId)}`,
+    id: `rt_${slugifyPathSegment(orgId)}`,
     orgId,
     gatewayPort,
     gatewayUrl: `ws://127.0.0.1:${gatewayPort}`,

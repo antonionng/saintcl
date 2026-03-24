@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SaintClaw",
+  title: "Saint AGI",
   description: "Managed, secure, always-on AI agents for teams and professionals.",
 };
 
@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} antialiased`}>{children}</body>
+      <body className={`${inter.variable} bg-background text-foreground antialiased`}>{children}</body>
     </html>
   );
 }

@@ -5,21 +5,21 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-full border text-sm font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 rounded-full border text-sm font-medium transition-all duration-200 ease-out disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "border-white/80 bg-white !text-black shadow-[0_10px_30px_rgba(255,255,255,0.08)] hover:border-white hover:bg-white/92 hover:!text-black",
+          "border-white/90 bg-white !text-zinc-950 shadow-[0_12px_30px_rgba(255,255,255,0.08)] hover:border-white hover:bg-white/94 hover:!text-zinc-950 [&]:!text-zinc-950 [&>span]:!text-zinc-950 [&>svg]:!text-zinc-950 [&_svg]:!text-zinc-950 [&_span]:!text-zinc-950 [&_a]:!text-zinc-950",
         secondary:
-          "border-white/10 bg-white/[0.04] text-white hover:border-white/14 hover:bg-white/[0.07]",
-        ghost: "border-transparent bg-transparent text-white hover:bg-white/[0.06]",
-        outline: "border-white/14 bg-transparent text-white hover:border-white/22 hover:bg-white/[0.04]",
+          "border-white/10 bg-white/[0.04] text-white hover:border-white/16 hover:bg-white/[0.08]",
+        ghost: "border-transparent bg-transparent text-white/82 hover:bg-white/[0.05] hover:text-white",
+        outline: "border-white/12 bg-transparent text-white hover:border-white/20 hover:bg-white/[0.03]",
       },
       size: {
-        default: "h-11 px-5",
-        sm: "h-9 px-4 text-sm",
-        lg: "h-12 px-6 text-[0.95rem]",
+        default: "h-10 px-4.5",
+        sm: "h-8.5 px-3.5 text-[0.82rem]",
+        lg: "h-11 px-5 text-[0.95rem]",
         icon: "size-10 rounded-full",
       },
     },

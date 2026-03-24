@@ -6,12 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const topupOptions = [
-  { label: "$25", amountCents: 2500 },
-  { label: "$100", amountCents: 10000 },
-  { label: "$250", amountCents: 25000 },
+  { label: "£25", amountCents: 2500 },
+  { label: "£100", amountCents: 10000 },
+  { label: "£250", amountCents: 25000 },
 ];
 
-export function BillingActions() {
+export function BillingActions({
+  returnPath = "/billing",
+}: {
+  returnPath?: string;
+}) {
   const [manualAmount, setManualAmount] = useState("50");
   const [creditAmount, setCreditAmount] = useState("25");
   const [creditDescription, setCreditDescription] = useState("Admin wallet credit");
@@ -25,7 +29,7 @@ export function BillingActions() {
       const res = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind: "topup", amountCents }),
+        body: JSON.stringify({ kind: "topup", amountCents, returnPath }),
       });
       const body = (await res.json()) as { url?: string; error?: { message?: string } };
       if (!res.ok || !body.url) {
@@ -64,7 +68,7 @@ export function BillingActions() {
   return (
     <div className="space-y-5">
       <div className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Add balance</p>
+        <p className="app-kicker">Add balance</p>
         <div className="flex flex-wrap gap-3">
           {topupOptions.map((option) => (
             <Button
@@ -95,15 +99,15 @@ export function BillingActions() {
         </div>
       </div>
 
-      <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-        <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Manual admin credit</p>
+      <div className="space-y-3 rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
+        <p className="app-kicker">Manual admin credit</p>
         <Input
           type="number"
           min="1"
           step="1"
           value={creditAmount}
           onChange={(event) => setCreditAmount(event.target.value)}
-          placeholder="Amount in USD"
+          placeholder="Amount in GBP"
         />
         <Input
           value={creditDescription}

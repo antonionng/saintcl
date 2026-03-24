@@ -75,6 +75,10 @@ export async function insertAgentMetadata(input: {
     .select()
     .single();
 
+  if (inserted.error) {
+    throw inserted.error;
+  }
+
   return inserted.data ?? null;
 }
 
@@ -148,6 +152,90 @@ export async function listRepoAllowlistPatterns(orgId: string) {
     .eq("org_id", orgId);
 
   return (data ?? []).map((entry) => entry.pattern);
+}
+
+export async function insertRepoAllowlist(input: {
+  orgId: string;
+  pattern: string;
+  createdBy?: string | null;
+}) {
+  const admin = createAdminClient();
+  if (!admin) {
+    return null;
+  }
+
+  const inserted = await admin
+    .from("repo_allowlists")
+    .insert({
+      org_id: input.orgId,
+      pattern: input.pattern,
+      created_by: input.createdBy ?? null,
+    })
+    .select()
+    .single();
+
+  return inserted.data ?? null;
+}
+
+export async function listAgentTerminalRepoPaths(agentId: string, orgId: string) {
+  const admin = createAdminClient();
+  if (!admin) {
+    return [];
+  }
+
+  const { data } = await admin
+    .from("agent_terminal_repo_allowlists")
+    .select("repo_path")
+    .eq("org_id", orgId)
+    .eq("agent_id", agentId)
+    .order("created_at", { ascending: true });
+
+  return (data ?? []).map((entry) => entry.repo_path);
+}
+
+export async function replaceAgentTerminalRepoAllowlists(input: {
+  orgId: string;
+  agentId: string;
+  repoPaths: string[];
+  createdBy?: string | null;
+}) {
+  const admin = createAdminClient();
+  if (!admin) {
+    return [];
+  }
+
+  const uniqueRepoPaths = [...new Set(input.repoPaths)];
+  const deleteResult = await admin
+    .from("agent_terminal_repo_allowlists")
+    .delete()
+    .eq("org_id", input.orgId)
+    .eq("agent_id", input.agentId);
+
+  if (deleteResult.error) {
+    throw deleteResult.error;
+  }
+
+  if (uniqueRepoPaths.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await admin
+    .from("agent_terminal_repo_allowlists")
+    .insert(
+      uniqueRepoPaths.map((repoPath) => ({
+        org_id: input.orgId,
+        agent_id: input.agentId,
+        repo_path: repoPath,
+        created_by: input.createdBy ?? null,
+      })),
+    )
+    .select("*");
+
+  if (error) {
+    throw error;
+  }
+
+  return data ?? [];
 }
 
 export async function insertTerminalApproval(input: {

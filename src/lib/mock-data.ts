@@ -15,7 +15,7 @@ export const dashboardStats: DashboardStat[] = [
   { id: "agents", label: "Active agents", value: "12", delta: "+4 this month" },
   { id: "runs", label: "Runs today", value: "1,284", delta: "+18% week over week" },
   { id: "response", label: "Median response", value: "2.3s", delta: "Stable" },
-  { id: "automation", label: "Estimated ROI", value: "$48k", delta: "Projected annualized" },
+  { id: "automation", label: "Estimated ROI", value: "£48k", delta: "Projected annualized" },
 ];
 
 export const agents: AgentRecord[] = [
@@ -128,21 +128,39 @@ export const logs: LogRecord[] = [
 export const knowledgeDocuments: KnowledgeDocument[] = [
   {
     id: "doc_1",
+    orgId: "org_001",
+    scopeType: "org",
+    teamId: null,
+    userId: null,
     filename: "enterprise-pricing-playbook.pdf",
+    mimeType: "application/pdf",
+    contentText: "",
     chunkCount: 184,
     status: "indexed",
     updatedAt: "Mar 08, 2026",
   },
   {
     id: "doc_2",
+    orgId: "org_001",
+    scopeType: "team",
+    teamId: "team_product",
+    userId: null,
     filename: "q1-product-roadmap.md",
+    mimeType: "text/markdown",
+    contentText: "",
     chunkCount: 48,
     status: "indexed",
     updatedAt: "Mar 06, 2026",
   },
   {
     id: "doc_3",
+    orgId: "org_001",
+    scopeType: "user",
+    teamId: null,
+    userId: "user_001",
     filename: "support-escalations.csv",
+    mimeType: "text/csv",
+    contentText: "",
     chunkCount: 92,
     status: "processing",
     updatedAt: "Uploading now",
@@ -227,25 +245,25 @@ export const billingPlans: Array<{
   features: string[];
 }> = [
   {
-    id: "free",
-    name: "Free",
-    price: "$0",
-    description: "One always-on agent for solo operators validating ROI.",
-    features: ["1 agent", "Telegram or Slack", "Basic logs"],
+    id: "starter",
+    name: "Starter",
+    price: "£49",
+    description: "For solo operators and consultants proving ROI with governed agent workflows.",
+    features: ["3 agents", "£15 usage credit", "5 GB storage"],
   },
   {
     id: "pro",
     name: "Pro",
-    price: "$29",
-    description: "For teams running dedicated agents per function.",
-    features: ["5 agents", "Usage-based runs", "Knowledge uploads"],
+    price: "£199",
+    description: "For small teams deploying multiple specialized agents with shared knowledge and approvals.",
+    features: ["10 agents", "£100 usage credit", "25 GB storage"],
   },
   {
-    id: "team",
-    name: "Team",
-    price: "$99",
-    description: "Multi-user governance, RAG, and shared operating memory.",
-    features: ["25 agents", "RAG enabled", "Approval workflows"],
+    id: "business",
+    name: "Business",
+    price: "£999",
+    description: "For companies rolling out AI operations across departments with governance and support.",
+    features: ["30 agents", "£500 usage credit", "100 GB storage"],
   },
 ];
 

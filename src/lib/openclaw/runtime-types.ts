@@ -45,6 +45,10 @@ export interface OpenClawRuntimeState {
 export interface BootstrapTenantOptions {
   orgId: string;
   defaultModel?: string;
+  approvedModels?: Array<{
+    id: string;
+    label?: string;
+  }>;
 }
 
 export interface BootstrapAgentOptions {

@@ -104,6 +104,30 @@ const CRON_TIMEZONE_SUGGESTIONS = [
   "Asia/Tokyo",
 ];
 
+function isEmbeddedSurface() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  const value = new URL(window.location.href).searchParams.get("embed")?.trim().toLowerCase();
+  return value === "1" || value === "true" || value === "yes" || value === "on";
+}
+
+function isManagedRuntimeSurface() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  const value = new URL(window.location.href).searchParams.get("managedRuntime")?.trim().toLowerCase();
+  return value === "1" || value === "true" || value === "yes" || value === "on";
+}
+
+function getBranding(embedMode: boolean) {
+  return {
+    title: "SAINT AGI",
+    subtitle: embedMode ? "Workspace" : "Runtime Console",
+    logoUrl: "/saintclaw-placeholder-logo.png",
+  };
+}
+
 function isHttpUrl(value: string): boolean {
   return /^https?:\/\//i.test(value.trim());
 }
@@ -147,15 +171,20 @@ function resolveAssistantAvatarUrl(state: AppViewState): string | undefined {
 }
 
 export function renderApp(state: AppViewState) {
+  const embedMode = isEmbeddedSurface();
+  const managedRuntime = isManagedRuntimeSurface();
+  const branding = getBranding(embedMode);
   const openClawVersion =
     (typeof state.hello?.server?.version === "string" && state.hello.server.version.trim()) ||
     state.updateAvailable?.currentVersion ||
     t("common.na");
-  const availableUpdate =
+  const availableUpdateRaw =
     state.updateAvailable &&
     state.updateAvailable.latestVersion !== state.updateAvailable.currentVersion
       ? state.updateAvailable
       : null;
+  const availableUpdate = managedRuntime ? null : availableUpdateRaw;
+  const managedRuntimeUpdate = managedRuntime ? availableUpdateRaw : null;
   const versionStatusClass = availableUpdate ? "warn" : "ok";
   const presenceCount = state.presenceEntries.length;
   const sessionsCount = state.sessionsResult?.count ?? null;
@@ -234,7 +263,7 @@ export function renderApp(state: AppViewState) {
       : rawDeliveryToSuggestions;
 
   return html`
-    <div class="shell ${isChat ? "shell--chat" : ""} ${chatFocus ? "shell--chat-focus" : ""} ${state.settings.navCollapsed ? "shell--nav-collapsed" : ""} ${state.onboarding ? "shell--onboarding" : ""}">
+    <div class="shell ${isChat ? "shell--chat" : ""} ${chatFocus ? "shell--chat-focus" : ""} ${state.settings.navCollapsed ? "shell--nav-collapsed" : ""} ${state.onboarding ? "shell--onboarding" : ""} ${embedMode ? "shell--embedded" : ""}">
       <header class="topbar">
         <div class="topbar-left">
           <button
@@ -250,12 +279,12 @@ export function renderApp(state: AppViewState) {
             <span class="nav-collapse-toggle__icon">${icons.menu}</span>
           </button>
           <div class="brand">
-            <div class="brand-logo">
-              <img src=${basePath ? `${basePath}/favicon.svg` : "/favicon.svg"} alt="OpenClaw" />
+            <div class="brand-logo" aria-hidden="true">
+              <img src=${branding.logoUrl} alt="" />
             </div>
             <div class="brand-text">
-              <div class="brand-title">OPENCLAW</div>
-              <div class="brand-sub">Gateway Dashboard</div>
+              <div class="brand-title">${branding.title}</div>
+              <div class="brand-sub">${branding.subtitle}</div>
             </div>
           </div>
         </div>
@@ -300,23 +329,27 @@ export function renderApp(state: AppViewState) {
             </div>
           `;
         })}
-        <div class="nav-group nav-group--links">
-          <div class="nav-label nav-label--static">
-            <span class="nav-label__text">${t("common.resources")}</span>
-          </div>
-          <div class="nav-group__items">
-            <a
-              class="nav-item nav-item--external"
-              href="https://docs.openclaw.ai"
-              target=${EXTERNAL_LINK_TARGET}
-              rel=${buildExternalLinkRel()}
-              title="${t("common.docs")} (opens in new tab)"
-            >
-              <span class="nav-item__icon" aria-hidden="true">${icons.book}</span>
-              <span class="nav-item__text">${t("common.docs")}</span>
-            </a>
-          </div>
-        </div>
+        ${
+          embedMode
+            ? nothing
+            : html`<div class="nav-group nav-group--links">
+                <div class="nav-label nav-label--static">
+                  <span class="nav-label__text">Resources</span>
+                </div>
+                <div class="nav-group__items">
+                  <a
+                    class="nav-item nav-item--external"
+                    href="https://docs.openclaw.ai"
+                    target=${EXTERNAL_LINK_TARGET}
+                    rel=${buildExternalLinkRel()}
+                    title="Runtime docs (opens in new tab)"
+                  >
+                    <span class="nav-item__icon" aria-hidden="true">${icons.book}</span>
+                    <span class="nav-item__text">Runtime docs</span>
+                  </a>
+                </div>
+              </div>`
+        }
       </aside>
       <main class="content ${isChat ? "content--chat" : ""}">
         ${
@@ -330,6 +363,13 @@ export function renderApp(state: AppViewState) {
                 @click=${() => runUpdate(state)}
               >${state.updateRunning ? "Updating…" : "Update now"}</button>
             </div>`
+            : managedRuntimeUpdate
+              ? html`<div class="update-banner callout info" role="status">
+                  <strong>Update available:</strong> v${managedRuntimeUpdate.latestVersion}
+                  (running v${managedRuntimeUpdate.currentVersion}). This hosted runtime is
+                  deployment-managed, so update the Saint AGI deployment instead of using the
+                  embedded console.
+                </div>`
             : nothing
         }
         <section class="content-header">

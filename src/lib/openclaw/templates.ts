@@ -3,11 +3,22 @@ import type {
   BootstrapTenantOptions,
   OpenClawRuntimeDescriptor,
 } from "@/lib/openclaw/runtime-types";
+import { buildOpenClawModelAllowlist } from "@/lib/openclaw/model-catalog";
 
 export function renderTenantOpenClawConfig(
   runtime: OpenClawRuntimeDescriptor,
   options: BootstrapTenantOptions,
 ) {
+  const approvedModels = (options.approvedModels ?? []).filter((entry) => entry.id.trim().length > 0);
+  const modelAllowlist = buildOpenClawModelAllowlist(
+    approvedModels.map((entry) => ({
+      id: entry.id,
+      label: entry.label ?? entry.id,
+      provider: "openrouter",
+      source: "policy",
+    })),
+  );
+
   return JSON.stringify(
     {
       agent: {
@@ -15,6 +26,8 @@ export function renderTenantOpenClawConfig(
       },
       agents: {
         defaults: {
+          model: options.defaultModel ? { primary: options.defaultModel } : undefined,
+          models: Object.keys(modelAllowlist).length > 0 ? modelAllowlist : undefined,
           workspace: runtime.paths.workspaceRoot,
         },
         list: [],

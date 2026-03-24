@@ -4,6 +4,16 @@ import { constants } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+const DEFAULT_BOOTSTRAP_CHANNELS = [
+  "telegram",
+  "whatsapp",
+  "discord",
+  "slack",
+  "googlechat",
+  "matrix",
+  "nostr",
+];
+
 async function fileExists(targetPath) {
   try {
     await access(targetPath, constants.F_OK);
@@ -44,6 +54,37 @@ function normalizeOrigin(domainOrUrl) {
   return `https://${domainOrUrl}`;
 }
 
+function parseBootstrapChannels(rawValue) {
+  if (!rawValue?.trim()) {
+    return [...DEFAULT_BOOTSTRAP_CHANNELS];
+  }
+
+  const trimmed = rawValue.trim();
+  if (trimmed.toLowerCase() === "none") {
+    return [];
+  }
+
+  if (trimmed.startsWith("[")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return [...new Set(parsed.map((value) => String(value).trim().toLowerCase()).filter(Boolean))];
+      }
+    } catch {
+      return [...DEFAULT_BOOTSTRAP_CHANNELS];
+    }
+  }
+
+  return [
+    ...new Set(
+      trimmed
+        .split(",")
+        .map((value) => value.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  ];
+}
+
 function mergeConfig(existingConfig, options) {
   const config = existingConfig && typeof existingConfig === "object" ? existingConfig : {};
   const gateway =
@@ -58,6 +99,19 @@ function mergeConfig(existingConfig, options) {
     config.agents && typeof config.agents === "object" && !Array.isArray(config.agents)
       ? { ...config.agents }
       : {};
+  const channels =
+    config.channels && typeof config.channels === "object" && !Array.isArray(config.channels)
+      ? { ...config.channels }
+      : {};
+  const plugins =
+    config.plugins && typeof config.plugins === "object" && !Array.isArray(config.plugins)
+      ? { ...config.plugins }
+      : {};
+  const pluginEntries =
+    plugins.entries && typeof plugins.entries === "object" && !Array.isArray(plugins.entries)
+      ? { ...plugins.entries }
+      : {};
+  const pluginAllow = Array.isArray(plugins.allow) ? [...plugins.allow] : null;
   const existingDefaults =
     agents.defaults && typeof agents.defaults === "object" && !Array.isArray(agents.defaults)
       ? { ...agents.defaults }
@@ -112,6 +166,23 @@ function mergeConfig(existingConfig, options) {
     delete controlUi.dangerouslyAllowHostHeaderOriginFallback;
   }
 
+  for (const channelId of options.bootstrapChannels) {
+    const existingPluginEntry =
+      pluginEntries[channelId] &&
+      typeof pluginEntries[channelId] === "object" &&
+      !Array.isArray(pluginEntries[channelId])
+        ? { ...pluginEntries[channelId] }
+        : {};
+    if (existingPluginEntry.enabled === undefined) {
+      existingPluginEntry.enabled = true;
+    }
+    pluginEntries[channelId] = existingPluginEntry;
+
+    if (pluginAllow && !pluginAllow.includes(channelId)) {
+      pluginAllow.push(channelId);
+    }
+  }
+
   const nextConfig = {
     ...config,
     agents: {
@@ -123,6 +194,12 @@ function mergeConfig(existingConfig, options) {
     gateway: {
       ...gateway,
       controlUi,
+    },
+    channels,
+    plugins: {
+      ...plugins,
+      ...(pluginAllow ? { allow: pluginAllow } : {}),
+      ...(Object.keys(pluginEntries).length > 0 ? { entries: pluginEntries } : {}),
     },
   };
   delete nextConfig.agent;
@@ -142,6 +219,7 @@ async function main() {
   const workspaceDir = process.env.OPENCLAW_WORKSPACE_DIR?.trim() || "/data/workspace";
   const configPath = process.env.OPENCLAW_CONFIG_PATH?.trim() || path.join(stateDir, "openclaw.json");
   const defaultModel = process.env.OPENCLAW_DEFAULT_MODEL?.trim();
+  const bootstrapChannels = parseBootstrapChannels(process.env.OPENCLAW_BOOTSTRAP_CHANNELS);
 
   const publicOrigins = new Set(parseAllowedOrigins(process.env.OPENCLAW_ALLOWED_ORIGINS));
   const railwayDomain =
@@ -168,6 +246,7 @@ async function main() {
     workspaceDir,
     defaultModel,
     allowedOrigins: [...publicOrigins],
+    bootstrapChannels,
   });
 
   await writeFile(configPath, `${JSON.stringify(nextConfig, null, 2)}\n`, "utf8");

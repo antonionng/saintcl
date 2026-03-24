@@ -1,328 +1,135 @@
 (function () {
-  const slides = Array.from(document.querySelectorAll(".slide"));
-  const jumpList = document.getElementById("jump-list");
-  const currentLabel = document.getElementById("current-label");
-  const currentCounter = document.getElementById("current-counter");
-  const progressFill = document.getElementById("progress-fill");
-  const prevButton = document.getElementById("prev-slide");
-  const nextButton = document.getElementById("next-slide");
-  const notesButton = document.getElementById("toggle-notes");
-  const overviewButton = document.getElementById("toggle-overview");
-  const sidebar = document.querySelector(".sidebar");
-  const day1Fill = document.getElementById("day1-fill");
-  const day2Fill = document.getElementById("day2-fill");
-  const day3Fill = document.getElementById("day3-fill");
-  const timerDisplay = document.getElementById("session-timer");
-  const timerLabel = document.getElementById("timer-status");
+  var slides = Array.from(document.querySelectorAll(".slide"));
+  var counter = document.getElementById("deck-counter");
+  var progressBar = document.getElementById("deck-progress-fill");
+  var timerEl = document.getElementById("deck-timer");
+  var current = 0;
+  var timer = null;
 
-  let currentSlide = 0;
-  let notesVisible = false;
-  let overviewVisible = true;
-  let activeTimer = null;
+  function getFragments(s) { return Array.from(s.querySelectorAll(".fragment")); }
 
-  const slideMeta = slides.map((slide, index) => ({
-    id: slide.id,
-    index,
-    title: slide.dataset.title || slide.querySelector("h2")?.textContent || `Slide ${index + 1}`,
-    day: Number(slide.dataset.day || 0),
-    type: slide.dataset.type || "Concept",
-  }));
-
-  function parseHash() {
-    const hash = window.location.hash.replace("#", "").trim();
-    if (!hash) {
-      return null;
-    }
-    const directIndex = slideMeta.findIndex((slide) => slide.id === hash);
-    return directIndex >= 0 ? directIndex : null;
+  function resetFragments(s) {
+    getFragments(s).forEach(function (f) { f.classList.remove("visible"); });
+    s.dataset.fi = "0";
   }
 
-  function buildJumpList() {
-    const fragment = document.createDocumentFragment();
-    slideMeta.forEach((slide) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "jump-button";
-      button.dataset.index = String(slide.index);
-      button.innerHTML = `
-        <span class="slide-number">${slide.index + 1}</span>
-        <span class="slide-title">${slide.title}</span>
-      `;
-      button.addEventListener("click", () => goToSlide(slide.index));
-      fragment.appendChild(button);
-    });
-    jumpList.appendChild(fragment);
-  }
-
-  function getFragments(slide) {
-    return Array.from(slide.querySelectorAll(".fragment"));
-  }
-
-  function resetFragments(slide) {
-    getFragments(slide).forEach((fragment) => fragment.classList.remove("visible"));
-    slide.dataset.fragmentIndex = "0";
-  }
-
-  function revealNextFragment(slide) {
-    const fragments = getFragments(slide);
-    const currentIndex = Number(slide.dataset.fragmentIndex || 0);
-    if (currentIndex >= fragments.length) {
-      return false;
-    }
-    fragments[currentIndex].classList.add("visible");
-    slide.dataset.fragmentIndex = String(currentIndex + 1);
+  function revealNext(s) {
+    var frags = getFragments(s);
+    var i = Number(s.dataset.fi || 0);
+    if (i >= frags.length) return false;
+    frags[i].classList.add("visible");
+    s.dataset.fi = String(i + 1);
     return true;
   }
 
-  function hideLastFragment(slide) {
-    const fragments = getFragments(slide);
-    const currentIndex = Number(slide.dataset.fragmentIndex || 0);
-    if (currentIndex <= 0) {
-      return false;
-    }
-    fragments[currentIndex - 1].classList.remove("visible");
-    slide.dataset.fragmentIndex = String(currentIndex - 1);
+  function hideLast(s) {
+    var frags = getFragments(s);
+    var i = Number(s.dataset.fi || 0);
+    if (i <= 0) return false;
+    frags[i - 1].classList.remove("visible");
+    s.dataset.fi = String(i - 1);
     return true;
   }
 
-  function updateSidebarButtons() {
-    const buttons = jumpList.querySelectorAll(".jump-button");
-    buttons.forEach((button) => {
-      const index = Number(button.dataset.index);
-      button.classList.toggle("active", index === currentSlide);
-    });
+  function go(index, reset) {
+    if (index < 0 || index >= slides.length) return;
+    slides[current].classList.remove("active");
+    current = index;
+    slides[current].classList.add("active");
+    if (reset !== false) resetFragments(slides[current]);
+    counter.textContent = (current + 1) + " / " + slides.length;
+    progressBar.style.width = ((current + 1) / slides.length * 100) + "%";
+    history.replaceState(null, "", "#" + slides[current].id);
+    try { localStorage.setItem("pt-slide", String(current)); } catch (e) {}
   }
 
-  function updateProgress() {
-    const total = slides.length;
-    currentCounter.textContent = `${currentSlide + 1} / ${total}`;
-    currentLabel.textContent = slideMeta[currentSlide].title;
-    progressFill.style.width = `${((currentSlide + 1) / total) * 100}%`;
-
-    const dayProgress = { 1: 0, 2: 0, 3: 0 };
-    const dayTotals = { 1: 0, 2: 0, 3: 0 };
-
-    slideMeta.forEach((meta, index) => {
-      if (!dayTotals[meta.day]) {
-        return;
-      }
-      dayTotals[meta.day] += 1;
-      if (index <= currentSlide) {
-        dayProgress[meta.day] += 1;
-      }
-    });
-
-    day1Fill.style.width = `${(dayProgress[1] / dayTotals[1]) * 100}%`;
-    day2Fill.style.width = `${(dayProgress[2] / dayTotals[2]) * 100}%`;
-    day3Fill.style.width = `${(dayProgress[3] / dayTotals[3]) * 100}%`;
+  function next() {
+    if (revealNext(slides[current])) return;
+    go(Math.min(current + 1, slides.length - 1));
   }
 
-  function updateControls() {
-    prevButton.disabled = currentSlide === 0;
-    nextButton.disabled = currentSlide === slides.length - 1 && !getFragments(slides[currentSlide]).length;
-    notesButton.classList.toggle("toggle-on", notesVisible);
-    overviewButton.classList.toggle("toggle-on", overviewVisible);
+  function prev() {
+    if (hideLast(slides[current])) return;
+    go(Math.max(current - 1, 0), false);
   }
 
-  function syncHash() {
-    const id = slideMeta[currentSlide].id;
-    if (window.location.hash !== `#${id}`) {
-      history.replaceState(null, "", `#${id}`);
-    }
-  }
-
-  function goToSlide(index, reset = true) {
-    if (index < 0 || index >= slides.length) {
-      return;
-    }
-    slides[currentSlide].classList.remove("active");
-    currentSlide = index;
-    slides[currentSlide].classList.add("active");
-    if (reset) {
-      resetFragments(slides[currentSlide]);
-    }
-    updateSidebarButtons();
-    updateProgress();
-    updateControls();
-    syncHash();
-  }
-
-  function nextStep() {
-    const slide = slides[currentSlide];
-    if (revealNextFragment(slide)) {
-      return;
-    }
-    goToSlide(Math.min(currentSlide + 1, slides.length - 1));
-  }
-
-  function previousStep() {
-    const slide = slides[currentSlide];
-    if (hideLastFragment(slide)) {
-      return;
-    }
-    goToSlide(Math.max(currentSlide - 1, 0), false);
-  }
-
-  function setNotesVisibility(visible) {
-    notesVisible = visible;
-    document.body.classList.toggle("notes-visible", notesVisible);
-    updateControls();
-  }
-
-  function setOverviewVisibility(visible) {
-    overviewVisible = visible;
-    sidebar.style.display = overviewVisible ? "" : "none";
-    updateControls();
-  }
-
-  function formatTimer(secondsLeft) {
-    const minutes = Math.floor(secondsLeft / 60)
-      .toString()
-      .padStart(2, "0");
-    const seconds = Math.floor(secondsLeft % 60)
-      .toString()
-      .padStart(2, "0");
-    return `${minutes}:${seconds}`;
+  function fmtTime(sec) {
+    var m = String(Math.floor(sec / 60)).padStart(2, "0");
+    var s = String(sec % 60).padStart(2, "0");
+    return m + ":" + s;
   }
 
   function clearTimer() {
-    if (activeTimer) {
-      clearInterval(activeTimer.intervalId);
-      activeTimer = null;
-    }
-    timerDisplay.textContent = "No timer";
-    timerDisplay.classList.remove("running", "expired");
-    timerLabel.textContent = "Ready for live facilitation";
-    document.querySelectorAll(".timer-button").forEach((button) => {
-      button.classList.remove("active");
-      button.textContent = button.dataset.defaultLabel || "Start timer";
+    if (timer) { clearInterval(timer.id); timer = null; }
+    timerEl.textContent = "";
+    timerEl.className = "deck-timer";
+    document.querySelectorAll(".timer-btn").forEach(function (b) {
+      b.classList.remove("running");
+      b.textContent = b.dataset.label || "Start timer";
     });
   }
 
-  function startTimer(button, minutes) {
+  function startTimer(btn, mins) {
     clearTimer();
-    const totalSeconds = Number(minutes) * 60;
-    const startedAt = Date.now();
-    timerLabel.textContent = `Running ${minutes}-minute activity`;
-    timerDisplay.classList.add("running");
-    button.classList.add("active");
-
-    const update = () => {
-      const elapsed = Math.floor((Date.now() - startedAt) / 1000);
-      const remaining = totalSeconds - elapsed;
-      if (remaining <= 0) {
-        timerDisplay.textContent = "00:00";
-        timerDisplay.classList.remove("running");
-        timerDisplay.classList.add("expired");
-        timerLabel.textContent = "Activity time is up";
-        button.classList.remove("active");
-        button.textContent = "Restart timer";
-        clearInterval(activeTimer.intervalId);
-        activeTimer = null;
+    var total = mins * 60;
+    var start = Date.now();
+    btn.classList.add("running");
+    timerEl.className = "deck-timer running";
+    var tick = function () {
+      var left = total - Math.floor((Date.now() - start) / 1000);
+      if (left <= 0) {
+        timerEl.textContent = "00:00";
+        timerEl.className = "deck-timer expired";
+        btn.classList.remove("running");
+        btn.textContent = "Done";
+        clearInterval(timer.id);
+        timer = null;
         return;
       }
-      timerDisplay.textContent = formatTimer(remaining);
-      button.textContent = `Running ${formatTimer(remaining)}`;
+      timerEl.textContent = fmtTime(left);
+      btn.textContent = fmtTime(left);
     };
-
-    timerDisplay.textContent = formatTimer(totalSeconds);
-    activeTimer = {
-      intervalId: window.setInterval(update, 1000),
-      button,
-    };
+    timerEl.textContent = fmtTime(total);
+    timer = { id: setInterval(tick, 1000) };
   }
 
-  function bindTimers() {
-    document.querySelectorAll(".timer-button").forEach((button) => {
-      button.dataset.defaultLabel = button.textContent;
-      button.addEventListener("click", () => {
-        const minutes = button.dataset.minutes;
-        if (!minutes) {
-          return;
-        }
-        startTimer(button, minutes);
-      });
+  document.querySelectorAll(".timer-btn").forEach(function (btn) {
+    btn.dataset.label = btn.textContent;
+    btn.addEventListener("click", function () {
+      startTimer(btn, Number(btn.dataset.minutes));
     });
-  }
+  });
 
-  function bindPolls() {
-    document.querySelectorAll(".poll-card").forEach((card) => {
-      const reveal = card.querySelector("[data-reveal-answer]");
-      card.querySelectorAll(".poll-option").forEach((option) => {
-        option.addEventListener("click", () => {
-          card.querySelectorAll(".poll-option").forEach((button) => {
-            button.classList.remove("selected");
-          });
-          option.classList.add("selected");
-        });
-      });
-      reveal?.addEventListener("click", () => {
-        card.classList.toggle("revealed");
-      });
-    });
-  }
+  document.addEventListener("keydown", function (e) {
+    var tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea") return;
+    switch (e.key) {
+      case "ArrowRight": case " ": case "PageDown":
+        e.preventDefault(); next(); break;
+      case "ArrowLeft": case "PageUp":
+        e.preventDefault(); prev(); break;
+      case "Home": e.preventDefault(); go(0); break;
+      case "End":  e.preventDefault(); go(slides.length - 1); break;
+      case "t": case "T": e.preventDefault(); clearTimer(); break;
+    }
+  });
 
-  function bindKeyboard() {
-    document.addEventListener("keydown", (event) => {
-      const tagName = event.target?.tagName?.toLowerCase();
-      if (tagName === "input" || tagName === "textarea") {
-        return;
-      }
+  document.addEventListener("click", function (e) {
+    var deck = document.querySelector(".deck");
+    if (!deck.contains(e.target)) return;
+    if (e.target.closest("button, a, pre, code, .exercise-card")) return;
+    var rect = deck.getBoundingClientRect();
+    if (e.clientX > rect.left + rect.width * 0.65) next();
+  });
 
-      switch (event.key) {
-        case "ArrowRight":
-        case "PageDown":
-        case " ":
-          event.preventDefault();
-          nextStep();
-          break;
-        case "ArrowLeft":
-        case "PageUp":
-          event.preventDefault();
-          previousStep();
-          break;
-        case "Home":
-          event.preventDefault();
-          goToSlide(0);
-          break;
-        case "End":
-          event.preventDefault();
-          goToSlide(slides.length - 1);
-          break;
-        case "n":
-        case "N":
-          event.preventDefault();
-          setNotesVisibility(!notesVisible);
-          break;
-        case "o":
-        case "O":
-          event.preventDefault();
-          setOverviewVisibility(!overviewVisible);
-          break;
-        case "t":
-        case "T":
-          event.preventDefault();
-          clearTimer();
-          break;
-        default:
-          break;
-      }
-    });
-  }
-
-  prevButton.addEventListener("click", previousStep);
-  nextButton.addEventListener("click", nextStep);
-  notesButton.addEventListener("click", () => setNotesVisibility(!notesVisible));
-  overviewButton.addEventListener("click", () => setOverviewVisibility(!overviewVisible));
-
-  buildJumpList();
-  bindTimers();
-  bindPolls();
-  bindKeyboard();
   slides.forEach(resetFragments);
 
-  const hashIndex = parseHash();
+  var hash = location.hash.replace("#", "");
+  var startIdx = slides.findIndex(function (s) { return s.id === hash; });
+  if (startIdx < 0) {
+    try { startIdx = Number(localStorage.getItem("pt-slide")) || 0; } catch (e) { startIdx = 0; }
+  }
+
   slides[0].classList.add("active");
-  goToSlide(hashIndex ?? 0);
-  clearTimer();
+  go(Math.max(0, Math.min(startIdx, slides.length - 1)));
 })();

@@ -77,6 +77,12 @@ describe("gateway tool", () => {
     expect(tool.ownerOnly).toBe(true);
   });
 
+  it("documents that config.patch needs a raw object string", async () => {
+    const tool = requireGatewayTool();
+    expect(tool.description).toContain("config.patch always requires a `raw` object string");
+    expect(tool.description).toContain("Telegram channel settings plus any bindings needed");
+  });
+
   it("schedules SIGUSR1 restart", async () => {
     vi.useFakeTimers();
     const kill = vi.spyOn(process, "kill").mockImplementation(() => true);

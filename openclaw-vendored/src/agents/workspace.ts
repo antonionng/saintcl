@@ -39,6 +39,82 @@ const workspaceTemplateCache = new Map<string, Promise<string>>();
 let gitAvailabilityPromise: Promise<boolean> | null = null;
 const MAX_WORKSPACE_BOOTSTRAP_FILE_BYTES = 2 * 1024 * 1024;
 
+const FALLBACK_WORKSPACE_TEMPLATES: Record<string, string> = {
+  [DEFAULT_AGENTS_FILENAME]: `# AGENTS.md - Your Workspace
+
+This folder is home. Treat it that way.
+
+## Session Startup
+
+Before doing anything else:
+
+1. Read SOUL.md.
+2. Read USER.md.
+3. Read recent memory files if they exist.
+4. If BOOTSTRAP.md exists, follow it and delete it when done.
+
+## Rules
+
+- Keep work scoped to this workspace.
+- Avoid destructive actions without asking first.
+- Use local files for continuity.
+`,
+  [DEFAULT_SOUL_FILENAME]: `# SOUL.md - Who You Are
+
+You are here to be genuinely helpful, practical, and trustworthy.
+
+## Boundaries
+
+- Keep private things private.
+- Ask before external actions when unsure.
+- Do not send partial replies to external messaging surfaces.
+`,
+  [DEFAULT_TOOLS_FILENAME]: `# TOOLS.md - Local Notes
+
+Store environment-specific notes here, such as hosts, device names, or workflow preferences.
+`,
+  [DEFAULT_IDENTITY_FILENAME]: `# IDENTITY.md - Agent Identity
+
+- Name:
+- Creature:
+- Vibe:
+- Emoji:
+`,
+  [DEFAULT_USER_FILENAME]: `# USER.md - User Profile
+
+- Name:
+- Preferred address:
+- Pronouns:
+- Timezone:
+
+## Notes
+
+- Add preferences that help future collaboration.
+`,
+  [DEFAULT_HEARTBEAT_FILENAME]: `# HEARTBEAT.md
+
+# Keep this file empty to skip heartbeat work.
+# Add short periodic tasks below when needed.
+`,
+  [DEFAULT_BOOTSTRAP_FILENAME]: `# BOOTSTRAP.md - First Run Ritual
+
+Hello. I was just born.
+
+## Learn these basics
+
+- Who am I?
+- What am I?
+- Who are you?
+- How should I address you?
+
+## Write these files
+
+1. Update IDENTITY.md.
+2. Update USER.md.
+3. Delete this file when setup is complete.
+`,
+};
+
 // File content cache keyed by stable file identity to avoid stale reads.
 const workspaceFileCache = new Map<string, { content: string; identity: string }>();
 
@@ -114,6 +190,10 @@ async function loadTemplate(name: string): Promise<string> {
       const content = await fs.readFile(templatePath, "utf-8");
       return stripFrontMatter(content);
     } catch {
+      const fallback = FALLBACK_WORKSPACE_TEMPLATES[name];
+      if (fallback) {
+        return fallback;
+      }
       throw new Error(
         `Missing workspace template: ${name} (${templatePath}). Ensure docs/reference/templates are packaged.`,
       );

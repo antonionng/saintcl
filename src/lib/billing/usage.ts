@@ -14,6 +14,9 @@ type UsageChargeInput = {
   eventType: string;
   amountCents: number;
   description: string;
+  quantity?: number;
+  unit?: string;
+  sessionKey?: string | null;
   metadata?: Record<string, unknown>;
 };
 
@@ -43,7 +46,10 @@ export async function recordUsageCharge(input: UsageChargeInput) {
       user_id: input.userId,
       agent_id: input.agentId,
       event_type: input.eventType,
+      quantity: input.quantity ?? 1,
+      unit: input.unit ?? "operation",
       amount_cents: input.amountCents,
+      session_key: input.sessionKey ?? null,
       metadata: input.metadata ?? {},
     })
     .select()

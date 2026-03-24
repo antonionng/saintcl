@@ -1,5 +1,6 @@
 import { appendFile, readFile } from "node:fs/promises";
 
+import { recordSessionActivityEvent } from "@/lib/observability";
 import type { OpenClawRuntimeDescriptor } from "@/lib/openclaw/runtime-types";
 
 export async function appendRuntimeAuditEvent(
@@ -14,6 +15,16 @@ export async function appendRuntimeAuditEvent(
   });
 
   await appendFile(runtime.paths.gatewayLogPath, `${line}\n`, "utf8");
+  await recordSessionActivityEvent({
+    orgId: runtime.orgId,
+    agentId: typeof details.agentId === "string" ? details.agentId : null,
+    sessionKey: typeof details.sessionKey === "string" ? details.sessionKey : null,
+    source: "runtime_lifecycle",
+    eventType: action,
+    level: "info",
+    message: action,
+    metadata: details,
+  });
 }
 
 export async function readRuntimeLogTail(

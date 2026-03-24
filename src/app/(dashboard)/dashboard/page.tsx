@@ -6,11 +6,10 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { StatsGrid } from "@/components/dashboard/stats-grid";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  getAgentLogs,
   getCurrentOrg,
   getDashboardStats,
+  getRecentSessionActivityEvents,
   getRuntimes,
   getTerminalApprovals,
 } from "@/lib/dal";
@@ -25,7 +24,7 @@ export default async function DashboardPage() {
         getDashboardStats(orgId),
         getRuntimes(orgId),
         getTerminalApprovals(orgId),
-        getAgentLogs(orgId, undefined, 4),
+        getRecentSessionActivityEvents(orgId, 4),
       ])
     : [{ agents: 0, channels: 0, docs: 0, runtimes: 0 }, [], [], []];
 
@@ -52,11 +51,11 @@ export default async function DashboardPage() {
       <StatsGrid stats={dashboardStats} />
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Runtime health</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <section className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
+          <div className="mb-4">
+            <h2 className="text-lg font-medium tracking-[-0.03em] text-white">Runtime health</h2>
+          </div>
+          <div>
             {runtimes.length === 0 ? (
               <EmptyState
                 icon={Activity}
@@ -67,11 +66,11 @@ export default async function DashboardPage() {
             ) : (
               <div className="space-y-3">
                 {runtimes.map((runtime) => (
-                  <div key={runtime.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                  <div key={runtime.id} className="rounded-xl border border-white/8 bg-white/[0.02] p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="font-medium text-white">{runtime.org_id.slice(0, 8)}</p>
-                        <p className="mt-2 text-sm text-zinc-500">
+                        <p className="mt-2 text-sm text-zinc-400">
                           Port {runtime.gateway_port}
                           {runtime.pid ? ` · PID ${runtime.pid}` : ""}
                         </p>
@@ -81,7 +80,7 @@ export default async function DashboardPage() {
                       </Badge>
                     </div>
                     {runtime.last_heartbeat_at ? (
-                      <p className="mt-3 text-sm leading-7 text-zinc-300">
+                      <p className="mt-3 text-sm leading-7 text-zinc-400">
                         Last heartbeat {new Date(runtime.last_heartbeat_at).toLocaleString()}
                       </p>
                     ) : null}
@@ -89,14 +88,14 @@ export default async function DashboardPage() {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Approval queue</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <section className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
+          <div className="mb-4">
+            <h2 className="text-lg font-medium tracking-[-0.03em] text-white">Approval queue</h2>
+          </div>
+          <div>
             {approvals.length === 0 ? (
               <EmptyState
                 icon={TerminalSquare}
@@ -109,11 +108,11 @@ export default async function DashboardPage() {
                 {approvals.map((approval) => (
                   <div
                     key={approval.id}
-                    className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4"
+                    className="flex items-center justify-between rounded-xl border border-white/8 bg-white/[0.02] px-4 py-4"
                   >
                     <div>
                       <p className="font-medium text-white">{approval.command}</p>
-                      <p className="text-sm text-zinc-500">{approval.requested_by ?? "system"}</p>
+                      <p className="text-sm text-zinc-400">{approval.requested_by ?? "system"}</p>
                     </div>
                     <div className="flex items-center gap-3 text-sm text-zinc-400">
                       <Activity className="size-4 text-emerald-400" />
@@ -124,15 +123,15 @@ export default async function DashboardPage() {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent logs</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <section className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
+        <div className="mb-4">
+          <h2 className="text-lg font-medium tracking-[-0.03em] text-white">Recent logs</h2>
+        </div>
+        <div>
           {logs.length === 0 ? (
             <EmptyState
               icon={Bot}
@@ -152,48 +151,48 @@ export default async function DashboardPage() {
           ) : (
             <div className="space-y-3">
               {logs.map((log) => (
-                <div key={log.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <div key={log.id} className="rounded-xl border border-white/8 bg-white/[0.02] p-4">
                   <div className="flex items-center justify-between text-sm text-zinc-400">
                     <span className="uppercase tracking-[0.2em]">
-                      {log.role ?? "system"} · {log.session_key ?? "—"}
+                      {log.role ?? "system"} · {log.session_key ?? "-"}
                     </span>
-                    <span>{new Date(log.created_at).toLocaleTimeString()}</span>
+                    <span>{new Date(log.occurred_at ?? log.created_at).toLocaleTimeString()}</span>
                   </div>
-                  <p className="mt-3 text-sm leading-7 text-zinc-300">{log.message}</p>
+                  <p className="mt-3 text-sm leading-7 text-zinc-400">{log.message}</p>
                 </div>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
-      <div className="grid gap-5 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-3">
         <Link
           href="/agents/new"
-          className="group rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/20 hover:bg-white/[0.05]"
+          className="group rounded-2xl border border-white/8 bg-white/[0.02] p-5 transition-colors hover:border-white/14 hover:bg-white/[0.04]"
         >
           <Bot className="size-5 text-white" />
-          <h3 className="mt-4 font-medium text-white">Provision an agent</h3>
+          <h3 className="mt-4 text-lg font-medium tracking-[-0.03em] text-white">Provision an agent</h3>
           <p className="mt-2 text-sm leading-7 text-zinc-400">
             Create a dedicated OpenClaw identity mapped to a model, persona, and workspace.
           </p>
         </Link>
         <Link
           href="/connections"
-          className="group rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/20 hover:bg-white/[0.05]"
+          className="group rounded-2xl border border-white/8 bg-white/[0.02] p-5 transition-colors hover:border-white/14 hover:bg-white/[0.04]"
         >
           <Cable className="size-5 text-white" />
-          <h3 className="mt-4 font-medium text-white">Connect a channel</h3>
+          <h3 className="mt-4 text-lg font-medium tracking-[-0.03em] text-white">Connect a channel</h3>
           <p className="mt-2 text-sm leading-7 text-zinc-400">
             Bind Telegram or Slack to an agent so inbound messages route to the right session.
           </p>
         </Link>
         <Link
           href="/knowledge"
-          className="group rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/20 hover:bg-white/[0.05]"
+          className="group rounded-2xl border border-white/8 bg-white/[0.02] p-5 transition-colors hover:border-white/14 hover:bg-white/[0.04]"
         >
           <Database className="size-5 text-white" />
-          <h3 className="mt-4 font-medium text-white">Upload knowledge</h3>
+          <h3 className="mt-4 text-lg font-medium tracking-[-0.03em] text-white">Upload knowledge</h3>
           <p className="mt-2 text-sm leading-7 text-zinc-400">
             Add documents to Supabase Storage for chunking and retrieval via pgvector.
           </p>

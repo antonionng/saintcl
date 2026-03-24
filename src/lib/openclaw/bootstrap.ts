@@ -13,6 +13,19 @@ async function ensureDir(dir: string) {
   await mkdir(dir, { recursive: true });
 }
 
+async function writeFileIfMissing(filePath: string, content: string) {
+  try {
+    await writeFile(filePath, content, { encoding: "utf8", flag: "wx" });
+    return true;
+  } catch (error) {
+    const nextError = error as { code?: string };
+    if (nextError.code === "EEXIST") {
+      return false;
+    }
+    throw error;
+  }
+}
+
 export async function bootstrapTenantRuntime(
   runtime: OpenClawRuntimeDescriptor,
   options: BootstrapTenantOptions,
@@ -26,9 +39,9 @@ export async function bootstrapTenantRuntime(
   ]);
 
   await Promise.all([
-    writeFile(runtime.paths.configPath, renderTenantOpenClawConfig(runtime, options), "utf8"),
-    writeFile(path.join(runtime.paths.workspaceRoot, "AGENTS.md"), renderTenantAgentsMd(runtime), "utf8"),
-    writeFile(path.join(runtime.paths.workspaceRoot, "TOOLS.md"), renderTenantToolsMd(), "utf8"),
+    writeFileIfMissing(runtime.paths.configPath, renderTenantOpenClawConfig(runtime, options)),
+    writeFileIfMissing(path.join(runtime.paths.workspaceRoot, "AGENTS.md"), renderTenantAgentsMd(runtime)),
+    writeFileIfMissing(path.join(runtime.paths.workspaceRoot, "TOOLS.md"), renderTenantToolsMd()),
   ]);
 }
 
@@ -41,8 +54,8 @@ export async function bootstrapAgentWorkspace(
 
   await ensureDir(workspacePath);
   await Promise.all([
-    writeFile(path.join(workspacePath, "AGENTS.md"), files.agents, "utf8"),
-    writeFile(path.join(workspacePath, "TOOLS.md"), files.tools, "utf8"),
+    writeFileIfMissing(path.join(workspacePath, "AGENTS.md"), files.agents),
+    writeFileIfMissing(path.join(workspacePath, "TOOLS.md"), files.tools),
   ]);
 
   return workspacePath;

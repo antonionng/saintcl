@@ -1,0 +1,23 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#07090D"/>
+  <rect x="90" y="90" width="1420" height="720" rx="36" fill="url(#panel)" stroke="white" stroke-opacity="0.08"/>
+  <circle cx="420" cy="450" r="200" fill="url(#orb)" fill-opacity="0.65"/>
+  <circle cx="1160" cy="320" r="110" fill="#4F46E5" fill-opacity="0.18"/>
+  <circle cx="1080" cy="570" r="170" fill="#22D3EE" fill-opacity="0.12"/>
+  <path d="M420 300C582 300 710 430 710 450C710 470 582 600 420 600" stroke="white" stroke-opacity="0.42" stroke-width="2"/>
+  <path d="M825 320H1235" stroke="white" stroke-opacity="0.16" stroke-width="2"/>
+  <path d="M825 390H1330" stroke="white" stroke-opacity="0.3" stroke-width="2"/>
+  <path d="M825 460H1280" stroke="white" stroke-opacity="0.22" stroke-width="2"/>
+  <path d="M825 530H1195" stroke="white" stroke-opacity="0.16" stroke-width="2"/>
+  <path d="M825 600H1260" stroke="white" stroke-opacity="0.12" stroke-width="2"/>
+  <defs>
+    <linearGradient id="panel" x1="160" y1="140" x2="1440" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10131B"/>
+      <stop offset="1" stop-color="#0A0D13"/>
+    </linearGradient>
+    <radialGradient id="orb" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(420 450) rotate(90) scale(200)">
+      <stop stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#6366F1" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>

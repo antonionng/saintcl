@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentOrg } from "@/lib/dal";
-import { buildGatewayConsoleUrl, resolveTenantGatewayTarget } from "@/lib/openclaw/tenant-gateway";
+import { buildGatewayConsoleProxyPath, resolveTenantGatewayTarget } from "@/lib/openclaw/tenant-gateway";
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await getCurrentOrg();
   if (!session) {
     return NextResponse.json({ error: { message: "Not authenticated" } }, { status: 401 });
@@ -21,6 +21,6 @@ export async function GET() {
     );
   }
 
-  return NextResponse.redirect(buildGatewayConsoleUrl(target));
+  return NextResponse.redirect(new URL(buildGatewayConsoleProxyPath(target), request.url));
 }
 

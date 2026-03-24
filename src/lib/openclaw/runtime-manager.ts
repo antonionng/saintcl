@@ -5,7 +5,9 @@ import { spawn } from "node:child_process";
 
 import { bootstrapTenantRuntime } from "@/lib/openclaw/bootstrap";
 import { env } from "@/lib/env";
+import { recordSessionActivityEvent } from "@/lib/observability";
 import { buildRuntimeDescriptor } from "@/lib/openclaw/paths";
+import { upsertRuntimeMetadata } from "@/lib/openclaw/runtime-store";
 import type {
   BootstrapTenantOptions,
   OpenClawRuntimeDescriptor,
@@ -34,6 +36,34 @@ async function writeRuntimeState(runtime: OpenClawRuntimeDescriptor, state: Part
   await writeFile(runtime.paths.metadataPath, JSON.stringify(nextState, null, 2), "utf8");
 }
 
+async function persistRuntime(runtime: OpenClawRuntimeDescriptor, state?: Partial<OpenClawRuntimeState>) {
+  if (state) {
+    await writeRuntimeState(runtime, state);
+  }
+  await upsertRuntimeMetadata(runtime);
+}
+
+async function recordRuntimeLifecycleEvent(
+  runtime: OpenClawRuntimeDescriptor,
+  eventType: string,
+  message: string,
+  metadata: Record<string, unknown> = {},
+) {
+  await recordSessionActivityEvent({
+    orgId: runtime.orgId,
+    source: "runtime_lifecycle",
+    eventType,
+    message,
+    occurredAt: new Date().toISOString(),
+    metadata: {
+      gatewayPort: runtime.gatewayPort,
+      pid: runtime.pid ?? null,
+      status: runtime.status,
+      ...metadata,
+    },
+  });
+}
+
 export async function readRuntimeState(orgId: string) {
   const runtime = buildRuntimeDescriptor(orgId);
   if (!existsSync(runtime.paths.metadataPath)) {
@@ -55,33 +85,46 @@ export async function ensureTenantRuntime(
   await bootstrapTenantRuntime(runtime, {
     orgId,
     defaultModel: options.defaultModel ?? env.openClawDefaultModel,
+    approvedModels: options.approvedModels,
   });
 
   const currentState = await readRuntimeState(orgId);
   if (!currentState) {
-    await writeRuntimeState(runtime, { status: "stopped" });
-    return runtime;
+    const nextRuntime = buildRuntimeDescriptor(orgId, {
+      status: "stopped",
+      gatewayToken: runtime.gatewayToken,
+    });
+    await persistRuntime(nextRuntime, { status: "stopped" });
+    await recordRuntimeLifecycleEvent(nextRuntime, "runtime.initialized", "Prepared runtime metadata.");
+    return nextRuntime;
   }
 
-  return buildRuntimeDescriptor(orgId, {
+  const nextRuntime = buildRuntimeDescriptor(orgId, {
     status: currentState.status,
     pid: currentState.pid,
     gatewayToken: currentState.gatewayToken,
     lastHeartbeatAt: currentState.lastHeartbeatAt,
   });
+  await persistRuntime(nextRuntime);
+  return nextRuntime;
 }
 
-export async function startTenantRuntime(orgId: string) {
-  const runtime = await ensureTenantRuntime(orgId, { orgId });
+export async function startTenantRuntime(
+  orgId: string,
+  options: BootstrapTenantOptions = { orgId },
+) {
+  const runtime = await ensureTenantRuntime(orgId, options);
   const currentState = await readRuntimeState(orgId);
 
   if (currentState?.pid && currentState.status === "online") {
-    return buildRuntimeDescriptor(orgId, {
+    const activeRuntime = buildRuntimeDescriptor(orgId, {
       status: currentState.status,
       pid: currentState.pid,
       gatewayToken: currentState.gatewayToken,
       lastHeartbeatAt: currentState.lastHeartbeatAt,
     });
+    await recordRuntimeLifecycleEvent(activeRuntime, "runtime.reused", "Reused an existing online runtime.");
+    return activeRuntime;
   }
 
   await mkdir(runtime.paths.logsDir, { recursive: true });
@@ -113,12 +156,13 @@ export async function startTenantRuntime(orgId: string) {
     lastHeartbeatAt: new Date().toISOString(),
   });
 
-  await writeRuntimeState(nextRuntime, {
+  await persistRuntime(nextRuntime, {
     status: "online",
     pid: child.pid,
     startedAt: new Date().toISOString(),
     lastHeartbeatAt: new Date().toISOString(),
   });
+  await recordRuntimeLifecycleEvent(nextRuntime, "runtime.started", "Started the tenant runtime process.");
 
   return nextRuntime;
 }
@@ -137,11 +181,14 @@ export async function stopTenantRuntime(orgId: string) {
     status: "stopped",
     gatewayToken: currentState?.gatewayToken,
   });
-  await writeRuntimeState(runtime, { status: "stopped" });
+  await persistRuntime(runtime, { status: "stopped" });
+  await recordRuntimeLifecycleEvent(runtime, "runtime.stopped", "Stopped the tenant runtime process.");
   return runtime;
 }
 
 export async function restartTenantRuntime(orgId: string) {
   await stopTenantRuntime(orgId);
-  return startTenantRuntime(orgId);
+  const runtime = await startTenantRuntime(orgId, { orgId });
+  await recordRuntimeLifecycleEvent(runtime, "runtime.restarted", "Restarted the tenant runtime process.");
+  return runtime;
 }

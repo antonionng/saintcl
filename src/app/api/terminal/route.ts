@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { getAgentWorkspacePath } from "@/lib/openclaw/paths";
 import { appendRuntimeAuditEvent } from "@/lib/openclaw/log-sync";
+import { getOrgModelCatalogState } from "@/lib/openclaw/model-governance";
 import { ensureTenantRuntime, startTenantRuntime } from "@/lib/openclaw/runtime-manager";
 import {
   insertTerminalApproval,
@@ -80,10 +81,25 @@ export async function POST(request: Request) {
 
   const dbAllowlists = await listRepoAllowlistPatterns(payload.orgId);
   assertRepoAllowed(payload.repo, dbAllowlists);
+  const { snapshot } = await getOrgModelCatalogState(payload.orgId);
 
   const runtime = payload.action === "approve"
-    ? await startTenantRuntime(payload.orgId)
-    : await ensureTenantRuntime(payload.orgId, { orgId: payload.orgId });
+    ? await startTenantRuntime(payload.orgId, {
+        orgId: payload.orgId,
+        defaultModel: snapshot.defaultModel,
+        approvedModels: snapshot.approvedModels.map((entry) => ({
+          id: entry.id,
+          label: entry.label,
+        })),
+      })
+    : await ensureTenantRuntime(payload.orgId, {
+        orgId: payload.orgId,
+        defaultModel: snapshot.defaultModel,
+        approvedModels: snapshot.approvedModels.map((entry) => ({
+          id: entry.id,
+          label: entry.label,
+        })),
+      });
 
   if (payload.action === "request") {
     const approval = await insertTerminalApproval({

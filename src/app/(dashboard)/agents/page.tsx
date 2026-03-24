@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { Bot } from "lucide-react";
+import { ArrowRight, Bot } from "lucide-react";
 
+import { AgentDeleteButton } from "@/components/dashboard/agent-delete-button";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentOrg, getVisibleAgentsForSession } from "@/lib/dal";
 import { titleCase } from "@/lib/utils";
 
@@ -38,65 +38,60 @@ export default async function AgentsPage() {
           }
         />
       ) : (
-        <div className="grid gap-5 xl:grid-cols-2">
-          {agents.map((agent) => {
-            const config = (agent.config ?? {}) as Record<string, unknown>;
-            return (
-              <Card key={agent.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <CardTitle>{agent.name}</CardTitle>
-                      {config.persona ? (
-                        <p className="mt-2 text-sm text-zinc-400">{String(config.persona)}</p>
-                      ) : null}
-                    </div>
+        <div className="overflow-x-auto rounded-2xl border border-white/8 bg-white/[0.02]">
+          <div className="min-w-[860px]">
+            <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)_180px_120px_150px] gap-4 border-b border-white/8 px-5 py-3 text-[0.72rem] uppercase tracking-[0.16em] text-zinc-500">
+              <span>Agent</span>
+              <span>Assignment</span>
+              <span>Model</span>
+              <span>Status</span>
+              <span>Actions</span>
+            </div>
+            {agents.map((agent) => {
+              const config = (agent.config ?? {}) as Record<string, unknown>;
+              const assignmentLabel =
+                typeof config.assignee === "string" && config.assignee.trim().length > 0
+                  ? config.assignee
+                  : agent.assignment?.assignee_ref;
+              return (
+                <div
+                  key={agent.id}
+                  className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)_180px_120px_150px] items-center gap-4 border-t border-white/6 px-5 py-4 first:border-t-0"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-white">{agent.name}</p>
+                    {config.persona ? (
+                      <p className="mt-1 truncate text-sm text-zinc-400">{String(config.persona)}</p>
+                    ) : (
+                      <p className="mt-1 text-sm text-zinc-500">No persona configured</p>
+                    )}
+                  </div>
+                  <div className="min-w-0 text-sm text-zinc-300">
+                    {agent.assignment
+                      ? `${titleCase(agent.assignment.assignee_type)} · ${assignmentLabel}`
+                      : "Unassigned"}
+                  </div>
+                  <div className="min-w-0 text-sm text-zinc-300">{agent.model}</div>
+                  <div>
                     <Badge variant={agent.status === "online" ? "success" : "default"}>
                       {agent.status}
                     </Badge>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-3 rounded-3xl border border-white/10 bg-white/[0.03] p-4 text-sm text-zinc-400 sm:grid-cols-2">
-                    <div>
-                      <p className="uppercase tracking-[0.18em] text-zinc-500">Model</p>
-                      <p className="mt-2 text-white">{agent.model}</p>
-                    </div>
-                    <div>
-                      <p className="uppercase tracking-[0.18em] text-zinc-500">Agent ID</p>
-                      <p className="mt-2 text-white">{agent.openclaw_agent_id}</p>
-                    </div>
-                    <div>
-                      <p className="uppercase tracking-[0.18em] text-zinc-500">Assigned to</p>
-                      <p className="mt-2 text-white">
-                        {agent.assignment
-                          ? `${titleCase(agent.assignment.assignee_type)} · ${agent.assignment.assignee_ref}`
-                          : "Unassigned"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="uppercase tracking-[0.18em] text-zinc-500">Status</p>
-                      <p className="mt-2 text-white">{agent.status}</p>
-                    </div>
-                    <div>
-                      <p className="uppercase tracking-[0.18em] text-zinc-500">Created</p>
-                      <p className="mt-2 text-white">
-                        {new Date(agent.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <Button asChild variant="secondary">
-                      <Link href={`/agents/${agent.id}`}>Open config</Link>
+                  <div className="flex items-center gap-2">
+                    <Button asChild variant="ghost" size="sm">
+                      <Link href={`/agents/${agent.id}`}>
+                        Open
+                        <ArrowRight className="size-4" />
+                      </Link>
                     </Button>
-                    <Button asChild variant="ghost">
-                      <Link href={`/agents/${agent.id}/logs`}>View logs</Link>
-                    </Button>
+                    {session?.capabilities.canManageAgents ? (
+                      <AgentDeleteButton agentId={agent.id} agentName={agent.name} />
+                    ) : null}
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

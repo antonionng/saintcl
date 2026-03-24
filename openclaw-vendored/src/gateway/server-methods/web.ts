@@ -26,7 +26,10 @@ function respondProviderUnavailable(respond: RespondFn) {
   respond(
     false,
     undefined,
-    errorShape(ErrorCodes.INVALID_REQUEST, "web login provider is not available"),
+    errorShape(
+      ErrorCodes.INVALID_REQUEST,
+      "web login provider is not available. Enable channels.whatsapp.enabled=true, or set OPENCLAW_BOOTSTRAP_CHANNELS to include whatsapp on hosted runtimes.",
+    ),
   );
 }
 
