@@ -51,9 +51,26 @@ export interface BootstrapTenantOptions {
   }>;
 }
 
+export interface BootstrapAgentOrgContext {
+  name?: string | null;
+  website?: string | null;
+  companySummary?: string | null;
+  agentBrief?: string | null;
+}
+
+export interface BootstrapAgentUserContext {
+  displayName?: string | null;
+  email?: string | null;
+  role?: string | null;
+  whatIDo?: string | null;
+  agentBrief?: string | null;
+}
+
 export interface BootstrapAgentOptions {
   agentId: string;
   name: string;
   model: string;
   persona: string;
+  org?: BootstrapAgentOrgContext | null;
+  user?: BootstrapAgentUserContext | null;
 }

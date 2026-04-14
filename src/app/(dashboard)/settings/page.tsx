@@ -8,6 +8,7 @@ import { SettingsBillingPlans } from "@/components/dashboard/settings-billing-pl
 import { SettingsConnectionsForm } from "@/components/dashboard/settings-connections-form";
 import { SettingsGeneralForm } from "@/components/dashboard/settings-general-form";
 import { SettingsMembersForm } from "@/components/dashboard/settings-members-form";
+import { SettingsPersonasForm } from "@/components/dashboard/settings-personas-form";
 import { BillingActions } from "@/components/dashboard/billing-actions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +19,7 @@ import {
   getOrgMembers,
   getOrgPolicy,
   getOrgWallet,
+  getPersonas,
   getRepoAllowlists,
   getTerminalApprovals,
   getTerminalRuns,
@@ -37,6 +39,7 @@ import {
 } from "@/lib/plans";
 import { resolveSettingsTab, settingsTabs } from "@/lib/settings-tabs";
 import { getOrgModelCatalogState } from "@/lib/openclaw/model-governance";
+import { getBuiltInPersonas } from "@/lib/personas";
 import { syncOpenClawUsageForOrg } from "@/lib/openclaw/usage-sync";
 import { formatCurrency } from "@/lib/utils";
 
@@ -47,6 +50,8 @@ const fallbackCapabilities = {
   canViewAllAgents: false,
   canManageConsole: false,
   canManageAdminTools: false,
+  canManageTraining: false,
+  canManagePlatformTraining: false,
 };
 
 export default async function SettingsPage({
@@ -124,7 +129,7 @@ async function SettingsTabContent({
   unsubscribeStatus,
   unsubscribeMessage,
 }: {
-  activeTab: "general" | "members" | "governance" | "billing" | "integrations" | "security" | "email";
+  activeTab: "general" | "members" | "personas" | "governance" | "billing" | "integrations" | "security" | "email";
   userId: string | null;
   orgId: string;
   orgName: string;
@@ -165,6 +170,17 @@ async function SettingsTabContent({
         initialInvites={invites}
         teams={teams}
         seatPriceCents={getPlanSeatPriceCents(orgPlan) ?? 0}
+      />
+    );
+  }
+
+  if (activeTab === "personas") {
+    const [orgPersonas, builtInPersonas] = await Promise.all([getPersonas(orgId), Promise.resolve(getBuiltInPersonas())]);
+    return (
+      <SettingsPersonasForm
+        initialOrgPersonas={orgPersonas}
+        builtInPersonas={builtInPersonas}
+        canEdit={capabilities.canManagePolicies}
       />
     );
   }

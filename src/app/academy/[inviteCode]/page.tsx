@@ -5,7 +5,7 @@ import { ParticipantCheckInForm } from "@/components/training/participant-check-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { buildParticipantModuleAccessState } from "@/lib/training-access";
-import { ajbTrainingProgramme } from "@/lib/training";
+import { ajbTrainingProgramme, getTrainingModuleEnhancement } from "@/lib/training";
 import { getTrainingParticipantCheckInToken } from "@/lib/training-participant-session";
 import {
   getTrainingCohortByInviteCode,
@@ -20,6 +20,34 @@ function getModulePhase(sequence: number) {
   if (sequence <= 5) return "Strategy and operations";
   if (sequence === 6) return "Communication";
   return "Capstone";
+}
+
+function ModuleAcademyUpgrades({ moduleSlug }: { moduleSlug: string }) {
+  const enhancement = getTrainingModuleEnhancement(moduleSlug);
+  if (!enhancement) return null;
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-3">
+        <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">Updated in academy</p>
+        <p className="mt-2 text-sm text-zinc-300">{enhancement.bankingContext[0]}</p>
+      </div>
+      <div className="grid gap-2 md:grid-cols-2">
+        <div className="rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-3">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">Intro path</p>
+          <p className="mt-2 text-sm text-zinc-300">{enhancement.learnerTracks[0]?.fit}</p>
+        </div>
+        <div className="rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-3">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">Advanced path</p>
+          <p className="mt-2 text-sm text-zinc-300">{enhancement.learnerTracks[1]?.fit}</p>
+        </div>
+      </div>
+      <div className="rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-3">
+        <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">Virtual delivery focus</p>
+        <p className="mt-2 text-sm text-zinc-300">{enhancement.pacingNotes[0]}</p>
+      </div>
+    </div>
+  );
 }
 
 export default async function AcademyInvitePage({
@@ -81,6 +109,24 @@ export default async function AcademyInvitePage({
         title="AJB participant academy"
         description="Access your modules, continue your labs, and pick up where you left off throughout the programme."
       />
+
+      <Card className="border-white/8 bg-black/10">
+        <CardHeader className="pb-3">
+          <CardTitle>Programme delivery updates</CardTitle>
+          <CardDescription>Every module now highlights mixed-level pathways, clearer pacing, and stronger facilitation support for virtual delivery.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 text-sm text-zinc-300 md:grid-cols-3">
+          <div className="rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-3">
+            Intro and advanced routes help mixed-ability participants stay productive without slowing the whole cohort.
+          </div>
+          <div className="rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-3">
+            Module pages call out must-keep pacing blocks, engagement checkpoints, and what good outputs look like.
+          </div>
+          <div className="rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-3">
+            Data-led modules now use richer cases and clearer business context to make exercises feel more bank-realistic.
+          </div>
+        </CardContent>
+      </Card>
 
       {hasActiveParticipant ? (
           <>
@@ -214,6 +260,7 @@ export default async function AcademyInvitePage({
                         <span className="text-white/10">|</span>
                         <span>{module.keyThemes.slice(0, 3).join(", ")}</span>
                       </div>
+                      <ModuleAcademyUpgrades moduleSlug={module.slug} />
                       <p className={`text-sm ${statusTone}`}>{statusCopy}</p>
                       {canOpen ? (
                         <Link
@@ -362,6 +409,7 @@ export default async function AcademyInvitePage({
                         <span className="text-white/10">|</span>
                         <span>{module.keyThemes.slice(0, 3).join(", ")}</span>
                       </div>
+                      <ModuleAcademyUpgrades moduleSlug={module.slug} />
                       <p className={`text-sm ${statusTone}`}>{statusCopy}</p>
                       {canOpen ? (
                         <Link

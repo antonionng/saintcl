@@ -6,10 +6,12 @@ import {
   getAgentCount,
   getCurrentOrg,
   getOrgMembers,
+  getPersona,
   getTeam,
   getVisibleAgentsForSession,
   loadCurrentUserProfile,
 } from "@/lib/dal";
+import { getBuiltInPersonaById } from "@/lib/personas";
 import { normalizeAgentTerminalRepoPaths } from "@/lib/openclaw/agent-terminal";
 import { syncKnowledgeToAgent } from "@/lib/openclaw/knowledge-sync";
 import { getAgentWorkspacePath } from "@/lib/openclaw/paths";
@@ -18,7 +20,7 @@ import {
   replaceAgentTerminalRepoAllowlists,
   upsertAgentAssignment,
 } from "@/lib/openclaw/runtime-store";
-import { appendOrgContextToPersona, appendProfileContextToPersona, writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
+import { writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
 import { resolveModelSelection } from "@/lib/openclaw/model-governance";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { canProvisionAnotherAgent, getAgentProvisionLimitMessage, getResolvedTrialStatus } from "@/lib/plans";
@@ -27,6 +29,7 @@ const createAgentSchema = z.object({
   name: z.string().min(2).optional(),
   model: z.string().min(3).optional(),
   persona: z.string().min(3).optional(),
+  personaTemplateId: z.string().trim().min(1).max(120).optional(),
   scope: z.enum(["employee", "team", "org"]).default("employee"),
   assignee: z.string().optional(),
   terminalEnabled: z.boolean().optional(),
@@ -210,22 +213,27 @@ export async function POST(request: Request) {
       assignee: employeeAssignment?.assigneeLabel ?? teamAssignment?.name ?? payload.assignee,
     });
     const profile = await loadCurrentUserProfile();
-    const personaWithKnowledge = appendKnowledgeScopeInstruction(
-      payload.persona ??
+    const selectedBuiltInPersona = payload.personaTemplateId
+      ? getBuiltInPersonaById(payload.personaTemplateId)
+      : null;
+    const selectedOrgPersona =
+      payload.personaTemplateId && !selectedBuiltInPersona
+        ? await getPersona(payload.personaTemplateId, orgId)
+        : null;
+
+    if (payload.personaTemplateId && !selectedBuiltInPersona && !selectedOrgPersona) {
+      return NextResponse.json({ error: { message: "Persona template not found." } }, { status: 404 });
+    }
+
+    const basePersona = appendKnowledgeScopeInstruction(
+      payload.persona?.trim() ||
+        selectedBuiltInPersona?.instructions ||
+        selectedOrgPersona?.instructions ||
         `You are ${name}. Follow the assigned human's direction inside organization guardrails and focus on practical outcomes.`,
       {
         scope: payload.scope,
         assigneeLabel: employeeAssignment?.assigneeLabel ?? teamAssignment?.name ?? payload.assignee,
       },
-    );
-    const persona = appendProfileContextToPersona(
-      appendOrgContextToPersona(personaWithKnowledge, {
-        name: session.org.name,
-        website: session.org.website,
-        companySummary: session.org.company_summary,
-        agentBrief: session.org.agent_brief,
-      }),
-      profile,
     );
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
     const currentAgentCount = await getAgentCount(orgId);
@@ -274,7 +282,22 @@ export async function POST(request: Request) {
       agentId: slug,
       name,
       model,
-      persona,
+      persona: basePersona,
+      org: {
+        name: session.org.name,
+        website: session.org.website,
+        companySummary: session.org.company_summary,
+        agentBrief: session.org.agent_brief,
+      },
+      profile: profile
+        ? {
+            displayName: profile.displayName,
+            email: profile.email,
+            role: profile.role,
+            whatIDo: profile.whatIDo,
+            agentBrief: profile.agentBrief,
+          }
+        : null,
     });
 
     const agentRow = await insertAgentMetadata({
@@ -283,9 +306,10 @@ export async function POST(request: Request) {
       name,
       slug,
       model,
-      persona,
+      persona: basePersona,
       workspacePath,
       metadata: {
+        personaTemplateId: payload.personaTemplateId ?? null,
         scope: payload.scope,
         assignee: employeeAssignment?.assigneeLabel ?? payload.assignee ?? null,
         terminal: {

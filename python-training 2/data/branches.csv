@@ -1,0 +1,9 @@
+branch_id,region,city,branch_type,open_date
+B-101,Riyadh,Riyadh,Flagship,2016-01-10
+B-104,Riyadh,Al Kharj,Urban,2018-03-14
+B-118,Makkah,Jeddah,Flagship,2017-06-21
+B-145,Makkah,Taif,Urban,2019-11-03
+B-201,Eastern,Dammam,Flagship,2015-09-17
+B-224,Eastern,Khobar,Urban,2020-02-09
+B-313,Madinah,Madinah,Urban,2018-08-30
+B-411,Asir,Abha,Urban,2021-04-12

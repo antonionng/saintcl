@@ -8,6 +8,7 @@ import type {
   KnowledgeDocument,
   OrgRole,
   OrgTrialStatus,
+  PersonaRecord,
   PlanTier,
   TeamRecord,
   UserProfileRecord,
@@ -138,6 +139,18 @@ type TeamRow = {
   updated_at: string;
 };
 
+type PersonaRow = {
+  id: string;
+  org_id: string;
+  name: string;
+  description: string;
+  instructions: string;
+  icon: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 type KnowledgeDocRow = {
   id: string;
   org_id: string;
@@ -179,6 +192,21 @@ function mapTeamRecord(row: TeamRow): TeamRecord {
     createdBy: row.created_by,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  };
+}
+
+function mapPersonaRecord(row: PersonaRow): PersonaRecord {
+  return {
+    id: row.id,
+    orgId: row.org_id,
+    name: row.name,
+    description: row.description,
+    instructions: row.instructions,
+    icon: row.icon,
+    createdBy: row.created_by,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    source: "org",
   };
 }
 
@@ -943,6 +971,95 @@ export async function getTeam(id: string, orgId: string) {
 
   const { data } = await admin.from("teams").select("*").eq("id", id).eq("org_id", orgId).maybeSingle();
   return data ? mapTeamRecord(data as TeamRow) : null;
+}
+
+export async function getPersonas(orgId: string) {
+  const admin = createAdminClient();
+  if (!admin) return [];
+
+  const { data } = await admin
+    .from("personas")
+    .select("*")
+    .eq("org_id", orgId)
+    .order("updated_at", { ascending: false });
+
+  return ((data ?? []) as PersonaRow[]).map(mapPersonaRecord);
+}
+
+export async function getPersona(id: string, orgId: string) {
+  const admin = createAdminClient();
+  if (!admin) return null;
+
+  const { data } = await admin
+    .from("personas")
+    .select("*")
+    .eq("id", id)
+    .eq("org_id", orgId)
+    .maybeSingle();
+
+  return data ? mapPersonaRecord(data as PersonaRow) : null;
+}
+
+export async function createPersona(input: {
+  orgId: string;
+  name: string;
+  description?: string;
+  instructions: string;
+  icon?: string | null;
+  createdBy?: string | null;
+}) {
+  const admin = createAdminClient();
+  if (!admin) return null;
+
+  const { data } = await admin
+    .from("personas")
+    .insert({
+      org_id: input.orgId,
+      name: input.name,
+      description: input.description ?? "",
+      instructions: input.instructions,
+      icon: input.icon ?? null,
+      created_by: input.createdBy ?? null,
+    })
+    .select("*")
+    .single();
+
+  return data ? mapPersonaRecord(data as PersonaRow) : null;
+}
+
+export async function updatePersona(input: {
+  id: string;
+  orgId: string;
+  name: string;
+  description?: string;
+  instructions: string;
+  icon?: string | null;
+}) {
+  const admin = createAdminClient();
+  if (!admin) return null;
+
+  const { data } = await admin
+    .from("personas")
+    .update({
+      name: input.name,
+      description: input.description ?? "",
+      instructions: input.instructions,
+      icon: input.icon ?? null,
+    })
+    .eq("id", input.id)
+    .eq("org_id", input.orgId)
+    .select("*")
+    .maybeSingle();
+
+  return data ? mapPersonaRecord(data as PersonaRow) : null;
+}
+
+export async function deletePersona(id: string, orgId: string) {
+  const admin = createAdminClient();
+  if (!admin) return false;
+
+  const { error } = await admin.from("personas").delete().eq("id", id).eq("org_id", orgId);
+  return !error;
 }
 
 export async function createTeam(input: {

@@ -1,0 +1,1390 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python for Data | Participant Deck</title>
+  <link rel="stylesheet" href="/python-training/assets/theme.css" />
+</head>
+<body>
+<div class="deck">
+
+<!-- ======================================================= -->
+<!--  DAY 1: PYTHON FOUNDATIONS FOR BANK DATA                -->
+<!-- ======================================================= -->
+
+<section class="slide active" id="s01">
+  <span class="eyebrow">Al Jazira Bank | Python for Data</span>
+  <h1>Python for Data</h1>
+  <p class="lede">Three days. From raw bank extracts to leadership-ready analysis and ML-ready handoff tables.</p>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Duration</span>
+      <p>3 days, 4 hours per day</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Dates</span>
+      <p>19 to 21 April 2026</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Format</span>
+      <p>Live online with hands-on labs</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s02">
+  <span class="eyebrow">Day 1 | Welcome</span>
+  <h2>What you will be able to do by the end of this programme</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Day 1</span>
+      <p>Load, inspect, and clean banking data safely using Python and pandas.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Day 2</span>
+      <p>Join tables, build KPIs, and produce data quality reports.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Day 3</span>
+      <p>Create charts, exceptions tables, and ML-ready feature sets for leadership.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s03">
+  <span class="eyebrow">Day 1 | Agenda</span>
+  <h2>Day 1 agenda</h2>
+  <ol>
+    <li>Your working environment: Jupyter notebooks</li>
+    <li>Python basics: variables, types, strings, lists, dictionaries</li>
+    <li>Reading CSV files with pandas</li>
+    <li>Inspecting and profiling data</li>
+    <li>Missing values and duplicates</li>
+    <li><strong>Lab A:</strong> Transaction extract triage</li>
+    <li>Writing cleaning functions</li>
+    <li><strong>Lab B:</strong> Build reusable cleaning logic</li>
+    <li>Day 1 recap</li>
+  </ol>
+</section>
+
+<section class="slide" id="s04">
+  <span class="eyebrow">Day 1 | Context</span>
+  <h2>Why Python for banking data?</h2>
+  <p>Python is the most widely used language for data analysis, machine learning, and automation. In banking, it lets you work with transaction records, customer tables, and branch data at a scale that spreadsheets cannot handle.</p>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">What Python gives you</span>
+      <ul>
+        <li>Repeatable analysis you can re-run any time</li>
+        <li>Clear logic that another analyst can read</li>
+        <li>Tools built for millions of rows</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Key libraries we will use</span>
+      <ul>
+        <li><code>pandas</code> for tables and data manipulation</li>
+        <li><code>numpy</code> for numerical operations</li>
+        <li><code>matplotlib</code> for charts (Day 3)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s05">
+  <span class="eyebrow">Day 1 | Environment</span>
+  <h2>Your working environment: Jupyter notebooks</h2>
+  <p>A Jupyter notebook lets you write Python code in cells and run each cell independently. You can mix code, output, and written notes in the same document.</p>
+  <div class="columns code-text spacer">
+    <pre><code><span class="code-comment"># This is a code cell. Press Shift+Enter to run it.</span>
+<span class="code-keyword">print</span>(<span class="code-string">"Hello, Al Jazira Bank!"</span>)</code></pre>
+    <div class="card">
+      <span class="card-label">Key shortcuts</span>
+      <ul>
+        <li><strong>Shift + Enter:</strong> run cell and move to next</li>
+        <li><strong>Ctrl + Enter:</strong> run cell and stay</li>
+        <li><strong>Esc + A:</strong> insert cell above</li>
+        <li><strong>Esc + B:</strong> insert cell below</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s06">
+  <span class="eyebrow">Day 1 | Python basics</span>
+  <h2>Variables and data types</h2>
+  <p>A variable stores a value. Python figures out the type automatically based on what you assign.</p>
+  <pre><code>branch_name = <span class="code-string">"Riyadh Central"</span>       <span class="code-comment"># string (text)</span>
+transaction_count = <span class="code-number">1420</span>               <span class="code-comment"># integer (whole number)</span>
+average_ticket = <span class="code-number">387.50</span>                <span class="code-comment"># float (decimal number)</span>
+is_active = <span class="code-keyword">True</span>                        <span class="code-comment"># boolean (True or False)</span>
+
+<span class="code-keyword">print</span>(branch_name, transaction_count)</code></pre>
+  <p class="muted spacer">Use descriptive names. <code>avg_ticket_sar</code> is better than <code>x</code>.</p>
+</section>
+
+<section class="slide" id="s07">
+  <span class="eyebrow">Day 1 | Python basics</span>
+  <h2>Working with strings</h2>
+  <p>Banking data is full of text: customer names, branch codes, channel labels. Python gives you methods to clean and transform them.</p>
+  <pre><code>channel = <span class="code-string">"  mob  "</span>
+
+channel.strip()           <span class="code-comment"># "mob"       - removes spaces</span>
+channel.strip().upper()   <span class="code-comment"># "MOB"       - converts to uppercase</span>
+channel.strip().title()   <span class="code-comment"># "Mob"       - capitalises first letter</span>
+
+amount_text = <span class="code-string">"1,250.00"</span>
+amount_text.replace(<span class="code-string">","</span>, <span class="code-string">""</span>)   <span class="code-comment"># "1250.00"   - removes commas</span>
+<span class="code-keyword">float</span>(amount_text.replace(<span class="code-string">","</span>, <span class="code-string">""</span>))  <span class="code-comment"># 1250.0  - converts to number</span></code></pre>
+</section>
+
+<section class="slide" id="s08">
+  <span class="eyebrow">Day 1 | Python basics</span>
+  <h2>Lists: ordered collections</h2>
+  <p>A list holds multiple values in order. You access items by position, starting from 0.</p>
+  <pre><code>regions = [<span class="code-string">"Riyadh"</span>, <span class="code-string">"Makkah"</span>, <span class="code-string">"Eastern"</span>, <span class="code-string">"Madinah"</span>, <span class="code-string">"Asir"</span>]
+
+regions[<span class="code-number">0</span>]          <span class="code-comment"># "Riyadh"  - first item</span>
+regions[-<span class="code-number">1</span>]         <span class="code-comment"># "Asir"    - last item</span>
+<span class="code-keyword">len</span>(regions)        <span class="code-comment"># 5         - how many items</span>
+<span class="code-string">"Riyadh"</span> <span class="code-keyword">in</span> regions  <span class="code-comment"># True      - membership test</span>
+
+regions.append(<span class="code-string">"Tabuk"</span>)  <span class="code-comment"># adds to end</span></code></pre>
+</section>
+
+<section class="slide" id="s09">
+  <span class="eyebrow">Day 1 | Python basics</span>
+  <h2>Dictionaries: key-value pairs</h2>
+  <p>A dictionary maps keys to values. Think of it as a lookup table.</p>
+  <pre><code>channel_map = {
+    <span class="code-string">"ATM"</span>: <span class="code-string">"ATM"</span>,
+    <span class="code-string">"MOB"</span>: <span class="code-string">"Mobile"</span>,
+    <span class="code-string">"BRANCH"</span>: <span class="code-string">"Branch"</span>,
+    <span class="code-string">"ONLINE"</span>: <span class="code-string">"Online"</span>,
+}
+
+channel_map[<span class="code-string">"MOB"</span>]                  <span class="code-comment"># "Mobile"</span>
+channel_map.get(<span class="code-string">"POS"</span>, <span class="code-string">"Unknown"</span>)    <span class="code-comment"># "Unknown" - safe lookup</span></code></pre>
+  <p class="muted spacer">Use <code>.get()</code> with a default value to avoid errors on missing keys.</p>
+</section>
+
+<section class="slide" id="s10">
+  <span class="eyebrow">Day 1 | Pandas</span>
+  <h2>Reading a CSV file with pandas</h2>
+  <p>The <code>pandas</code> library reads tabular data into a structure called a DataFrame. Think of a DataFrame as a powerful spreadsheet that lives in Python.</p>
+  <pre><code><span class="code-keyword">import</span> pandas <span class="code-keyword">as</span> pd
+
+txns = pd.read_csv(<span class="code-string">"data/transactions.csv"</span>)
+
+<span class="code-comment"># This single line reads the entire file into memory.</span>
+<span class="code-comment"># txns is now a DataFrame with rows and columns.</span></code></pre>
+  <p class="spacer"><strong>Tip:</strong> always assign the result to a clearly named variable like <code>txns</code>, <code>customers</code>, or <code>branches</code>.</p>
+</section>
+
+<section class="slide" id="s11">
+  <span class="eyebrow">Day 1 | Pandas</span>
+  <h2>What is a DataFrame?</h2>
+  <p>A DataFrame is a table of data with labelled rows and columns. Every column has a name and a data type.</p>
+  <div class="columns code-text spacer">
+    <pre><code>txns.shape        <span class="code-comment"># (5000, 8) = 5000 rows, 8 columns</span>
+txns.columns      <span class="code-comment"># Index(['txn_id', 'account_id', ...])</span>
+txns.dtypes       <span class="code-comment"># shows the type of each column</span></code></pre>
+    <div class="card">
+      <span class="card-label">Common types</span>
+      <table>
+        <tr><th>Type</th><th>Meaning</th></tr>
+        <tr><td><code>int64</code></td><td>Whole numbers</td></tr>
+        <tr><td><code>float64</code></td><td>Decimal numbers</td></tr>
+        <tr><td><code>object</code></td><td>Text/mixed</td></tr>
+        <tr><td><code>datetime64</code></td><td>Date/time</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s12">
+  <span class="eyebrow">Day 1 | Pandas</span>
+  <h2>Inspecting your data: the first five checks</h2>
+  <p>Every time you load a new file, run these five checks before doing anything else.</p>
+  <pre><code>txns.head()               <span class="code-comment"># 1. Look at the first 5 rows</span>
+txns.shape                <span class="code-comment"># 2. How many rows and columns?</span>
+txns.dtypes               <span class="code-comment"># 3. What type is each column?</span>
+txns.isna().sum()         <span class="code-comment"># 4. How many missing values per column?</span>
+txns[<span class="code-string">"txn_id"</span>].nunique()  <span class="code-comment"># 5. How many unique IDs? (matches row count?)</span></code></pre>
+  <p class="muted spacer">If the number of unique IDs does not match the row count, you may have duplicates.</p>
+</section>
+
+<section class="slide" id="s13">
+  <span class="eyebrow">Day 1 | Pandas</span>
+  <h2>Selecting columns</h2>
+  <p>You access a single column with square brackets and the column name. You get multiple columns by passing a list of names.</p>
+  <pre><code><span class="code-comment"># Single column (returns a Series)</span>
+txns[<span class="code-string">"amount_sar"</span>]
+
+<span class="code-comment"># Multiple columns (returns a DataFrame)</span>
+txns[[<span class="code-string">"txn_id"</span>, <span class="code-string">"amount_sar"</span>, <span class="code-string">"channel"</span>]]
+
+<span class="code-comment"># Quick stats on a numeric column</span>
+txns[<span class="code-string">"amount_sar"</span>].describe()</code></pre>
+</section>
+
+<section class="slide" id="s14">
+  <span class="eyebrow">Day 1 | Pandas</span>
+  <h2>Filtering rows</h2>
+  <p>Use a condition inside square brackets to keep only the rows you want.</p>
+  <pre><code><span class="code-comment"># Only posted transactions</span>
+posted = txns[txns[<span class="code-string">"status"</span>] == <span class="code-string">"POSTED"</span>]
+
+<span class="code-comment"># Transactions above 1000 SAR</span>
+large = txns[txns[<span class="code-string">"amount_sar"</span>] > <span class="code-number">1000</span>]
+
+<span class="code-comment"># Combine conditions with & (and) or | (or)</span>
+mobile_large = txns[
+    (txns[<span class="code-string">"channel"</span>] == <span class="code-string">"MOB"</span>) & (txns[<span class="code-string">"amount_sar"</span>] > <span class="code-number">1000</span>)
+]</code></pre>
+  <p class="muted spacer">Always wrap each condition in parentheses when combining with <code>&amp;</code> or <code>|</code>.</p>
+</section>
+
+<section class="slide" id="s15">
+  <span class="eyebrow">Day 1 | Data quality</span>
+  <h2>Missing values: what <code>.isna()</code> tells you</h2>
+  <p>Missing values appear as <code>NaN</code> in pandas. They are common in banking data and must be understood before analysis.</p>
+  <pre><code><span class="code-comment"># Count of missing values per column</span>
+txns.isna().sum()
+
+<span class="code-comment"># Percentage of missing values per column</span>
+null_rates = txns.isna().mean().sort_values(ascending=<span class="code-keyword">False</span>)
+null_rates</code></pre>
+  <div class="card spacer">
+    <span class="card-label">Rule of thumb</span>
+    <p>A column with more than 30% missing values needs investigation. Ask: is this field optional, or is something wrong with the extract?</p>
+  </div>
+</section>
+
+<section class="slide" id="s16">
+  <span class="eyebrow">Day 1 | Data quality</span>
+  <h2>Finding duplicate records</h2>
+  <p>Duplicates can inflate counts and distort KPIs. Always check for them before aggregation.</p>
+  <pre><code><span class="code-comment"># Are there any duplicate transaction IDs?</span>
+txns[<span class="code-string">"txn_id"</span>].duplicated().sum()
+
+<span class="code-comment"># Show all rows with a duplicated ID</span>
+dupes = txns[txns.duplicated(<span class="code-string">"txn_id"</span>, keep=<span class="code-keyword">False</span>)]
+dupes</code></pre>
+  <p class="spacer"><code>keep=False</code> marks all copies as duplicates, not just the second one. This helps you see the full picture.</p>
+</section>
+
+<section class="slide" id="s17">
+  <span class="eyebrow">Day 1 | Data quality</span>
+  <h2>Data types matter: why IDs should be strings</h2>
+  <p>A branch ID like <code>001</code> looks like a number, but if pandas reads it as an integer, it becomes <code>1</code> and you lose the leading zero. This breaks joins later.</p>
+  <pre><code><span class="code-comment"># Read with explicit types to protect IDs</span>
+txns = pd.read_csv(
+    <span class="code-string">"data/transactions.csv"</span>,
+    dtype={<span class="code-string">"account_id"</span>: <span class="code-string">"string"</span>, <span class="code-string">"branch_id"</span>: <span class="code-string">"string"</span>}
+)
+
+<span class="code-comment"># Convert dates properly</span>
+txns[<span class="code-string">"txn_ts"</span>] = pd.to_datetime(txns[<span class="code-string">"txn_ts"</span>], errors=<span class="code-string">"coerce"</span>)</code></pre>
+  <p class="muted spacer"><code>errors="coerce"</code> turns unparseable dates into <code>NaN</code> instead of crashing.</p>
+</section>
+
+<section class="slide" id="s18">
+  <span class="eyebrow">Day 1 | Lab A</span>
+  <h2>Lab A: Transaction extract triage</h2>
+  <div class="exercise-card">
+    <h3>Your task</h3>
+    <p>A daily transactions extract has arrived. Leadership wants to know: is this file usable for a first performance cut?</p>
+    <div class="columns three spacer">
+      <div class="card">
+        <span class="card-label">Steps</span>
+        <ol>
+          <li>Load <code>transactions.csv</code></li>
+          <li>Check row count and unique IDs</li>
+          <li>Profile null rates</li>
+          <li>Check the date range</li>
+          <li>State whether the file is fit for analysis</li>
+        </ol>
+      </div>
+      <div class="card">
+        <span class="card-label">Output</span>
+        <p>A triage summary plus one written risk statement about the biggest data quality concern.</p>
+      </div>
+      <div class="card">
+        <span class="card-label">Stretch</span>
+        <p>Export a <code>rejects.csv</code> with duplicate rows and a reason code column.</p>
+      </div>
+    </div>
+    <button type="button" class="timer-btn" data-minutes="12">Start 12-min timer</button>
+  </div>
+</section>
+
+<section class="slide" id="s19">
+  <span class="eyebrow">Day 1 | Functions</span>
+  <h2>Why write functions?</h2>
+  <p>A function packages logic so you can reuse it and so other people can understand what it does.</p>
+  <pre><code><span class="code-keyword">def</span> clean_amount(text):
+    <span class="code-string">"""Convert a text amount like '1,250.00' to a float."""</span>
+    <span class="code-keyword">if</span> pd.isna(text):
+        <span class="code-keyword">return</span> <span class="code-keyword">None</span>
+    cleaned = <span class="code-keyword">str</span>(text).replace(<span class="code-string">","</span>, <span class="code-string">""</span>).strip()
+    <span class="code-keyword">if</span> cleaned == <span class="code-string">""</span>:
+        <span class="code-keyword">return</span> <span class="code-keyword">None</span>
+    <span class="code-keyword">return</span> <span class="code-keyword">float</span>(cleaned)</code></pre>
+  <p class="spacer">A good function name tells you what it does. A good docstring tells you how to use it.</p>
+</section>
+
+<section class="slide" id="s20">
+  <span class="eyebrow">Day 1 | Functions</span>
+  <h2>Applying functions to a column</h2>
+  <p>Use <code>.apply()</code> to run your function on every value in a column.</p>
+  <pre><code><span class="code-comment"># Apply the cleaning function to create a new column</span>
+txns[<span class="code-string">"amount_clean"</span>] = txns[<span class="code-string">"amount_sar"</span>].apply(clean_amount)
+
+<span class="code-comment"># Check the result</span>
+txns[[<span class="code-string">"amount_sar"</span>, <span class="code-string">"amount_clean"</span>]].head()</code></pre>
+  <div class="card spacer">
+    <span class="card-label">Before and after</span>
+    <table>
+      <tr><th>amount_sar</th><th>amount_clean</th></tr>
+      <tr><td>1,250.00</td><td>1250.0</td></tr>
+      <tr><td></td><td>None</td></tr>
+      <tr><td>500</td><td>500.0</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="slide" id="s21">
+  <span class="eyebrow">Day 1 | Functions</span>
+  <h2>Mapping values with a dictionary</h2>
+  <p>When you need to convert codes to labels, use <code>.map()</code> with a dictionary.</p>
+  <pre><code>channel_map = {
+    <span class="code-string">"ATM"</span>: <span class="code-string">"ATM"</span>,
+    <span class="code-string">"MOB"</span>: <span class="code-string">"Mobile"</span>,
+    <span class="code-string">"BRANCH"</span>: <span class="code-string">"Branch"</span>,
+}
+
+txns[<span class="code-string">"channel_clean"</span>] = txns[<span class="code-string">"channel"</span>].str.strip().str.upper().map(channel_map)
+
+<span class="code-comment"># Values not in the dictionary become NaN.</span>
+<span class="code-comment"># Check for unmapped values:</span>
+txns[txns[<span class="code-string">"channel_clean"</span>].isna()][<span class="code-string">"channel"</span>].value_counts()</code></pre>
+</section>
+
+<section class="slide" id="s22">
+  <span class="eyebrow">Day 1 | Functions</span>
+  <h2>Handling errors clearly</h2>
+  <p>Good code fails clearly. Compare these two approaches:</p>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label" style="color:var(--danger)">Weak</span>
+      <pre><code><span class="code-keyword">try</span>:
+    df = pd.read_csv(path)
+<span class="code-keyword">except</span>:
+    <span class="code-keyword">print</span>(<span class="code-string">"Error"</span>)</code></pre>
+    </div>
+    <div class="card">
+      <span class="card-label" style="color:var(--success)">Strong</span>
+      <pre><code>df = pd.read_csv(path)
+missing = [c <span class="code-keyword">for</span> c <span class="code-keyword">in</span> required
+           <span class="code-keyword">if</span> c <span class="code-keyword">not in</span> df.columns]
+<span class="code-keyword">if</span> missing:
+    <span class="code-keyword">raise</span> ValueError(
+        <span class="code-keyword">f</span><span class="code-string">"Missing columns: {missing}"</span>
+    )</code></pre>
+    </div>
+  </div>
+  <p>The strong version tells the next person exactly what went wrong and how to fix it.</p>
+</section>
+
+<section class="slide" id="s23">
+  <span class="eyebrow">Day 1 | Lab B</span>
+  <h2>Lab B: Build cleaning functions</h2>
+  <div class="exercise-card">
+    <h3>Your task</h3>
+    <p>Create two reusable functions: one for cleaning amounts and one for cleaning channel codes.</p>
+    <div class="columns three spacer">
+      <div class="card">
+        <span class="card-label">Steps</span>
+        <ol>
+          <li>Write <code>clean_amount()</code></li>
+          <li>Write <code>clean_channel()</code></li>
+          <li>Apply both to the transactions data</li>
+          <li>Write a note describing your assumptions</li>
+        </ol>
+      </div>
+      <div class="card">
+        <span class="card-label">Output</span>
+        <p>Cleaned columns in your DataFrame, plus a markdown cell describing what your functions assume about the input.</p>
+      </div>
+      <div class="card">
+        <span class="card-label">Stretch</span>
+        <p>Count how many values did not map to a known channel. Explain what you would do about them.</p>
+      </div>
+    </div>
+    <button type="button" class="timer-btn" data-minutes="10">Start 10-min timer</button>
+  </div>
+</section>
+
+<section class="slide" id="s24">
+  <span class="eyebrow">Day 1 | Saving work</span>
+  <h2>Exporting your results</h2>
+  <p>Save your cleaned data and summaries so they can be reviewed or used in the next step.</p>
+  <pre><code><span class="code-comment"># Save a DataFrame to CSV</span>
+branch_kpi.to_csv(<span class="code-string">"outputs/day1/triage_summary.csv"</span>, index=<span class="code-keyword">False</span>)
+
+<span class="code-comment"># Save just the rejected rows</span>
+rejects.to_csv(<span class="code-string">"outputs/day1/rejects.csv"</span>, index=<span class="code-keyword">False</span>)</code></pre>
+  <p class="spacer"><code>index=False</code> avoids writing the row numbers into the file. Most of the time you do not want them.</p>
+</section>
+
+<section class="slide" id="s25">
+  <span class="eyebrow">Day 1 | Recap</span>
+  <h2>Day 1 recap</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">You can now</span>
+      <p>Load CSV files into pandas and inspect them with <code>.head()</code>, <code>.shape</code>, <code>.dtypes</code>, and <code>.isna()</code>.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">You can now</span>
+      <p>Filter rows, select columns, find duplicates, and profile null rates.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">You can now</span>
+      <p>Write reusable cleaning functions and apply them to columns.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s26">
+  <span class="eyebrow">Day 1 | Key concepts</span>
+  <h2>Day 1 key takeaways</h2>
+  <ol>
+    <li><strong>Always inspect before you analyse.</strong> Run the five checks on every new file.</li>
+    <li><strong>Set dtypes deliberately.</strong> IDs should be strings, dates should be datetime.</li>
+    <li><strong>Write functions, not one-off fixes.</strong> Functions are reusable, testable, and explainable.</li>
+    <li><strong>Surface problems, do not hide them.</strong> Unmapped values and nulls should be visible.</li>
+    <li><strong>Export your work.</strong> Save outputs so someone else can review and reuse them.</li>
+  </ol>
+</section>
+
+<!-- ======================================================= -->
+<!--  DAY 2: JOINS, GROUPBY, AND KPIs                       -->
+<!-- ======================================================= -->
+
+<section class="slide" id="s27">
+  <span class="eyebrow">Day 2 | Welcome</span>
+  <h1>Day 2: Joins, GroupBy, and KPIs</h1>
+  <p class="lede">Today you will connect tables, build performance metrics, and learn to defend the numbers you produce.</p>
+</section>
+
+<section class="slide" id="s28">
+  <span class="eyebrow">Day 2 | Agenda</span>
+  <h2>Day 2 agenda</h2>
+  <ol>
+    <li>Loading multiple files with deliberate dtypes</li>
+    <li>Joins: connecting customers, accounts, and transactions</li>
+    <li>Data quality checks across joined tables</li>
+    <li><strong>Lab C:</strong> Customer quality checks</li>
+    <li>GroupBy: split-apply-combine</li>
+    <li>Building KPI tables</li>
+    <li><strong>Lab D:</strong> Branch performance summary</li>
+    <li>Shares and denominators</li>
+    <li><strong>Lab E:</strong> Regional product uptake</li>
+    <li>Time-based analysis</li>
+    <li>Day 2 recap</li>
+  </ol>
+</section>
+
+<section class="slide" id="s29">
+  <span class="eyebrow">Day 2 | Loading data</span>
+  <h2>Loading multiple files</h2>
+  <p>Most real analysis uses more than one table. Load each file separately with explicit types.</p>
+  <pre><code>customers = pd.read_csv(<span class="code-string">"data/customers.csv"</span>,    dtype={<span class="code-string">"customer_id"</span>: <span class="code-string">"string"</span>})
+accounts  = pd.read_csv(<span class="code-string">"data/accounts.csv"</span>,     dtype={<span class="code-string">"account_id"</span>: <span class="code-string">"string"</span>,
+                                                       <span class="code-string">"customer_id"</span>: <span class="code-string">"string"</span>})
+txns      = pd.read_csv(<span class="code-string">"data/transactions.csv"</span>, dtype={<span class="code-string">"account_id"</span>: <span class="code-string">"string"</span>,
+                                                       <span class="code-string">"branch_id"</span>: <span class="code-string">"string"</span>})
+branches  = pd.read_csv(<span class="code-string">"data/branches.csv"</span>,     dtype={<span class="code-string">"branch_id"</span>: <span class="code-string">"string"</span>})</code></pre>
+</section>
+
+<section class="slide" id="s30">
+  <span class="eyebrow">Day 2 | Joins</span>
+  <h2>What is a join?</h2>
+  <p>A join combines two tables using a shared key column. It is how you connect customers to their accounts, or transactions to their branches.</p>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Customers</span>
+      <p>customer_id, name, region, segment</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Accounts</span>
+      <p>account_id, customer_id, product_family</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Transactions</span>
+      <p>txn_id, account_id, amount, channel, branch_id</p>
+    </div>
+  </div>
+  <p class="spacer">The key columns (<code>customer_id</code>, <code>account_id</code>) are what connect these tables together.</p>
+</section>
+
+<section class="slide" id="s31">
+  <span class="eyebrow">Day 2 | Joins</span>
+  <h2>Join types in pandas</h2>
+  <pre><code><span class="code-comment"># Left join: keep all rows from the left table</span>
+result = txns.merge(accounts, on=<span class="code-string">"account_id"</span>, how=<span class="code-string">"left"</span>)</code></pre>
+  <div class="columns four spacer">
+    <div class="card">
+      <span class="card-label">Left</span>
+      <p>Keep all left rows. Fill with NaN if no match on the right.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Inner</span>
+      <p>Keep only rows that match in both tables.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Outer</span>
+      <p>Keep all rows from both tables. Fill gaps with NaN.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Which to use?</span>
+      <p><strong>Left join</strong> is safest. You keep all your analysis rows and can see where matches are missing.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s32">
+  <span class="eyebrow">Day 2 | Joins</span>
+  <h2>Protecting the grain</h2>
+  <p>The grain of a table is what one row represents. If you join a customer table (one row per customer) to a transactions table (many rows per customer), the result has one row per transaction. That is correct.</p>
+  <p>But if customers has duplicate IDs, the join will create extra rows. Always check:</p>
+  <pre><code><span class="code-comment"># Before joining, verify the key is unique</span>
+customers[<span class="code-string">"customer_id"</span>].duplicated().sum()
+<span class="code-comment"># If this is not 0, investigate before proceeding.</span></code></pre>
+</section>
+
+<section class="slide" id="s33">
+  <span class="eyebrow">Day 2 | Joins</span>
+  <h2>Building a lean analysis table</h2>
+  <p>Join only the columns you need. Lean tables are easier to work with and harder to misinterpret.</p>
+  <pre><code>analysis = (
+    txns
+    .merge(accounts[[<span class="code-string">"account_id"</span>, <span class="code-string">"customer_id"</span>, <span class="code-string">"product_family"</span>]],
+           on=<span class="code-string">"account_id"</span>, how=<span class="code-string">"left"</span>)
+    .merge(customers[[<span class="code-string">"customer_id"</span>, <span class="code-string">"region"</span>, <span class="code-string">"segment"</span>]],
+           on=<span class="code-string">"customer_id"</span>, how=<span class="code-string">"left"</span>)
+    .merge(branches[[<span class="code-string">"branch_id"</span>, <span class="code-string">"city"</span>]],
+           on=<span class="code-string">"branch_id"</span>, how=<span class="code-string">"left"</span>)
+)
+analysis.shape</code></pre>
+</section>
+
+<section class="slide" id="s34">
+  <span class="eyebrow">Day 2 | Lab C</span>
+  <h2>Lab C: Customer quality checks</h2>
+  <div class="exercise-card">
+    <h3>Your task</h3>
+    <p>Before joining, test whether the customer table is safe. Find duplicates, null columns, and invalid region values.</p>
+    <div class="columns three spacer">
+      <div class="card">
+        <span class="card-label">Steps</span>
+        <ol>
+          <li>Check for duplicate <code>customer_id</code></li>
+          <li>Profile nulls in key columns</li>
+          <li>List invalid region values</li>
+          <li>State the biggest risk for a regional analysis</li>
+        </ol>
+      </div>
+      <div class="card">
+        <span class="card-label">Output</span>
+        <p>A quality summary with the number of issues found per check.</p>
+      </div>
+      <div class="card">
+        <span class="card-label">Stretch</span>
+        <p>Export a <code>dq_report.csv</code> with pass/fail for each check.</p>
+      </div>
+    </div>
+    <button type="button" class="timer-btn" data-minutes="12">Start 12-min timer</button>
+  </div>
+</section>
+
+<section class="slide" id="s35">
+  <span class="eyebrow">Day 2 | GroupBy</span>
+  <h2>Introduction to groupby</h2>
+  <p><code>groupby</code> is how you summarise data. It follows a three-step pattern: split the data into groups, apply a calculation, and combine the results.</p>
+  <pre><code><span class="code-comment"># Count transactions per branch</span>
+txns.groupby(<span class="code-string">"branch_id"</span>)[<span class="code-string">"txn_id"</span>].count()</code></pre>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">1. Split</span>
+      <p>Divide the data by the grouping column (e.g. branch_id).</p>
+    </div>
+    <div class="card">
+      <span class="card-label">2. Apply</span>
+      <p>Run a calculation on each group (e.g. count, sum, mean).</p>
+    </div>
+    <div class="card">
+      <span class="card-label">3. Combine</span>
+      <p>Bring the results back into a single table.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s36">
+  <span class="eyebrow">Day 2 | GroupBy</span>
+  <h2>Multiple aggregations with <code>.agg()</code></h2>
+  <p>Use <code>.agg()</code> to compute several metrics at once. Name each output clearly.</p>
+  <pre><code>branch_kpi = (
+    posted
+    .groupby([<span class="code-string">"region"</span>, <span class="code-string">"branch_id"</span>])
+    .agg(
+        txn_count     = (<span class="code-string">"txn_id"</span>,     <span class="code-string">"count"</span>),
+        total_fee_sar = (<span class="code-string">"fee_sar"</span>,    <span class="code-string">"sum"</span>),
+        avg_ticket    = (<span class="code-string">"amount_sar"</span>, <span class="code-string">"mean"</span>),
+    )
+    .reset_index()
+)
+
+branch_kpi.head()</code></pre>
+  <p class="muted spacer"><code>.reset_index()</code> turns the group keys back into regular columns.</p>
+</section>
+
+<section class="slide" id="s37">
+  <span class="eyebrow">Day 2 | KPIs</span>
+  <h2>Defining metrics clearly</h2>
+  <p>Every KPI has three parts. If you cannot state all three, the metric is not ready for leadership.</p>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Numerator</span>
+      <p>What are you counting or summing?</p>
+      <p class="muted">Example: sum of fee_sar</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Denominator</span>
+      <p>What is the base or population?</p>
+      <p class="muted">Example: per branch, for posted transactions only</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Filter</span>
+      <p>What rows are included or excluded?</p>
+      <p class="muted">Example: status == "POSTED", exclude test accounts</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s38">
+  <span class="eyebrow">Day 2 | Lab D</span>
+  <h2>Lab D: Branch performance summary</h2>
+  <div class="exercise-card">
+    <h3>Your task</h3>
+    <p>Create a branch KPI table that leadership can scan in under 30 seconds.</p>
+    <div class="columns three spacer">
+      <div class="card">
+        <span class="card-label">Required columns</span>
+        <ul>
+          <li><code>txn_count</code></li>
+          <li><code>total_fee_sar</code></li>
+          <li><code>avg_ticket_sar</code></li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="card-label">Output</span>
+        <p>Export <code>branch_kpi.csv</code></p>
+      </div>
+      <div class="card">
+        <span class="card-label">Stretch</span>
+        <p>Add <code>active_customers</code> and rank branches within each region.</p>
+      </div>
+    </div>
+    <button type="button" class="timer-btn" data-minutes="14">Start 14-min timer</button>
+  </div>
+</section>
+
+<section class="slide" id="s39">
+  <span class="eyebrow">Day 2 | Shares</span>
+  <h2>Computing shares and percentages</h2>
+  <p>Shares show proportions. The denominator you choose changes the story.</p>
+  <pre><code><span class="code-comment"># Count accounts by region and product family</span>
+uptake = (
+    accounts
+    .merge(customers[[<span class="code-string">"customer_id"</span>, <span class="code-string">"region"</span>]], on=<span class="code-string">"customer_id"</span>)
+    .groupby([<span class="code-string">"region"</span>, <span class="code-string">"product_family"</span>])
+    .size()
+    .reset_index(name=<span class="code-string">"count"</span>)
+)
+
+<span class="code-comment"># Compute share within each region</span>
+uptake[<span class="code-string">"share"</span>] = (
+    uptake[<span class="code-string">"count"</span>] / uptake.groupby(<span class="code-string">"region"</span>)[<span class="code-string">"count"</span>].transform(<span class="code-string">"sum"</span>)
+)</code></pre>
+</section>
+
+<section class="slide" id="s40">
+  <span class="eyebrow">Day 2 | Shares</span>
+  <h2>Choosing the right denominator</h2>
+  <p>The same numerator with different denominators tells different stories.</p>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Denominator: all accounts in the region</span>
+      <p>"What share of accounts in the Eastern region are savings accounts?"</p>
+      <p class="muted">Answers: product mix</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Denominator: all savings accounts nationally</span>
+      <p>"What share of all savings accounts are in the Eastern region?"</p>
+      <p class="muted">Answers: regional concentration</p>
+    </div>
+  </div>
+  <p class="spacer">Both are valid. Which one you choose depends on the question leadership is asking.</p>
+</section>
+
+<section class="slide" id="s41">
+  <span class="eyebrow">Day 2 | Lab E</span>
+  <h2>Lab E: Regional product uptake</h2>
+  <div class="exercise-card">
+    <h3>Your task</h3>
+    <p>Show product-family uptake by region. Choose and justify your denominator.</p>
+    <div class="columns three spacer">
+      <div class="card">
+        <span class="card-label">Steps</span>
+        <ol>
+          <li>Count accounts by region and product</li>
+          <li>Compute within-region share</li>
+          <li>Write one sentence defending your denominator</li>
+        </ol>
+      </div>
+      <div class="card">
+        <span class="card-label">Output</span>
+        <p>Export <code>uptake_summary.csv</code></p>
+      </div>
+      <div class="card">
+        <span class="card-label">Stretch</span>
+        <p>Add an opening-month cohort view.</p>
+      </div>
+    </div>
+    <button type="button" class="timer-btn" data-minutes="12">Start 12-min timer</button>
+  </div>
+</section>
+
+<section class="slide" id="s42">
+  <span class="eyebrow">Day 2 | Time</span>
+  <h2>Time-based analysis</h2>
+  <p>Once your date column is a proper datetime, pandas gives you powerful time tools.</p>
+  <pre><code><span class="code-comment"># Extract parts of a date</span>
+txns[<span class="code-string">"month"</span>]   = txns[<span class="code-string">"txn_ts"</span>].dt.to_period(<span class="code-string">"M"</span>).astype(<span class="code-keyword">str</span>)
+txns[<span class="code-string">"weekday"</span>] = txns[<span class="code-string">"txn_ts"</span>].dt.day_name()
+
+<span class="code-comment"># Monthly summary</span>
+monthly = (
+    posted
+    .groupby(<span class="code-string">"month"</span>)
+    .agg(txn_count=(<span class="code-string">"txn_id"</span>, <span class="code-string">"count"</span>), total_fee=(<span class="code-string">"fee_sar"</span>, <span class="code-string">"sum"</span>))
+    .reset_index()
+)</code></pre>
+</section>
+
+<section class="slide" id="s43">
+  <span class="eyebrow">Day 2 | Time</span>
+  <h2>Month-on-month change</h2>
+  <p>Use <code>.diff()</code> or <code>.pct_change()</code> to show movement over time.</p>
+  <pre><code>monthly[<span class="code-string">"fee_change"</span>]   = monthly[<span class="code-string">"total_fee"</span>].diff()
+monthly[<span class="code-string">"fee_pct_chg"</span>] = monthly[<span class="code-string">"total_fee"</span>].pct_change() * <span class="code-number">100</span>
+
+monthly</code></pre>
+  <div class="card spacer">
+    <span class="card-label">Reading the output</span>
+    <p>A <code>fee_pct_chg</code> of 12.5 means fee revenue grew 12.5% compared to the previous month. The first row will be NaN because there is no prior month to compare against.</p>
+  </div>
+</section>
+
+<section class="slide" id="s44">
+  <span class="eyebrow">Day 2 | Quality</span>
+  <h2>Building a data quality report</h2>
+  <p>A DQ report is a simple table where each row is a check, with a pass/fail result and a count.</p>
+  <pre><code>checks = pd.DataFrame([
+    {<span class="code-string">"check"</span>: <span class="code-string">"duplicate customer_id"</span>,
+     <span class="code-string">"status"</span>: <span class="code-string">"fail"</span> <span class="code-keyword">if</span> n_dupes > <span class="code-number">0</span> <span class="code-keyword">else</span> <span class="code-string">"pass"</span>,
+     <span class="code-string">"count"</span>: n_dupes},
+    {<span class="code-string">"check"</span>: <span class="code-string">"missing amount"</span>,
+     <span class="code-string">"status"</span>: <span class="code-string">"fail"</span> <span class="code-keyword">if</span> n_null_amt > <span class="code-number">0</span> <span class="code-keyword">else</span> <span class="code-string">"pass"</span>,
+     <span class="code-string">"count"</span>: n_null_amt},
+])
+checks.to_csv(<span class="code-string">"outputs/day2/dq_report.csv"</span>, index=<span class="code-keyword">False</span>)</code></pre>
+</section>
+
+<section class="slide" id="s45">
+  <span class="eyebrow">Day 2 | Communication</span>
+  <h2>Communicating findings to leadership</h2>
+  <p>When leadership asks "what happened?", use this structure:</p>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">1. What moved</span>
+      <p>"Fee revenue increased 8% month on month."</p>
+    </div>
+    <div class="card">
+      <span class="card-label">2. What likely drove it</span>
+      <p>"Digital channel volume grew while branch volume was flat."</p>
+    </div>
+    <div class="card">
+      <span class="card-label">3. What could still change</span>
+      <p>"Two branches have data quality issues that may affect the total."</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s46">
+  <span class="eyebrow">Day 2 | Recap</span>
+  <h2>Day 2 recap</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">You can now</span>
+      <p>Join multiple tables using <code>.merge()</code> and protect the grain of your analysis.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">You can now</span>
+      <p>Build KPI tables with <code>.groupby().agg()</code> and define metrics clearly.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">You can now</span>
+      <p>Compute shares, time-based summaries, and structured quality reports.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s47">
+  <span class="eyebrow">Day 2 | Key concepts</span>
+  <h2>Day 2 key takeaways</h2>
+  <ol>
+    <li><strong>Check keys before joining.</strong> Duplicate keys create phantom rows.</li>
+    <li><strong>Join only the columns you need.</strong> Lean tables are easier to trust.</li>
+    <li><strong>Define every KPI with numerator, denominator, and filter.</strong></li>
+    <li><strong>Your denominator is your argument.</strong> Different denominators tell different stories.</li>
+    <li><strong>Communicate movement, driver, and caveat.</strong> Not just the number.</li>
+  </ol>
+</section>
+
+<!-- ======================================================= -->
+<!--  DAY 3: VISUALIZATION, REPORTING, AND ML HANDOFF       -->
+<!-- ======================================================= -->
+
+<section class="slide" id="s48">
+  <span class="eyebrow">Day 3 | Welcome</span>
+  <h1>Day 3: Reporting, Visualisation, and ML Handoff</h1>
+  <p class="lede">Today you move from analysis tables to leadership-ready outputs: charts, exceptions tables, narrative summaries, and a feature set for the next module.</p>
+</section>
+
+<section class="slide" id="s49">
+  <span class="eyebrow">Day 3 | Agenda</span>
+  <h2>Day 3 agenda</h2>
+  <ol>
+    <li>Introduction to matplotlib</li>
+    <li>Line charts, bar charts, and chart anatomy</li>
+    <li>Making charts leadership-ready</li>
+    <li><strong>Lab F:</strong> Pack charts</li>
+    <li>Exception logic and flagging</li>
+    <li><strong>Lab G:</strong> Exceptions table</li>
+    <li>Feature engineering for ML handoff</li>
+    <li><strong>Lab H:</strong> ML-ready feature table</li>
+    <li>Writing executive summaries</li>
+    <li>Capstone: team executive brief</li>
+    <li>Programme close</li>
+  </ol>
+</section>
+
+<section class="slide" id="s50">
+  <span class="eyebrow">Day 3 | Matplotlib</span>
+  <h2>Introduction to matplotlib</h2>
+  <p>Matplotlib is Python's most widely used charting library. You create a figure, add data, and customise labels.</p>
+  <pre><code><span class="code-keyword">import</span> matplotlib.pyplot <span class="code-keyword">as</span> plt
+
+fig, ax = plt.subplots(figsize=(<span class="code-number">10</span>, <span class="code-number">5</span>))
+ax.plot(monthly[<span class="code-string">"month"</span>], monthly[<span class="code-string">"txn_count"</span>], marker=<span class="code-string">"o"</span>)
+ax.set_title(<span class="code-string">"Monthly transaction count"</span>)
+ax.set_xlabel(<span class="code-string">"Month"</span>)
+ax.set_ylabel(<span class="code-string">"Transactions"</span>)
+plt.tight_layout()
+plt.show()</code></pre>
+</section>
+
+<section class="slide" id="s51">
+  <span class="eyebrow">Day 3 | Charts</span>
+  <h2>Line charts: showing trends</h2>
+  <p>Use a line chart when you want to show how something changes over time.</p>
+  <pre><code>fig, ax = plt.subplots(figsize=(<span class="code-number">10</span>, <span class="code-number">5</span>))
+ax.plot(monthly[<span class="code-string">"month"</span>], monthly[<span class="code-string">"total_fee"</span>], marker=<span class="code-string">"o"</span>, color=<span class="code-string">"#5f89df"</span>)
+ax.set_title(<span class="code-string">"Fee revenue increased 8% in the latest month"</span>)
+ax.set_ylabel(<span class="code-string">"Total fees (SAR)"</span>)
+plt.xticks(rotation=<span class="code-number">45</span>)
+plt.tight_layout()</code></pre>
+  <p class="spacer"><strong>Key rule:</strong> the chart title should state the finding, not just the topic. "Fee revenue increased 8%" is better than "Fee revenue over time".</p>
+</section>
+
+<section class="slide" id="s52">
+  <span class="eyebrow">Day 3 | Charts</span>
+  <h2>Bar charts: showing comparisons</h2>
+  <p>Use a bar chart when you want to compare values across categories.</p>
+  <pre><code>top_branches = branch_kpi.nlargest(<span class="code-number">5</span>, <span class="code-string">"total_fee_sar"</span>)
+
+fig, ax = plt.subplots(figsize=(<span class="code-number">10</span>, <span class="code-number">5</span>))
+ax.bar(top_branches[<span class="code-string">"branch_id"</span>], top_branches[<span class="code-string">"total_fee_sar"</span>], color=<span class="code-string">"#5f89df"</span>)
+ax.set_title(<span class="code-string">"Top 5 branches by fee revenue"</span>)
+ax.set_ylabel(<span class="code-string">"Total fees (SAR)"</span>)
+plt.tight_layout()</code></pre>
+</section>
+
+<section class="slide" id="s53">
+  <span class="eyebrow">Day 3 | Charts</span>
+  <h2>Making charts leadership-ready</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label" style="color:var(--danger)">Before</span>
+      <ul>
+        <li>Title: "Total fees over time"</li>
+        <li>No units on axis</li>
+        <li>Default colours</li>
+        <li>Gridlines everywhere</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label" style="color:var(--success)">After</span>
+      <ul>
+        <li>Title: "Fee revenue increased 8% in the latest month"</li>
+        <li>Axis labelled with "(SAR)"</li>
+        <li>Single accent colour</li>
+        <li>Clean, minimal layout</li>
+      </ul>
+    </div>
+  </div>
+  <pre><code class="spacer"><span class="code-comment"># Save the chart for the leadership pack</span>
+fig.savefig(<span class="code-string">"outputs/day3_pack/trend_chart.png"</span>, dpi=<span class="code-number">150</span>, bbox_inches=<span class="code-string">"tight"</span>)</code></pre>
+</section>
+
+<section class="slide" id="s54">
+  <span class="eyebrow">Day 3 | Lab F</span>
+  <h2>Lab F: Pack charts</h2>
+  <div class="exercise-card">
+    <h3>Your task</h3>
+    <p>Create two charts that deserve a place in a leadership performance pack.</p>
+    <div class="columns three spacer">
+      <div class="card">
+        <span class="card-label">Chart 1</span>
+        <p>A trend chart showing movement over time. Title states the finding.</p>
+      </div>
+      <div class="card">
+        <span class="card-label">Chart 2</span>
+        <p>A ranking chart showing top or bottom performers.</p>
+      </div>
+      <div class="card">
+        <span class="card-label">Stretch</span>
+        <p>Add one annotation that highlights the most important data point.</p>
+      </div>
+    </div>
+    <button type="button" class="timer-btn" data-minutes="14">Start 14-min timer</button>
+  </div>
+</section>
+
+<section class="slide" id="s55">
+  <span class="eyebrow">Day 3 | Exceptions</span>
+  <h2>What is an exceptions table?</h2>
+  <p>An exceptions table is a shortlist of items that deserve investigation. Instead of showing management a table of 200 branches, you show them the 5 to 10 that need attention.</p>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label" style="color:var(--danger)">Weak</span>
+      <p>"Here is all the data."</p>
+    </div>
+    <div class="card">
+      <span class="card-label" style="color:var(--success)">Strong</span>
+      <p>"These 7 branches had unusual fee changes. Here is why each one was flagged."</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s56">
+  <span class="eyebrow">Day 3 | Exceptions</span>
+  <h2>Building exception flags</h2>
+  <p>Create transparent, rule-based flags. Every flagged row needs a reason code.</p>
+  <pre><code><span class="code-comment"># Flag branches with large fee changes</span>
+branch_monthly[<span class="code-string">"fee_change"</span>] = branch_monthly.groupby(<span class="code-string">"branch_id"</span>)[<span class="code-string">"total_fee"</span>].diff()
+
+threshold = branch_monthly[<span class="code-string">"fee_change"</span>].abs().quantile(<span class="code-number">0.9</span>)
+
+exceptions = branch_monthly[branch_monthly[<span class="code-string">"fee_change"</span>].abs() > threshold].copy()
+exceptions[<span class="code-string">"reason_code"</span>] = <span class="code-string">"fee_change_above_p90"</span>
+
+exceptions.to_csv(<span class="code-string">"outputs/day3_pack/exceptions.csv"</span>, index=<span class="code-keyword">False</span>)</code></pre>
+</section>
+
+<section class="slide" id="s57">
+  <span class="eyebrow">Day 3 | Lab G</span>
+  <h2>Lab G: Exceptions table</h2>
+  <div class="exercise-card">
+    <h3>Your task</h3>
+    <p>Produce a shortlist of branches that deserve investigation.</p>
+    <div class="columns three spacer">
+      <div class="card">
+        <span class="card-label">Steps</span>
+        <ol>
+          <li>Define your flagging rule</li>
+          <li>Add a <code>reason_code</code> column</li>
+          <li>Export <code>exceptions.csv</code></li>
+        </ol>
+      </div>
+      <div class="card">
+        <span class="card-label">Output</span>
+        <p>A short, actionable list with reason codes.</p>
+      </div>
+      <div class="card">
+        <span class="card-label">Stretch</span>
+        <p>Use a percentile threshold and rank the flagged branches by severity.</p>
+      </div>
+    </div>
+    <button type="button" class="timer-btn" data-minutes="12">Start 12-min timer</button>
+  </div>
+</section>
+
+<section class="slide" id="s58">
+  <span class="eyebrow">Day 3 | ML handoff</span>
+  <h2>Feature engineering: what and why</h2>
+  <p>The Machine Learning module that follows this programme needs a customer-level table of features. Your job is to prepare data that a model can learn from.</p>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Feature</span>
+      <p>A column that describes past customer behaviour. Examples: transaction count, average ticket size, digital channel share.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Cut-off date</span>
+      <p>The date that divides "what happened" from "what you are trying to predict". Features must only use data before the cut-off.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Leakage</span>
+      <p>When future information accidentally appears in your features. This makes the model look good in testing but fail in production.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s59">
+  <span class="eyebrow">Day 3 | ML handoff</span>
+  <h2>Building a feature table</h2>
+  <pre><code>cut_off = pd.Timestamp(<span class="code-string">"2026-06-30"</span>)
+window = posted[posted[<span class="code-string">"txn_ts"</span>] <= cut_off].copy()
+window[<span class="code-string">"is_digital"</span>] = window[<span class="code-string">"channel"</span>].isin([<span class="code-string">"MOB"</span>, <span class="code-string">"ONLINE"</span>])
+
+features = (
+    window.groupby(<span class="code-string">"customer_id"</span>)
+    .agg(
+        txn_count    = (<span class="code-string">"txn_id"</span>,        <span class="code-string">"count"</span>),
+        avg_ticket   = (<span class="code-string">"amount_sar"</span>,    <span class="code-string">"mean"</span>),
+        digital_pct  = (<span class="code-string">"is_digital"</span>,    <span class="code-string">"mean"</span>),
+        total_fee    = (<span class="code-string">"fee_sar"</span>,       <span class="code-string">"sum"</span>),
+        product_cnt  = (<span class="code-string">"product_family"</span>, <span class="code-string">"nunique"</span>),
+    )
+    .reset_index()
+)
+features[<span class="code-string">"cut_off_date"</span>] = <span class="code-string">"2026-06-30"</span>
+features.to_csv(<span class="code-string">"outputs/day3_pack/features.csv"</span>, index=<span class="code-keyword">False</span>)</code></pre>
+</section>
+
+<section class="slide" id="s60">
+  <span class="eyebrow">Day 3 | ML handoff</span>
+  <h2>Avoiding data leakage</h2>
+  <p>Leakage is the most common mistake in feature engineering. Here are two ways it happens:</p>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label" style="color:var(--danger)">Time leakage</span>
+      <p>Using transaction data from July to predict what happens in June. The model sees the future.</p>
+      <p class="muted">Fix: enforce a hard cut-off date.</p>
+    </div>
+    <div class="card">
+      <span class="card-label" style="color:var(--danger)">Target leakage</span>
+      <p>Including a column that is only available after the outcome is known (e.g. "churned" flag in a churn prediction model).</p>
+      <p class="muted">Fix: only include features available at prediction time.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s61">
+  <span class="eyebrow">Day 3 | Lab H</span>
+  <h2>Lab H: ML-ready feature table</h2>
+  <div class="exercise-card">
+    <h3>Your task</h3>
+    <p>Prepare a customer-level feature table that is safe for the ML module.</p>
+    <div class="columns three spacer">
+      <div class="card">
+        <span class="card-label">Steps</span>
+        <ol>
+          <li>Set a cut-off date</li>
+          <li>Build customer-level features</li>
+          <li>Export <code>features.csv</code></li>
+          <li>Export an <code>assumptions.csv</code></li>
+        </ol>
+      </div>
+      <div class="card">
+        <span class="card-label">Output</span>
+        <p>Feature table with one row per customer.</p>
+      </div>
+      <div class="card">
+        <span class="card-label">Stretch</span>
+        <p>Name one leakage risk you avoided and one that still needs monitoring.</p>
+      </div>
+    </div>
+    <button type="button" class="timer-btn" data-minutes="14">Start 14-min timer</button>
+  </div>
+</section>
+
+<section class="slide" id="s62">
+  <span class="eyebrow">Day 3 | Governance</span>
+  <h2>Data governance: what to export and what not to</h2>
+  <p>Under Saudi Arabia's Personal Data Protection Law (PDPL), you must be intentional about what data leaves your environment.</p>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label" style="color:var(--success)">Good practice</span>
+      <ul>
+        <li>Export only the fields needed for the agreed output</li>
+        <li>Document what is included and why</li>
+        <li>Use pseudonymised identifiers</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label" style="color:var(--danger)">Risky practice</span>
+      <ul>
+        <li>Export everything "just in case"</li>
+        <li>Include personal names or national IDs in feature tables</li>
+        <li>No documentation of assumptions</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s63">
+  <span class="eyebrow">Day 3 | Narrative</span>
+  <h2>Writing executive summaries</h2>
+  <p>A good executive summary uses three sentences:</p>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Sentence 1</span>
+      <p><strong>What moved?</strong></p>
+      <p class="muted">"Fee revenue increased 8% month on month."</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Sentence 2</span>
+      <p><strong>What likely drove it?</strong></p>
+      <p class="muted">"Digital channel volume grew 15% while branch volume was flat."</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Sentence 3</span>
+      <p><strong>What caveat matters?</strong></p>
+      <p class="muted">"Two branches have incomplete data that may affect the regional total."</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s64">
+  <span class="eyebrow">Day 3 | Narrative lab</span>
+  <h2>Narrative lab: write your three-sentence summary</h2>
+  <div class="exercise-card">
+    <h3>Your task</h3>
+    <p>Using your analysis outputs from Days 1 to 3, write a three-sentence executive summary.</p>
+    <ol>
+      <li>What is the most important finding?</li>
+      <li>What is the most likely explanation?</li>
+      <li>What should leadership be cautious about?</li>
+    </ol>
+    <button type="button" class="timer-btn" data-minutes="8">Start 8-min timer</button>
+  </div>
+</section>
+
+<section class="slide" id="s65">
+  <span class="eyebrow">Day 3 | Pack assembly</span>
+  <h2>Assembling a leadership pack</h2>
+  <p>A leadership pack is a concise bundle of outputs that tells one clear story. Less is more.</p>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">1. Summary table</span>
+      <p>Branch KPIs or regional uptake. One clean table.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">2. Two charts</span>
+      <p>One trend, one comparison. Titles state findings.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">3. Appendix</span>
+      <p>Exceptions table, DQ report, and assumptions. Available if leadership asks questions.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s66">
+  <span class="eyebrow">Day 3 | Capstone</span>
+  <h2>Capstone: team executive brief</h2>
+  <div class="exercise-card">
+    <h3>Your task</h3>
+    <p>In teams, assemble your strongest outputs into a compact pack and present a 90-second executive brief.</p>
+    <div class="columns two spacer">
+      <div class="card">
+        <span class="card-label">What to prepare</span>
+        <ul>
+          <li>Choose your strongest evidence</li>
+          <li>Assemble a compact pack</li>
+          <li>Write a three-sentence summary</li>
+          <li>Prepare to present live</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="card-label">Presentation frame</span>
+        <ol>
+          <li>Open with the most important finding</li>
+          <li>Show the one chart or table that proves it</li>
+          <li>State the likely driver</li>
+          <li>Name the key caveat</li>
+          <li>Finish with the recommended action</li>
+        </ol>
+      </div>
+    </div>
+    <button type="button" class="timer-btn" data-minutes="16">Start 16-min timer</button>
+  </div>
+</section>
+
+<section class="slide" id="s67">
+  <span class="eyebrow">Day 3 | Capstone</span>
+  <h2>Capstone scoring criteria</h2>
+  <div class="columns four spacer">
+    <div class="card">
+      <span class="card-label">Insight /5</span>
+      <p>Did the team identify the most important finding?</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Evidence /5</span>
+      <p>Were the chosen outputs strong and relevant?</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Caveat /5</span>
+      <p>Did the team state a real limitation?</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Clarity /5</span>
+      <p>Would leadership understand and trust the recommendation?</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s68">
+  <span class="eyebrow">Day 3 | Recap</span>
+  <h2>Day 3 recap</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">You can now</span>
+      <p>Create trend and comparison charts using matplotlib, with titles that state findings.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">You can now</span>
+      <p>Build exceptions tables with transparent rules and reason codes.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">You can now</span>
+      <p>Prepare ML-ready feature tables with cut-off dates and assumptions.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= -->
+<!--  PROGRAMME CLOSE                                        -->
+<!-- ======================================================= -->
+
+<section class="slide" id="s69">
+  <span class="eyebrow">Programme | Recap</span>
+  <h2>Programme recap: what you can now do</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Day 1</span>
+      <ul>
+        <li>Load and inspect CSV files with pandas</li>
+        <li>Profile missing values and duplicates</li>
+        <li>Write reusable cleaning functions</li>
+        <li>Set data types deliberately</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Day 2</span>
+      <ul>
+        <li>Join tables and protect the grain</li>
+        <li>Build KPI tables with groupby</li>
+        <li>Compute shares and time-based summaries</li>
+        <li>Produce data quality reports</li>
+      </ul>
+    </div>
+  </div>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Day 3</span>
+      <ul>
+        <li>Create leadership-ready charts</li>
+        <li>Build exceptions tables with reason codes</li>
+        <li>Prepare ML-ready feature tables</li>
+        <li>Write executive summaries</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Across all days</span>
+      <ul>
+        <li>Communicate findings to non-technical audiences</li>
+        <li>Document assumptions and caveats</li>
+        <li>Export reproducible, reusable outputs</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s70">
+  <span class="eyebrow">Programme | What comes next</span>
+  <h2>What comes next: Machine Learning</h2>
+  <p>The feature table you built today is the input for the Machine Learning module (17 to 19 May 2026). You will learn how to train models, evaluate performance, and deploy predictions using the same banking data.</p>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">You are prepared because</span>
+      <ul>
+        <li>You can clean and join data reliably</li>
+        <li>You understand cut-off dates and leakage</li>
+        <li>You can define features in business terms</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Upcoming modules</span>
+      <table>
+        <tr><td>Machine Learning</td><td>17-19 May</td></tr>
+        <tr><td>Neural Networks</td><td>20-21 May</td></tr>
+        <tr><td>Business Applications in AI</td><td>7-8 June</td></tr>
+        <tr><td>Advanced Data Visualisation</td><td>28-30 June</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s71">
+  <span class="eyebrow">Programme | Close</span>
+  <h1>Thank you</h1>
+  <p class="lede">You started with raw bank extracts and finished with a leadership-ready pack and an ML-ready feature table. That is real analyst output.</p>
+  <div class="card spacer">
+    <span class="card-label">Before you leave, complete these prompts</span>
+    <ul>
+      <li>One Python habit I will use immediately: ___</li>
+      <li>One way I will improve how I define metrics: ___</li>
+      <li>One way I will communicate uncertainty more clearly: ___</li>
+    </ul>
+  </div>
+</section>
+
+</div><!-- /deck -->
+
+<!-- Bottom bar -->
+<div class="deck-bar">
+  <span id="deck-counter">1 / 71</span>
+  <span id="deck-timer" class="deck-timer"></span>
+</div>
+<div class="deck-progress"><span id="deck-progress-fill"></span></div>
+
+<script src="/python-training/assets/deck.js"></script>
+</body>
+</html>

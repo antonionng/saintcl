@@ -8,13 +8,14 @@
 </head>
 <body>
 <div class="deck">
+<div class="deck-brand"><img class="emft-logo" src="/emft-logo.png" alt="Emerging Market Financial Training" /><span class="deck-brand-divider"></span><img src="/ajb-logo.png" alt="Al Jazira Bank" /></div>
 
 <!-- ======================================================= -->
 <!--  DAY 1: PYTHON FOUNDATIONS FOR BANK DATA                -->
 <!-- ======================================================= -->
 
 <section class="slide active" id="s01">
-  <span class="eyebrow">Al Jazira Bank | Python for Data</span>
+  <span class="eyebrow">EMFT x Al Jazira Bank | Python for Data</span>
   <h1>Python for Data</h1>
   <p class="lede">Three days. From raw bank extracts to leadership-ready analysis and ML-ready handoff tables.</p>
   <div class="columns three spacer">
@@ -33,261 +34,411 @@
   </div>
 </section>
 
-<section class="slide" id="s02">
-  <span class="eyebrow">Day 1 | Welcome</span>
-  <h2>What you will be able to do by the end of this programme</h2>
+<section class="slide" id="s01a">
+  <span class="eyebrow">Day 1 | Banking context</span>
+  <h2>Why data and analytics matter in a bank</h2>
+  <p>Bank decisions depend on trustworthy data. Whether the question is growth, service quality, risk, or operations, the analyst's first job is to understand what the data can support and what it cannot support yet.</p>
   <div class="columns three spacer">
     <div class="card">
-      <span class="card-label">Day 1</span>
-      <p>Load, inspect, and clean banking data safely using Python and pandas.</p>
+      <span class="card-label">Core data sources</span>
+      <p>Customer, account, transaction, branch, and service datasets each describe one part of the operating picture.</p>
     </div>
     <div class="card">
-      <span class="card-label">Day 2</span>
-      <p>Join tables, build KPIs, and produce data quality reports.</p>
+      <span class="card-label">Typical use cases</span>
+      <p>Performance packs, quality checks, segmentation prep, exception tracking, and ML-ready handoff files.</p>
     </div>
     <div class="card">
-      <span class="card-label">Day 3</span>
-      <p>Create charts, exceptions tables, and ML-ready feature sets for leadership.</p>
+      <span class="card-label">Why this course starts here</span>
+      <p>If the data logic is weak, every later dashboard, recommendation, or model becomes harder to trust.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s01b">
+  <span class="eyebrow">Day 1 | Tool choice</span>
+  <h2>Where Python helps, and where other tools still fit</h2>
+  <table class="spacer">
+    <thead>
+      <tr>
+        <th>Tool</th>
+        <th>Best for</th>
+        <th>Watchout</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Python</td>
+        <td>Repeatable cleaning, multi-table joins, richer QC, charts, and ML handoff preparation.</td>
+        <td>Needs a little setup and discipline for new users.</td>
+      </tr>
+      <tr>
+        <td>Excel</td>
+        <td>Quick inspection, ad hoc checks, and lightweight manual review.</td>
+        <td>Harder to scale, reproduce, and govern once logic becomes complex.</td>
+      </tr>
+      <tr>
+        <td>SQL</td>
+        <td>Pulling, filtering, and aggregating source data close to the warehouse.</td>
+        <td>Less suited on its own for notebook-style exploration and chart-led storytelling.</td>
+      </tr>
+      <tr>
+        <td>BI tools</td>
+        <td>Dashboards, repeat reporting, and stakeholder consumption.</td>
+        <td>Usually weaker for first-pass triage and custom cleaning logic.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+
+<section class="slide" id="s01c">
+  <span class="eyebrow">Day 1 | Delivery routes</span>
+  <h2>Two routes, one shared outcome</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Intro path</span>
+      <p>Stay on the core notebook tasks, complete each checkpoint, and finish with defendable outputs for triage, KPI logic, charts, and ML handoff.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Advanced path</span>
+      <p>Move through the core path quickly, then deepen QC, denominator testing, caveats, and executive framing through the stretch prompts.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s02">
+  <span class="eyebrow">Day 1 | End state</span>
+  <h2>What success looks like by the end of this course</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Today</span>
+      <p>You can open the notebook, load the extract safely, and make a defensible judgement about whether the file is usable.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">By Day 2</span>
+      <p>You can join bank-shaped tables, build KPIs with clearer definitions, and attach quality evidence to your outputs.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">By Day 3</span>
+      <p>You can turn analysis into charts, exception views, and ML-ready handoff tables that leadership can challenge and still trust.</p>
     </div>
   </div>
 </section>
 
 <section class="slide" id="s03">
-  <span class="eyebrow">Day 1 | Agenda</span>
-  <h2>Day 1 agenda</h2>
-  <ol>
-    <li>Your working environment: Jupyter notebooks</li>
-    <li>Python basics: variables, types, strings, lists, dictionaries</li>
-    <li>Reading CSV files with pandas</li>
-    <li>Inspecting and profiling data</li>
-    <li>Missing values and duplicates</li>
-    <li><strong>Lab A:</strong> Transaction extract triage</li>
-    <li>Writing cleaning functions</li>
-    <li><strong>Lab B:</strong> Build reusable cleaning logic</li>
-    <li>Day 1 recap</li>
-  </ol>
+  <span class="eyebrow">Day 1 | Learning journey</span>
+  <h2>How the course unfolds from here</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">First</span>
+      <p>Get the environment working properly. Open the notebook, run the setup cell, and confirm you can see data and output paths.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Then</span>
+      <p>Build just enough Python and pandas fluency to inspect a banking file rather than guessing about it.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Then apply</span>
+      <p>Use the notebook to triage a transactions extract, surface risks, and justify whether first-pass analysis should proceed.</p>
+    </div>
+  </div>
 </section>
 
-<section class="slide" id="s04">
-  <span class="eyebrow">Day 1 | Context</span>
-  <h2>Why Python for banking data?</h2>
-  <p>Python is the most widely used language for data analysis, machine learning, and automation. In banking, it lets you work with transaction records, customer tables, and branch data at a scale that spreadsheets cannot handle.</p>
+<section class="slide" id="s03b">
+  <span class="eyebrow">Day 1 | Outputs and validation</span>
+  <h2>What you will produce and how it will be checked</h2>
   <div class="columns two spacer">
     <div class="card">
-      <span class="card-label">What Python gives you</span>
+      <span class="card-label">Outputs</span>
       <ul>
-        <li>Repeatable analysis you can re-run any time</li>
-        <li>Clear logic that another analyst can read</li>
-        <li>Tools built for millions of rows</li>
+        <li>Triage summaries and cleaned tables</li>
+        <li>KPI views with quality evidence</li>
+        <li>Charts, exception views, and handoff files</li>
+        <li>Written explanations that leadership can challenge</li>
       </ul>
     </div>
     <div class="card">
-      <span class="card-label">Key libraries we will use</span>
+      <span class="card-label">Validation</span>
       <ul>
-        <li><code>pandas</code> for tables and data manipulation</li>
-        <li><code>numpy</code> for numerical operations</li>
-        <li><code>matplotlib</code> for charts (Day 3)</li>
+        <li>Notebook checkpoints completed through the module</li>
+        <li>Workbook artefacts finished and reviewable</li>
+        <li>Visible evidence in outputs, not only code cells</li>
+        <li>Reasoning that is specific, cautious, and defensible</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s04">
+  <span class="eyebrow">Day 1 | Start here</span>
+  <h2>Before we write code, get these four things ready</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Open on your screen</span>
+      <ul>
+        <li>This participant deck</li>
+        <li>The Day 1 notebook</li>
+        <li>The file browser for the training folder</li>
+        <li>A clear view of notebook output cells</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">What we will verify in the next five minutes</span>
+      <ul>
+        <li>You can run a cell successfully</li>
+        <li>The notebook can see the <code>data/</code> folder</li>
+        <li>The notebook can create the <code>outputs/day1/</code> folder</li>
+        <li>You know what to do if an import or path fails</li>
       </ul>
     </div>
   </div>
 </section>
 
 <section class="slide" id="s05">
-  <span class="eyebrow">Day 1 | Environment</span>
-  <h2>Your working environment: Jupyter notebooks</h2>
-  <p>A Jupyter notebook lets you write Python code in cells and run each cell independently. You can mix code, output, and written notes in the same document.</p>
+  <span class="eyebrow">Day 1 | Setup step 1</span>
+  <h2>Open the Day 1 notebook now</h2>
+  <p>Use the Day 1 notebook as your working file for this session. Do not wait until the lab starts. Open it now so your environment and the deck move together.</p>
   <div class="columns code-text spacer">
-    <pre><code><span class="code-comment"># This is a code cell. Press Shift+Enter to run it.</span>
-<span class="code-keyword">print</span>(<span class="code-string">"Hello, Al Jazira Bank!"</span>)</code></pre>
+    <pre><code>python-training/
+  notebooks/
+    day1_python_foundations.ipynb
+  data/
+    transactions.csv
+  outputs/
+    day1/</code></pre>
     <div class="card">
-      <span class="card-label">Key shortcuts</span>
+      <span class="card-label">Checkpoint</span>
       <ul>
-        <li><strong>Shift + Enter:</strong> run cell and move to next</li>
-        <li><strong>Ctrl + Enter:</strong> run cell and stay</li>
-        <li><strong>Esc + A:</strong> insert cell above</li>
-        <li><strong>Esc + B:</strong> insert cell below</li>
+        <li>You should have <code>day1_python_foundations.ipynb</code> open</li>
+        <li>You should be able to see the notebook cells</li>
+        <li>You should know where the <code>data/</code> folder lives relative to the notebook</li>
+        <li>If you cannot open the notebook, stop and fix that first</li>
       </ul>
     </div>
   </div>
 </section>
 
 <section class="slide" id="s06">
-  <span class="eyebrow">Day 1 | Python basics</span>
-  <h2>Variables and data types</h2>
-  <p>A variable stores a value. Python figures out the type automatically based on what you assign.</p>
-  <pre><code>branch_name = <span class="code-string">"Riyadh Central"</span>       <span class="code-comment"># string (text)</span>
-transaction_count = <span class="code-number">1420</span>               <span class="code-comment"># integer (whole number)</span>
-average_ticket = <span class="code-number">387.50</span>                <span class="code-comment"># float (decimal number)</span>
-is_active = <span class="code-keyword">True</span>                        <span class="code-comment"># boolean (True or False)</span>
-
-<span class="code-keyword">print</span>(branch_name, transaction_count)</code></pre>
-  <p class="muted spacer">Use descriptive names. <code>avg_ticket_sar</code> is better than <code>x</code>.</p>
+  <span class="eyebrow">Day 1 | Setup step 2</span>
+  <h2>Understand the three notebook elements before you run anything</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Markdown cell</span>
+      <p>Used for headings, instructions, and written notes about assumptions and decisions.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Code cell</span>
+      <p>Used to run Python. This is where you import libraries, load files, inspect data, and build outputs.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Output area</span>
+      <p>Shows printed results, tables, charts, and errors. Read this carefully. It is part of the analysis.</p>
+    </div>
+  </div>
+  <p class="muted spacer">Important: run cells from top to bottom. If you jump around, variables and paths may not exist yet.</p>
 </section>
 
 <section class="slide" id="s07">
-  <span class="eyebrow">Day 1 | Python basics</span>
-  <h2>Working with strings</h2>
-  <p>Banking data is full of text: customer names, branch codes, channel labels. Python gives you methods to clean and transform them.</p>
-  <pre><code>channel = <span class="code-string">"  mob  "</span>
+  <span class="eyebrow">Day 1 | Setup step 3</span>
+  <h2>Run the setup cell first, before any data work</h2>
+  <p>This first code block prepares the notebook environment. It imports libraries, defines the data and output paths, and creates the output folder if it does not exist yet.</p>
+  <pre><code><span class="code-keyword">from</span> pathlib <span class="code-keyword">import</span> Path
 
-channel.strip()           <span class="code-comment"># "mob"       - removes spaces</span>
-channel.strip().upper()   <span class="code-comment"># "MOB"       - converts to uppercase</span>
-channel.strip().title()   <span class="code-comment"># "Mob"       - capitalises first letter</span>
+<span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np
+<span class="code-keyword">import</span> pandas <span class="code-keyword">as</span> pd
 
-amount_text = <span class="code-string">"1,250.00"</span>
-amount_text.replace(<span class="code-string">","</span>, <span class="code-string">""</span>)   <span class="code-comment"># "1250.00"   - removes commas</span>
-<span class="code-keyword">float</span>(amount_text.replace(<span class="code-string">","</span>, <span class="code-string">""</span>))  <span class="code-comment"># 1250.0  - converts to number</span></code></pre>
+DATA_DIR = Path(<span class="code-string">"../data"</span>)
+OUTPUT_DIR = Path(<span class="code-string">"../outputs/day1"</span>)
+OUTPUT_DIR.mkdir(parents=<span class="code-keyword">True</span>, exist_ok=<span class="code-keyword">True</span>)</code></pre>
+  <p class="muted spacer">If this cell fails, do not keep going. Fix the environment first.</p>
 </section>
 
 <section class="slide" id="s08">
-  <span class="eyebrow">Day 1 | Python basics</span>
-  <h2>Lists: ordered collections</h2>
-  <p>A list holds multiple values in order. You access items by position, starting from 0.</p>
-  <pre><code>regions = [<span class="code-string">"Riyadh"</span>, <span class="code-string">"Makkah"</span>, <span class="code-string">"Eastern"</span>, <span class="code-string">"Madinah"</span>, <span class="code-string">"Asir"</span>]
-
-regions[<span class="code-number">0</span>]          <span class="code-comment"># "Riyadh"  - first item</span>
-regions[-<span class="code-number">1</span>]         <span class="code-comment"># "Asir"    - last item</span>
-<span class="code-keyword">len</span>(regions)        <span class="code-comment"># 5         - how many items</span>
-<span class="code-string">"Riyadh"</span> <span class="code-keyword">in</span> regions  <span class="code-comment"># True      - membership test</span>
-
-regions.append(<span class="code-string">"Tabuk"</span>)  <span class="code-comment"># adds to end</span></code></pre>
+  <span class="eyebrow">Day 1 | Setup step 4</span>
+  <h2>Check what the notebook should now be able to see</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Inputs</span>
+      <ul>
+        <li><code>DATA_DIR</code> should point to <code>../data</code></li>
+        <li>You should have access to <code>transactions.csv</code></li>
+        <li>The notebook should be reading from the training pack, not an unrelated folder</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Outputs</span>
+      <ul>
+        <li><code>OUTPUT_DIR</code> should point to <code>../outputs/day1</code></li>
+        <li>The folder should be created automatically if missing</li>
+        <li>This is where you save triage and cleaning outputs from today's work</li>
+      </ul>
+    </div>
+  </div>
+  <p class="muted spacer">Good analytical practice starts with knowing where your files come from and where your outputs will go.</p>
 </section>
 
 <section class="slide" id="s09">
-  <span class="eyebrow">Day 1 | Python basics</span>
-  <h2>Dictionaries: key-value pairs</h2>
-  <p>A dictionary maps keys to values. Think of it as a lookup table.</p>
-  <pre><code>channel_map = {
-    <span class="code-string">"ATM"</span>: <span class="code-string">"ATM"</span>,
-    <span class="code-string">"MOB"</span>: <span class="code-string">"Mobile"</span>,
-    <span class="code-string">"BRANCH"</span>: <span class="code-string">"Branch"</span>,
-    <span class="code-string">"ONLINE"</span>: <span class="code-string">"Online"</span>,
-}
-
-channel_map[<span class="code-string">"MOB"</span>]                  <span class="code-comment"># "Mobile"</span>
-channel_map.get(<span class="code-string">"POS"</span>, <span class="code-string">"Unknown"</span>)    <span class="code-comment"># "Unknown" - safe lookup</span></code></pre>
-  <p class="muted spacer">Use <code>.get()</code> with a default value to avoid errors on missing keys.</p>
-</section>
-
-<section class="slide" id="s10">
-  <span class="eyebrow">Day 1 | Pandas</span>
-  <h2>Reading a CSV file with pandas</h2>
-  <p>The <code>pandas</code> library reads tabular data into a structure called a DataFrame. Think of a DataFrame as a powerful spreadsheet that lives in Python.</p>
-  <pre><code><span class="code-keyword">import</span> pandas <span class="code-keyword">as</span> pd
-
-txns = pd.read_csv(<span class="code-string">"data/transactions.csv"</span>)
-
-<span class="code-comment"># This single line reads the entire file into memory.</span>
-<span class="code-comment"># txns is now a DataFrame with rows and columns.</span></code></pre>
-  <p class="spacer"><strong>Tip:</strong> always assign the result to a clearly named variable like <code>txns</code>, <code>customers</code>, or <code>branches</code>.</p>
-</section>
-
-<section class="slide" id="s11">
-  <span class="eyebrow">Day 1 | Pandas</span>
-  <h2>What is a DataFrame?</h2>
-  <p>A DataFrame is a table of data with labelled rows and columns. Every column has a name and a data type.</p>
-  <div class="columns code-text spacer">
-    <pre><code>txns.shape        <span class="code-comment"># (5000, 8) = 5000 rows, 8 columns</span>
-txns.columns      <span class="code-comment"># Index(['txn_id', 'account_id', ...])</span>
-txns.dtypes       <span class="code-comment"># shows the type of each column</span></code></pre>
+  <span class="eyebrow">Day 1 | Setup step 5</span>
+  <h2>If your notebook does not run cleanly, stop here first</h2>
+  <div class="columns three spacer">
     <div class="card">
-      <span class="card-label">Common types</span>
-      <table>
-        <tr><th>Type</th><th>Meaning</th></tr>
-        <tr><td><code>int64</code></td><td>Whole numbers</td></tr>
-        <tr><td><code>float64</code></td><td>Decimal numbers</td></tr>
-        <tr><td><code>object</code></td><td>Text/mixed</td></tr>
-        <tr><td><code>datetime64</code></td><td>Date/time</td></tr>
-      </table>
+      <span class="card-label">Import error</span>
+      <p>The Python environment may not have the required packages available. Do not skip past this. Resolve it first.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">File not found</span>
+      <p>The notebook path is wrong or the working folder is incorrect. Check where the notebook sits relative to <code>data/</code>.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Output looks stale</span>
+      <p>Restart the kernel, then run from the top again in order. This often fixes hidden state issues.</p>
     </div>
   </div>
 </section>
 
+<section class="slide" id="s10">
+  <span class="eyebrow">Day 1 | Transition</span>
+  <h2>The small set of Python ideas you need before the data work</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">You do not need everything</span>
+      <ul>
+        <li>Variables and types</li>
+        <li>Basic string cleaning</li>
+        <li>Simple lists and dictionaries</li>
+        <li>Reading and inspecting a table</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Why this matters</span>
+      <p>These ideas are not the goal of the course. They are the minimum toolkit that lets you load a banking extract, inspect it, and start making evidence-based judgements.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s11">
+  <span class="eyebrow">Day 1 | Python basics</span>
+  <h2>Variables and data types you will see all day</h2>
+  <p>A variable stores a value. Python infers the type from the value you assign, so you need to stay aware of what kind of thing each variable actually holds.</p>
+  <pre><code>branch_name = <span class="code-string">"Riyadh Central"</span>       <span class="code-comment"># string</span>
+transaction_count = <span class="code-number">1420</span>               <span class="code-comment"># integer</span>
+average_ticket = <span class="code-number">387.50</span>                <span class="code-comment"># float</span>
+is_active = <span class="code-keyword">True</span>                        <span class="code-comment"># boolean</span>
+
+<span class="code-keyword">print</span>(branch_name, transaction_count)</code></pre>
+  <p class="muted spacer">Use names that another analyst could understand immediately. <code>avg_ticket_sar</code> is stronger than <code>x</code>.</p>
+</section>
+
 <section class="slide" id="s12">
-  <span class="eyebrow">Day 1 | Pandas</span>
-  <h2>Inspecting your data: the first five checks</h2>
-  <p>Every time you load a new file, run these five checks before doing anything else.</p>
-  <pre><code>txns.head()               <span class="code-comment"># 1. Look at the first 5 rows</span>
-txns.shape                <span class="code-comment"># 2. How many rows and columns?</span>
-txns.dtypes               <span class="code-comment"># 3. What type is each column?</span>
-txns.isna().sum()         <span class="code-comment"># 4. How many missing values per column?</span>
-txns[<span class="code-string">"txn_id"</span>].nunique()  <span class="code-comment"># 5. How many unique IDs? (matches row count?)</span></code></pre>
-  <p class="muted spacer">If the number of unique IDs does not match the row count, you may have duplicates.</p>
+  <span class="eyebrow">Day 1 | Python basics</span>
+  <h2>Strings, lists, and dictionaries for real banking data</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Strings</span>
+      <p>Useful when channel labels, branch names, and free-text fields arrive padded, inconsistent, or badly formatted.</p>
+      <p class="muted"><code>"  mob  ".strip().upper()</code></p>
+    </div>
+    <div class="card">
+      <span class="card-label">Lists</span>
+      <p>Useful when you need an ordered set of values, such as expected regions, statuses, or fields to keep.</p>
+      <p class="muted"><code>["Riyadh", "Makkah", "Eastern"]</code></p>
+    </div>
+    <div class="card">
+      <span class="card-label">Dictionaries</span>
+      <p>Useful when you need a lookup table to translate system codes into analytical labels.</p>
+      <p class="muted"><code>{"MOB": "Mobile", "BRANCH": "Branch"}</code></p>
+    </div>
+  </div>
 </section>
 
 <section class="slide" id="s13">
   <span class="eyebrow">Day 1 | Pandas</span>
-  <h2>Selecting columns</h2>
-  <p>You access a single column with square brackets and the column name. You get multiple columns by passing a list of names.</p>
-  <pre><code><span class="code-comment"># Single column (returns a Series)</span>
-txns[<span class="code-string">"amount_sar"</span>]
-
-<span class="code-comment"># Multiple columns (returns a DataFrame)</span>
-txns[[<span class="code-string">"txn_id"</span>, <span class="code-string">"amount_sar"</span>, <span class="code-string">"channel"</span>]]
-
-<span class="code-comment"># Quick stats on a numeric column</span>
-txns[<span class="code-string">"amount_sar"</span>].describe()</code></pre>
+  <h2>Your first safe file load with pandas</h2>
+  <p>Use the helper already provided in the notebook. It reads the file and checks that the required columns are present before you continue.</p>
+  <pre><code>txns = read_csv_safe(
+    DATA_DIR / <span class="code-string">"transactions.csv"</span>,
+    required_cols=[<span class="code-string">"txn_id"</span>, <span class="code-string">"account_id"</span>, <span class="code-string">"txn_ts"</span>, <span class="code-string">"amount_sar"</span>, <span class="code-string">"channel"</span>, <span class="code-string">"status"</span>],
+    dtype={<span class="code-string">"account_id"</span>: <span class="code-string">"string"</span>},
+)</code></pre>
+  <p class="muted spacer">This is stronger than loading blindly because it makes the expected structure visible from the start.</p>
 </section>
 
 <section class="slide" id="s14">
   <span class="eyebrow">Day 1 | Pandas</span>
-  <h2>Filtering rows</h2>
-  <p>Use a condition inside square brackets to keep only the rows you want.</p>
-  <pre><code><span class="code-comment"># Only posted transactions</span>
-posted = txns[txns[<span class="code-string">"status"</span>] == <span class="code-string">"POSTED"</span>]
-
-<span class="code-comment"># Transactions above 1000 SAR</span>
-large = txns[txns[<span class="code-string">"amount_sar"</span>] > <span class="code-number">1000</span>]
-
-<span class="code-comment"># Combine conditions with & (and) or | (or)</span>
-mobile_large = txns[
-    (txns[<span class="code-string">"channel"</span>] == <span class="code-string">"MOB"</span>) & (txns[<span class="code-string">"amount_sar"</span>] > <span class="code-number">1000</span>)
-]</code></pre>
-  <p class="muted spacer">Always wrap each condition in parentheses when combining with <code>&amp;</code> or <code>|</code>.</p>
-</section>
-
-<section class="slide" id="s15">
-  <span class="eyebrow">Day 1 | Data quality</span>
-  <h2>Missing values: what <code>.isna()</code> tells you</h2>
-  <p>Missing values appear as <code>NaN</code> in pandas. They are common in banking data and must be understood before analysis.</p>
-  <pre><code><span class="code-comment"># Count of missing values per column</span>
-txns.isna().sum()
-
-<span class="code-comment"># Percentage of missing values per column</span>
-null_rates = txns.isna().mean().sort_values(ascending=<span class="code-keyword">False</span>)
-null_rates</code></pre>
-  <div class="card spacer">
-    <span class="card-label">Rule of thumb</span>
-    <p>A column with more than 30% missing values needs investigation. Ask: is this field optional, or is something wrong with the extract?</p>
+  <h2>What a DataFrame gives you immediately</h2>
+  <p>A DataFrame is the main working object for this course. Once the file is loaded, your first task is not analysis. It is orientation.</p>
+  <div class="columns code-text spacer">
+    <pre><code>txns.shape        <span class="code-comment"># rows and columns</span>
+txns.columns      <span class="code-comment"># field names</span>
+txns.dtypes       <span class="code-comment"># column types</span>
+txns.head()       <span class="code-comment"># first few rows</span></code></pre>
+    <div class="card">
+      <span class="card-label">Read this like an analyst</span>
+      <ul>
+        <li>How large is the file?</li>
+        <li>What fields are available?</li>
+        <li>What types did pandas assign?</li>
+        <li>Do the first rows look plausible?</li>
+      </ul>
+    </div>
   </div>
 </section>
 
-<section class="slide" id="s16">
-  <span class="eyebrow">Day 1 | Data quality</span>
-  <h2>Finding duplicate records</h2>
-  <p>Duplicates can inflate counts and distort KPIs. Always check for them before aggregation.</p>
-  <pre><code><span class="code-comment"># Are there any duplicate transaction IDs?</span>
-txns[<span class="code-string">"txn_id"</span>].duplicated().sum()
+<section class="slide" id="s15">
+  <span class="eyebrow">Day 1 | Inspection</span>
+  <h2>The first five checks are your opening ritual</h2>
+  <p>Every time a new file lands, run these checks before you build a summary, filter a table, or tell anyone a number.</p>
+  <pre><code>txns.head()               <span class="code-comment"># 1. look at the rows</span>
+txns.shape                <span class="code-comment"># 2. check the size</span>
+txns.dtypes               <span class="code-comment"># 3. inspect the types</span>
+txns.isna().sum()         <span class="code-comment"># 4. profile missingness</span>
+txns[<span class="code-string">"txn_id"</span>].nunique()  <span class="code-comment"># 5. compare unique IDs to row count</span></code></pre>
+  <p class="muted spacer">If the unique ID count does not line up with the row count, you may already have duplication risk before any KPI work begins.</p>
+</section>
 
-<span class="code-comment"># Show all rows with a duplicated ID</span>
-dupes = txns[txns.duplicated(<span class="code-string">"txn_id"</span>, keep=<span class="code-keyword">False</span>)]
-dupes</code></pre>
-  <p class="spacer"><code>keep=False</code> marks all copies as duplicates, not just the second one. This helps you see the full picture.</p>
+<section class="slide" id="s16">
+  <span class="eyebrow">Day 1 | Inspection</span>
+  <h2>What you are looking for before any analysis</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Data quality checks</span>
+      <ul>
+        <li>Missing values that may signal extract weakness</li>
+        <li>Duplicate IDs that could inflate counts</li>
+        <li>Unexpected categories or malformed text</li>
+        <li>Date fields that fail to parse cleanly</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Business questions to ask</span>
+      <ul>
+        <li>Is this issue merely inconvenient, or analysis-damaging?</li>
+        <li>Would leadership make a different decision if we ignored it?</li>
+        <li>Can we continue with caveats, or should we stop?</li>
+        <li>What needs escalation before further use?</li>
+      </ul>
+    </div>
+  </div>
 </section>
 
 <section class="slide" id="s17">
-  <span class="eyebrow">Day 1 | Data quality</span>
-  <h2>Data types matter: why IDs should be strings</h2>
-  <p>A branch ID like <code>001</code> looks like a number, but if pandas reads it as an integer, it becomes <code>1</code> and you lose the leading zero. This breaks joins later.</p>
-  <pre><code><span class="code-comment"># Read with explicit types to protect IDs</span>
-txns = pd.read_csv(
-    <span class="code-string">"data/transactions.csv"</span>,
-    dtype={<span class="code-string">"account_id"</span>: <span class="code-string">"string"</span>, <span class="code-string">"branch_id"</span>: <span class="code-string">"string"</span>}
-)
-
-<span class="code-comment"># Convert dates properly</span>
-txns[<span class="code-string">"txn_ts"</span>] = pd.to_datetime(txns[<span class="code-string">"txn_ts"</span>], errors=<span class="code-string">"coerce"</span>)</code></pre>
-  <p class="muted spacer"><code>errors="coerce"</code> turns unparseable dates into <code>NaN</code> instead of crashing.</p>
+  <span class="eyebrow">Day 1 | Before Lab A</span>
+  <h2>Your triage workflow for the first lab</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">1. Load safely</span>
+      <p>Run the notebook setup and load <code>transactions.csv</code> through the provided helper.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">2. Inspect carefully</span>
+      <p>Check rows, columns, types, nulls, unique IDs, and anything else that could weaken trust.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">3. Judge honestly</span>
+      <p>State whether the file is fit, partly fit, or not yet fit for first-pass analysis, and support that judgement with evidence.</p>
+    </div>
+  </div>
+  <p class="muted spacer">The lab is not about writing lots of code. It is about making a disciplined evidence-based call.</p>
 </section>
 
 <section class="slide" id="s18">
@@ -1376,11 +1527,210 @@ features.to_csv(<span class="code-string">"outputs/day3_pack/features.csv"</span
   </div>
 </section>
 
+<section class="slide" id="s72">
+  <span class="eyebrow">Day 3 | Synthesis</span>
+  <h2>Three days, one trajectory</h2>
+  <p>You started with a raw CSV and finished with a leadership pack and an ML-ready feature table. Here is the arc.</p>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Day 1: Trust the data</span>
+      <p>Profile, triage, clean. Decide whether the extract is fit for analysis and document the risks.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Day 2: Build the metrics</span>
+      <p>Join tables, define KPIs with explicit logic, and attach quality evidence to every output.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Day 3: Deliver the story</span>
+      <p>Create charts, exceptions, and feature tables. Present findings under challenge.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s73">
+  <span class="eyebrow">Day 3 | Production readiness</span>
+  <h2>From notebook to production readiness</h2>
+  <p>A notebook that only you can run is not a deliverable. Reusable code meets these standards.</p>
+  <ul>
+    <li><strong>Restart and run all</strong> passes without manual intervention</li>
+    <li>Paths use variables, not hard-coded strings</li>
+    <li>Functions have clear input contracts and documented failure behaviour</li>
+    <li>Outputs are exported to files, not left in cell output</li>
+    <li>Assumptions are written in markdown cells, not just in your memory</li>
+    <li>Another analyst can reproduce your results without asking you a single question</li>
+  </ul>
+  <blockquote>If your notebook cannot survive a fresh kernel restart, it is not finished.</blockquote>
+</section>
+
+<section class="slide" id="s74">
+  <span class="eyebrow">Day 3 | Quality gates</span>
+  <h2>Quality gates before handoff</h2>
+  <p>Before handing any data deliverable to a colleague or stakeholder, walk through this checklist.</p>
+  <table class="spacer">
+    <tr><td><strong>Gate</strong></td><td><strong>Check</strong></td></tr>
+    <tr><td>Grain</td><td>Is each row one transaction, one customer, or one branch? State it explicitly.</td></tr>
+    <tr><td>Completeness</td><td>Are null rates documented and acceptable for the use case?</td></tr>
+    <tr><td>Definitions</td><td>Can the recipient read the numerator, denominator, and exclusion logic for every KPI?</td></tr>
+    <tr><td>Reproducibility</td><td>Does the notebook run cleanly from a fresh kernel restart?</td></tr>
+    <tr><td>Assumptions</td><td>Are assumptions written down, not implied?</td></tr>
+    <tr><td>Caveats</td><td>Is at least one limitation stated alongside every conclusion?</td></tr>
+  </table>
+</section>
+
+<section class="slide" id="s75">
+  <span class="eyebrow">Day 3 | Self-assessment</span>
+  <h2>Performance band self-assessment</h2>
+  <p>Use these descriptions to evaluate your own work honestly before the final debrief.</p>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Competent</span>
+      <ul>
+        <li>Core tasks are complete and technically correct</li>
+        <li>Outputs are clear and usable</li>
+        <li>Assumptions are stated</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Strong</span>
+      <ul>
+        <li>Outputs are well-justified with caveats</li>
+        <li>Logic is documented and reproducible</li>
+        <li>Quality evidence accompanies deliverables</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Exceptional</span>
+      <ul>
+        <li>Work is defensible under direct challenge</li>
+        <li>Alternative explanations are considered</li>
+        <li>Limitations are specific, not generic</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s76">
+  <span class="eyebrow">Day 3 | Portfolio review</span>
+  <h2>Portfolio of artefacts</h2>
+  <p>By this point you should have produced the following outputs. Review your <code>outputs/</code> folder.</p>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Day 1</span>
+      <ul>
+        <li><code>triage_summary</code> with risk statement</li>
+        <li>Cleaned amount and channel fields</li>
+        <li>Executive fitness-for-use statement</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Day 2</span>
+      <ul>
+        <li><code>dq_report.csv</code> with pass/fail checks</li>
+        <li><code>branch_kpi.csv</code> with filter logic</li>
+        <li><code>uptake_summary.csv</code> with denominator defence</li>
+      </ul>
+    </div>
+  </div>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Day 3</span>
+      <ul>
+        <li>Two leadership-ready charts</li>
+        <li><code>exceptions.csv</code> with reason codes</li>
+        <li>ML-ready feature table</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Capstone</span>
+      <ul>
+        <li>Team executive brief (slides or summary)</li>
+        <li>90-second presentation delivered</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s77">
+  <span class="eyebrow">Programme | Bridge to Module 2</span>
+  <h2>Connecting to Module 2: Machine Learning</h2>
+  <p>Everything you built this week feeds directly into the ML module. Here is how the two connect.</p>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">What you take forward</span>
+      <ul>
+        <li>Your ML-ready feature table becomes the training dataset</li>
+        <li>Your cut-off date discipline prevents data leakage in models</li>
+        <li>Your data quality checks ensure the model trains on trustworthy inputs</li>
+        <li>Your KPI definitions become target variables and evaluation benchmarks</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">What Module 2 adds</span>
+      <ul>
+        <li>Train/test splits and cross-validation</li>
+        <li>Classification and regression models</li>
+        <li>Feature importance and model interpretability</li>
+        <li>Performance metrics: precision, recall, AUC</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s78">
+  <span class="eyebrow">Programme | Resources</span>
+  <h2>Resources and continued learning</h2>
+  <p>Keep practising between modules. These resources match the level and context of this programme.</p>
+  <table class="spacer">
+    <tr><td><strong>Topic</strong></td><td><strong>Resource</strong></td></tr>
+    <tr><td>pandas fundamentals</td><td>pandas.pydata.org/docs/getting_started</td></tr>
+    <tr><td>Data cleaning patterns</td><td>pyjanitor documentation and examples</td></tr>
+    <tr><td>Visualisation</td><td>matplotlib.org/stable/gallery and seaborn gallery</td></tr>
+    <tr><td>Jupyter best practices</td><td>"Ten Simple Rules for Reproducible Research" (PLOS)</td></tr>
+    <tr><td>Banking analytics context</td><td>Internal AJB data standards and glossary (shared drive)</td></tr>
+  </table>
+  <blockquote>The best way to retain what you learned is to apply it to a real task within the next two weeks.</blockquote>
+</section>
+
+<section class="slide" id="s79">
+  <span class="eyebrow">Programme | Module close</span>
+  <h2>What you learned, produced, and proved</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">What you learned</span>
+      <p>How to inspect banking data safely, clean it carefully, build defensible outputs, and explain your reasoning under challenge.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">What you produced</span>
+      <p>Triage summaries, cleaned tables, KPI outputs, charts, exception views, and ML-ready handoff files.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">What proved success</span>
+      <p>Checkpoint completion, visible notebook outputs, workbook artefacts, and analysis that stayed specific, cautious, and reviewable.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s80">
+  <span class="eyebrow">Programme | Next move</span>
+  <h1>Module 1 complete</h1>
+  <p class="lede">You now have the data discipline needed for the next stage. Module 2 uses these clean inputs, definitions, and handoff habits to move into machine learning judgement.</p>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Before Module 2</span>
+      <p>Revisit one notebook output, tighten one written explanation, and make sure you can explain why data quality affects model trust.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Carry forward</span>
+      <p>Good models start with trustworthy data, disciplined cut-off logic, and outputs that can survive scrutiny.</p>
+    </div>
+  </div>
+</section>
+
 </div><!-- /deck -->
 
 <!-- Bottom bar -->
 <div class="deck-bar">
-  <span id="deck-counter">1 / 71</span>
+  <span id="deck-counter">1 / 80</span>
   <span id="deck-timer" class="deck-timer"></span>
 </div>
 <div class="deck-progress"><span id="deck-progress-fill"></span></div>

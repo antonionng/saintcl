@@ -14,6 +14,7 @@ import { buildParticipantModuleAccessState } from "@/lib/training-access";
 import {
   ajbTrainingProgramme,
   getTrainingModuleDeck,
+  getTrainingModuleEnhancement,
   getTrainingModuleParticipantExperience,
   getTrainingModuleResources,
   getTrainingModuleWorkbookHref,
@@ -321,6 +322,7 @@ export default async function AcademyModulePage({
     : null;
   const moduleJourneySteps = trainingModule.contentModel.sections;
   const moduleDeliverables = [...trainingModule.coreOutputs, ...trainingModule.labs.map((lab) => lab.deliverable)];
+  const moduleEnhancement = getTrainingModuleEnhancement(moduleSlug);
   const validationSignals = [
     `${moduleLabCheckpoints.length || trainingModule.labs.length} guided checkpoints`,
     ...trainingModule.labs.map((lab) => lab.successSignal),
@@ -423,6 +425,86 @@ export default async function AcademyModulePage({
         </CardContent>
       </Card>
 
+      {moduleEnhancement ? (
+        <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
+          <Card className="border-white/8 bg-black/10">
+            <CardHeader className="pb-3">
+              <CardTitle>Banking context and use cases</CardTitle>
+              <CardDescription>Start with the business lens so the technical work feels grounded from the first slide.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-zinc-300">
+              {moduleEnhancement.bankingContext.map((item) => (
+                <div key={item} className="rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-3">
+                  {item}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="border-white/8 bg-black/10">
+            <CardHeader className="pb-3">
+              <CardTitle>Pacing and facilitation support</CardTitle>
+              <CardDescription>Virtual delivery works best when the room knows what is core, what is stretch, and where the checkpoints happen.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-zinc-300">
+              {moduleEnhancement.pacingNotes.map((item) => (
+                <div key={item} className="rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-3">
+                  {item}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
+
+      {moduleEnhancement ? (
+        <Card className="border-white/8 bg-black/10">
+          <CardHeader className="pb-3">
+            <CardTitle>Choose the path that fits you</CardTitle>
+            <CardDescription>Each module supports a guided intro route and an advanced stretch route so mixed-level cohorts can stay aligned.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 lg:grid-cols-2">
+            {moduleEnhancement.learnerTracks.map((track) => (
+              <div key={track.id} className="rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-4 text-sm text-zinc-300">
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">{track.title}</p>
+                <p className="mt-2 font-medium text-white">{track.fit}</p>
+                <p className="mt-2">{track.guidance}</p>
+                <p className="mt-3 text-zinc-400">{track.outcome}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {moduleEnhancement?.toolComparisonRows?.length ? (
+        <Card className="border-white/8 bg-black/10">
+          <CardHeader className="pb-3">
+            <CardTitle>{moduleEnhancement.toolComparisonTitle}</CardTitle>
+            <CardDescription>Tool choice should match the task, not habit alone.</CardDescription>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <table className="min-w-full text-left text-sm text-zinc-300">
+              <thead>
+                <tr className="border-b border-white/8 text-xs uppercase tracking-[0.18em] text-zinc-500">
+                  <th className="px-4 py-3 font-medium">Tool</th>
+                  <th className="px-4 py-3 font-medium">Best for</th>
+                  <th className="px-4 py-3 font-medium">Watchout</th>
+                </tr>
+              </thead>
+              <tbody>
+                {moduleEnhancement.toolComparisonRows.map((row) => (
+                  <tr key={row.tool} className="border-b border-white/[0.04] align-top last:border-b-0">
+                    <td className="px-4 py-3 font-medium text-white">{row.tool}</td>
+                    <td className="px-4 py-3">{row.bestFor}</td>
+                    <td className="px-4 py-3 text-zinc-400">{row.watchout}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      ) : null}
+
       <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
         <Card className="border-white/8 bg-black/10">
           <CardHeader className="pb-3">
@@ -453,6 +535,22 @@ export default async function AcademyModulePage({
           </CardContent>
         </Card>
       </div>
+
+      {moduleEnhancement ? (
+        <Card className="border-white/8 bg-black/10">
+          <CardHeader className="pb-3">
+            <CardTitle>Engagement checkpoints</CardTitle>
+            <CardDescription>Use these moments to keep the room interactive and to surface confusion before it compounds.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3 md:grid-cols-3">
+            {moduleEnhancement.engagementPrompts.map((item) => (
+              <div key={item} className="rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-3 text-sm text-zinc-300">
+                {item}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 

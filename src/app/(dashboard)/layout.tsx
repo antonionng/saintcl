@@ -33,6 +33,8 @@ export default async function DashboardLayout({
     canViewAllAgents: false,
     canManageConsole: false,
     canManageAdminTools: false,
+    canManageTraining: false,
+    canManagePlatformTraining: false,
   };
 
   if (isSupabaseConfigured()) {

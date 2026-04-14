@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Automation in AI | Participant Deck</title>
+  <link rel="stylesheet" href="/python-training/assets/theme.css" />
+</head>
+<body>
+<div class="deck">
+<div class="deck-brand"><img class="emft-logo" src="/emft-logo.png" alt="Emerging Market Financial Training" /><span class="deck-brand-divider"></span><img src="/ajb-logo.png" alt="Al Jazira Bank" /></div>
+
+<!-- ============================================================ -->
+<!-- OPENING / ORIENTATION  (s01-s08)                              -->
+<!-- ============================================================ -->
+
+<section class="slide active" id="s01">
+  <span class="eyebrow">EMFT x Al Jazira Bank | Automation in AI</span>
+  <h1>Automation in AI</h1>
+  <p class="lede">A practical module on workflow mapping, automation design, exception handling, and governed rollout choices in banking operations.</p>
+</section>
+
+
+<section class="slide" id="s01a">
+  <span class="eyebrow">Opening | Automation map</span>
+  <h2>What governed automation looks like</h2>
+  <div class="columns three spacer">
+    <div class="card"><span class="card-label">Workflow</span><p>Start with the current-state process, owners, triggers, and bottlenecks.</p></div>
+    <div class="card"><span class="card-label">Control</span><p>Define exception paths, review points, and fallback steps before rollout.</p></div>
+    <div class="card"><span class="card-label">Pilot</span><p>Move toward a realistic first implementation, not a vague future-state aspiration.</p></div>
+  </div>
+</section>
+
+<section class="slide" id="s01b">
+  <span class="eyebrow">Opening | Delivery routes</span>
+  <h2>Choose your learning route</h2>
+  <div class="columns two spacer">
+    <div class="card"><span class="card-label">Intro path</span><p>Focus on one clear governed workflow design with visible human review and fallback points.</p></div>
+    <div class="card"><span class="card-label">Advanced path</span><p>Use stretch time for threshold logic, wider automation scope, and stronger implementation sequencing.</p></div>
+  </div>
+</section>
+
+<section class="slide" id="s02">
+  <span class="eyebrow">Opening | Why This Module</span>
+  <h2>Why automation matters now</h2>
+  <p>Banking operations carry thousands of repetitive, rule-heavy tasks every week. AI-assisted automation can reduce cycle time and error rates, but only when design, governance, and fallback paths are explicit from day one.</p>
+</section>
+
+<section class="slide" id="s03">
+  <span class="eyebrow">Opening | Module Outcomes</span>
+  <h2>What you will be able to do</h2>
+  <ol>
+    <li>Map a banking workflow from trigger to completion.</li>
+    <li>Classify automation opportunities by type and risk.</li>
+    <li>Design exception paths and human-in-the-loop checkpoints.</li>
+    <li>Build a governed pilot plan with measurable success criteria.</li>
+  </ol>
+</section>
+
+<section class="slide" id="s04">
+  <span class="eyebrow">Opening | Two-Day Structure</span>
+  <h2>Module schedule</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Day 1: Foundations</span>
+      <p>Workflow mapping, automation types, decision frameworks, and guided design exercises.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Day 2: Application</span>
+      <p>Exception handling, pilot planning, metrics, case critiques, and your end-to-end automation design mission.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s05">
+  <span class="eyebrow">Opening | Outputs</span>
+  <h2>What you will produce</h2>
+  <ul>
+    <li>A mapped banking workflow with decision points and handoffs</li>
+    <li>An automation classification with justified choices</li>
+    <li>Exception and human-review design</li>
+    <li>A pilot plan and a rollout recommendation</li>
+  </ul>
+</section>
+
+<section class="slide" id="s06">
+  <span class="eyebrow">Opening | Validation</span>
+  <h2>How your work is assessed</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Competent</span>
+      <p>Maps workflow steps accurately. Identifies at least one automation point with a named review step.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Strong</span>
+      <p>Classifies automation types. Designs exception paths. Proposes a pilot with metrics.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Exceptional</span>
+      <p>Connects automation design to operating risk. Defines rollback triggers. Critiques trade-offs with evidence.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s07">
+  <span class="eyebrow">Opening | Context</span>
+  <h2>Automation at AJB today</h2>
+  <p>Al Jazira Bank already uses rule-based automation in payments processing and account opening checks. This module extends that foundation into AI-assisted and AI-augmented automation, where outputs require judgment and oversight.</p>
+</section>
+
+<section class="slide" id="s08">
+  <span class="eyebrow">Opening | Vocabulary</span>
+  <h2>Key terms for this module</h2>
+  <table class="spacer">
+    <tr><th>Term</th><th>Definition</th></tr>
+    <tr><td>Workflow</td><td>A sequence of steps that transforms an input into a defined output.</td></tr>
+    <tr><td>Automation candidate</td><td>A step or set of steps suitable for partial or full automation.</td></tr>
+    <tr><td>Exception path</td><td>The route a process takes when normal conditions are not met.</td></tr>
+    <tr><td>Human-in-the-loop</td><td>A design pattern where a human reviews, approves, or overrides an automated decision.</td></tr>
+    <tr><td>Pilot</td><td>A controlled, limited rollout of an automation to validate performance before scaling.</td></tr>
+  </table>
+</section>
+
+<!-- ============================================================ -->
+<!-- CORE CONCEPTS: AUTOMATION LANDSCAPE  (s09-s26)                -->
+<!-- ============================================================ -->
+
+<section class="slide" id="s09">
+  <span class="eyebrow">Core Concepts | Landscape</span>
+  <h2>The automation landscape</h2>
+  <p class="lede">Automation exists on a spectrum. Understanding where each type sits helps you choose the right approach for each workflow step.</p>
+</section>
+
+<section class="slide" id="s10">
+  <span class="eyebrow">Core Concepts | Spectrum</span>
+  <h2>From manual to autonomous</h2>
+  <table class="spacer">
+    <tr><th>Level</th><th>Description</th><th>Banking example</th></tr>
+    <tr><td>Manual</td><td>Human performs every step.</td><td>Relationship manager compiles a portfolio review by hand.</td></tr>
+    <tr><td>Rule-based</td><td>Fixed logic executes predefined steps.</td><td>Auto-reject loan if income-to-debt ratio exceeds threshold.</td></tr>
+    <tr><td>AI-assisted</td><td>AI suggests; human decides.</td><td>AI drafts a KYC summary; analyst reviews and approves.</td></tr>
+    <tr><td>Autonomous</td><td>AI decides and executes without human review.</td><td>Fraud scoring blocks a transaction in real time.</td></tr>
+  </table>
+</section>
+
+<section class="slide" id="s11">
+  <span class="eyebrow">Core Concepts | Rule-Based</span>
+  <h2>Rule-based automation</h2>
+  <p>Rule-based automation uses deterministic logic. If a condition is met, an action fires. It is reliable, auditable, and fast, but brittle when inputs vary or rules conflict.</p>
+  <ul>
+    <li>Best for: high-volume, stable-logic tasks (payment routing, threshold alerts).</li>
+    <li>Weakness: cannot handle ambiguity or novel inputs.</li>
+    <li>Governance: rule changes require version control and approval workflows.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s12">
+  <span class="eyebrow">Core Concepts | AI-Assisted</span>
+  <h2>AI-assisted automation</h2>
+  <p>AI-assisted automation uses machine learning or language models to generate recommendations, classifications, or drafts. A human remains in the loop for final decisions.</p>
+  <ul>
+    <li>Best for: tasks with unstructured inputs (document review, email triage).</li>
+    <li>Weakness: model confidence varies; requires calibration and monitoring.</li>
+    <li>Governance: output review, confidence thresholds, and audit logging.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s13">
+  <span class="eyebrow">Core Concepts | Autonomous</span>
+  <h2>Fully autonomous automation</h2>
+  <p>Autonomous automation operates without human review in the decision loop. It is appropriate only when the cost of errors is low, reversibility is built in, or speed requirements make human review impractical.</p>
+  <ul>
+    <li>Best for: real-time fraud scoring, automated reconciliation matching.</li>
+    <li>Weakness: errors propagate silently if monitoring is insufficient.</li>
+    <li>Governance: circuit breakers, anomaly alerts, and regular model audits.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s14">
+  <span class="eyebrow">Core Concepts | Choosing the Level</span>
+  <h2>Decision framework: which level fits?</h2>
+  <table class="spacer">
+    <tr><th>Factor</th><th>Favours rule-based</th><th>Favours AI-assisted</th><th>Favours autonomous</th></tr>
+    <tr><td>Input variability</td><td>Low</td><td>Medium to high</td><td>Predictable patterns</td></tr>
+    <tr><td>Error cost</td><td>Any</td><td>Medium (review catches errors)</td><td>Low or reversible</td></tr>
+    <tr><td>Decision speed</td><td>Batch OK</td><td>Batch or near-real-time</td><td>Real-time required</td></tr>
+    <tr><td>Regulatory scrutiny</td><td>Moderate</td><td>High (explainability needed)</td><td>Very high (audit trail critical)</td></tr>
+  </table>
+</section>
+
+<section class="slide" id="s15">
+  <span class="eyebrow">Core Concepts | Workflow Anatomy</span>
+  <h2>Anatomy of a bankable workflow</h2>
+  <ol>
+    <li><strong>Trigger:</strong> What starts the process? (Customer request, scheduled batch, event signal.)</li>
+    <li><strong>Input:</strong> What data or documents enter the workflow?</li>
+    <li><strong>Steps:</strong> What transformations, checks, or decisions occur?</li>
+    <li><strong>Exception:</strong> What happens when a step fails or produces ambiguous output?</li>
+    <li><strong>Output:</strong> What is delivered, to whom, and in what format?</li>
+    <li><strong>Feedback:</strong> How does the process learn from outcomes?</li>
+  </ol>
+</section>
+
+<section class="slide" id="s16">
+  <span class="eyebrow">Core Concepts | Mapping Notation</span>
+  <h2>Workflow mapping: practical notation</h2>
+  <p>You do not need formal BPMN for this module. Use a simple notation with clear conventions.</p>
+  <ul>
+    <li><strong>Rectangle:</strong> A process step (action or transformation).</li>
+    <li><strong>Diamond:</strong> A decision point (yes/no or branching logic).</li>
+    <li><strong>Oval:</strong> Start or end of the workflow.</li>
+    <li><strong>Arrow:</strong> Direction of flow, labelled with conditions where applicable.</li>
+    <li><strong>Dashed box:</strong> An exception or fallback path.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s17">
+  <span class="eyebrow">Core Concepts | Case: Loan Processing</span>
+  <h2>Case study: personal loan processing</h2>
+  <p>A customer applies for a personal loan online. The current workflow has 14 steps and takes an average of 3.2 days. Manual steps include income verification, document review, and credit committee approval.</p>
+  <blockquote>Question: Which of these 14 steps involve judgment, and which follow fixed rules?</blockquote>
+</section>
+
+<section class="slide" id="s18">
+  <span class="eyebrow">Core Concepts | Case: Loan Mapping</span>
+  <h2>Loan processing: step breakdown</h2>
+  <table class="spacer">
+    <tr><th>Step</th><th>Type</th><th>Automation potential</th></tr>
+    <tr><td>Application intake</td><td>Data capture</td><td>High (form validation, OCR)</td></tr>
+    <tr><td>Income verification</td><td>Document review</td><td>Medium (AI extraction + human check)</td></tr>
+    <tr><td>Credit score pull</td><td>API call</td><td>High (fully automated)</td></tr>
+    <tr><td>Debt-to-income calculation</td><td>Rule-based</td><td>High (deterministic formula)</td></tr>
+    <tr><td>Risk assessment</td><td>Judgment</td><td>Medium (AI-assisted scoring)</td></tr>
+    <tr><td>Committee approval</td><td>Decision</td><td>Low (human review required)</td></tr>
+    <tr><td>Offer generation</td><td>Template</td><td>High (auto-populate terms)</td></tr>
+  </table>
+</section>
+
+<section class="slide" id="s19">
+  <span class="eyebrow">Core Concepts | AI Assistants</span>
+  <h2>AI assistants and chatbots in banking</h2>
+  <p>AI assistants handle customer-facing interactions: answering questions, routing requests, and collecting information. Chatbot design in banking requires strict guardrails.</p>
+  <ul>
+    <li>Scope limitation: the assistant must know what it cannot answer.</li>
+    <li>Escalation paths: when should the bot hand off to a human agent?</li>
+    <li>Data sensitivity: the bot must never expose account details without authentication.</li>
+    <li>Tone and compliance: responses must align with regulatory and brand standards.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s20">
+  <span class="eyebrow">Core Concepts | Chatbot Design</span>
+  <h2>Designing a governed chatbot</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Intent recognition</span>
+      <p>Classify what the customer wants. Use confidence thresholds to route low-confidence intents to human agents.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Response generation</span>
+      <p>Use approved templates for regulated topics. Allow AI-generated responses only for informational queries.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Escalation logic</span>
+      <p>Define triggers: failed authentication, complaint keywords, repeated misunderstanding, or customer request.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s21">
+  <span class="eyebrow">Core Concepts | API Integration</span>
+  <h2>API integration patterns</h2>
+  <p>Automation in banking often requires connecting systems through APIs. Common patterns include:</p>
+  <ul>
+    <li><strong>Request-response:</strong> Synchronous calls for real-time data (credit checks, balance inquiries).</li>
+    <li><strong>Event-driven:</strong> Asynchronous processing triggered by system events (new account, transaction alert).</li>
+    <li><strong>Batch processing:</strong> Scheduled bulk operations (end-of-day reconciliation, report generation).</li>
+    <li><strong>Webhook:</strong> External systems push updates to your workflow (payment gateway notifications).</li>
+  </ul>
+</section>
+
+<section class="slide" id="s22">
+  <span class="eyebrow">Core Concepts | Data Flow</span>
+  <h2>Data flow in automated workflows</h2>
+  <p>Every automated workflow moves data between systems. Map the data flow explicitly to identify bottlenecks, security risks, and failure points.</p>
+  <table class="spacer">
+    <tr><th>Question</th><th>Why it matters</th></tr>
+    <tr><td>What data enters the workflow?</td><td>Defines input validation requirements.</td></tr>
+    <tr><td>Where is data transformed?</td><td>Identifies processing dependencies.</td></tr>
+    <tr><td>Who can access the data at each step?</td><td>Determines access control and audit needs.</td></tr>
+    <tr><td>Where is data stored?</td><td>Affects compliance and retention policies.</td></tr>
+    <tr><td>What happens to data after the workflow ends?</td><td>Defines cleanup and archival rules.</td></tr>
+  </table>
+</section>
+
+<section class="slide" id="s23">
+  <span class="eyebrow">Core Concepts | Common Failures</span>
+  <h2>Common automation failures</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Over-automation</span>
+      <p>Automating steps that require judgment. The system makes decisions nobody reviewed, and errors compound silently.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Missing exceptions</span>
+      <p>Designing only the happy path. When unexpected inputs arrive, the workflow stalls or produces wrong outputs.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Ungoverned rollout</span>
+      <p>Deploying automation without metrics, monitoring, or rollback plans. Problems surface only after damage is done.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s24">
+  <span class="eyebrow">Core Concepts | Human-in-the-Loop</span>
+  <h2>Human-in-the-loop design</h2>
+  <p>Human-in-the-loop (HITL) is not a single pattern. It is a design decision about where, when, and how humans interact with automated processes.</p>
+  <ul>
+    <li><strong>Pre-action review:</strong> Human approves before the system acts (loan approvals, large transactions).</li>
+    <li><strong>Post-action audit:</strong> System acts, human reviews a sample afterward (transaction monitoring).</li>
+    <li><strong>Exception handling:</strong> Human intervenes only when the system cannot proceed (edge cases, low confidence).</li>
+    <li><strong>Override capability:</strong> Human can reverse or modify an automated decision at any time.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s25">
+  <span class="eyebrow">Core Concepts | Governance</span>
+  <h2>Governance and monitoring</h2>
+  <p>Automation without governance is a liability. Every automated workflow needs:</p>
+  <ol>
+    <li>An owner accountable for the workflow's performance and compliance.</li>
+    <li>Monitoring dashboards tracking throughput, error rates, and exception volumes.</li>
+    <li>Alerting rules that trigger investigation when metrics breach thresholds.</li>
+    <li>Scheduled reviews to assess whether automation assumptions still hold.</li>
+    <li>Change management processes for updating rules, models, or thresholds.</li>
+  </ol>
+</section>
+
+<section class="slide" id="s26">
+  <span class="eyebrow">Core Concepts | Concept Check</span>
+  <h2>Concept check</h2>
+  <blockquote>Pause and answer these questions before moving on.</blockquote>
+  <ol>
+    <li>Name a banking task best suited for rule-based automation and explain why.</li>
+    <li>Name a banking task that should stay AI-assisted (not autonomous) and explain the risk of removing human review.</li>
+    <li>What is the difference between pre-action review and post-action audit?</li>
+    <li>Why is an exception path more important than the happy path in automation design?</li>
+  </ol>
+</section>
+
+<!-- ============================================================ -->
+<!-- GUIDED WALKTHROUGHS: WORKFLOW MAPPING & DESIGN  (s27-s42)     -->
+<!-- ============================================================ -->
+
+<section class="slide" id="s27">
+  <span class="eyebrow">Guided Walkthrough | Introduction</span>
+  <h2>Guided walkthrough: workflow mapping and design</h2>
+  <p class="lede">In this section, we walk through two complete workflows together. You will practice mapping, classifying, and designing automation for real banking processes.</p>
+</section>
+
+<section class="slide" id="s28">
+  <span class="eyebrow">Guided Walkthrough | KYC Overview</span>
+  <h2>Walkthrough 1: KYC document review</h2>
+  <p>Know Your Customer (KYC) document review is a core compliance process. Analysts verify identity documents, check sanctions lists, and assess risk profiles. The current process at AJB handles approximately 200 cases per week with an average turnaround of 48 hours.</p>
+</section>
+
+<section class="slide" id="s29">
+  <span class="eyebrow">Guided Walkthrough | KYC Steps</span>
+  <h2>KYC review: current workflow steps</h2>
+  <ol>
+    <li>Customer submits identity documents through the portal.</li>
+    <li>Operations team logs the submission and assigns it to an analyst.</li>
+    <li>Analyst opens each document and checks for completeness.</li>
+    <li>Analyst extracts key fields (name, ID number, date of birth, address).</li>
+    <li>System runs a sanctions and PEP (Politically Exposed Person) check.</li>
+    <li>Analyst compares extracted data against application form entries.</li>
+    <li>Analyst writes a risk assessment summary.</li>
+    <li>Senior analyst reviews and approves or rejects the case.</li>
+    <li>System sends the outcome notification to the customer.</li>
+  </ol>
+</section>
+
+<section class="slide" id="s30">
+  <span class="eyebrow">Guided Walkthrough | KYC Classification</span>
+  <h2>KYC review: classifying each step</h2>
+  <table class="spacer">
+    <tr><th>Step</th><th>Current</th><th>Automation candidate?</th><th>Type</th></tr>
+    <tr><td>Document submission</td><td>Manual upload</td><td>Already digital</td><td>N/A</td></tr>
+    <tr><td>Assignment</td><td>Manual queue</td><td>Yes</td><td>Rule-based</td></tr>
+    <tr><td>Completeness check</td><td>Manual</td><td>Yes</td><td>AI-assisted (document classification)</td></tr>
+    <tr><td>Field extraction</td><td>Manual</td><td>Yes</td><td>AI-assisted (OCR + NLP)</td></tr>
+    <tr><td>Sanctions check</td><td>Automated API</td><td>Already automated</td><td>Rule-based</td></tr>
+    <tr><td>Data comparison</td><td>Manual</td><td>Yes</td><td>Rule-based + AI-assisted</td></tr>
+    <tr><td>Risk summary</td><td>Manual</td><td>Partial</td><td>AI-assisted (draft, human review)</td></tr>
+    <tr><td>Senior review</td><td>Manual</td><td>No</td><td>Human-in-the-loop required</td></tr>
+    <tr><td>Notification</td><td>Semi-automated</td><td>Yes</td><td>Rule-based (template)</td></tr>
+  </table>
+</section>
+
+<section class="slide" id="s31">
+  <span class="eyebrow">Guided Walkthrough | KYC Exception Paths</span>
+  <h2>KYC review: exception paths</h2>
+  <ul>
+    <li><strong>Incomplete documents:</strong> System flags missing items and sends a request back to the customer. Workflow pauses until resubmission.</li>
+    <li><strong>Sanctions match:</strong> Immediate escalation to compliance team. Workflow halts. No automated progression allowed.</li>
+    <li><strong>Low OCR confidence:</strong> Field extraction falls below 85% confidence. Route to manual extraction by analyst.</li>
+    <li><strong>Data mismatch:</strong> Extracted fields do not match application data. Flag for analyst review with highlighted discrepancies.</li>
+    <li><strong>System downtime:</strong> If the sanctions API is unavailable, queue the case and alert operations. Do not skip the check.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s32">
+  <span class="eyebrow">Guided Walkthrough | KYC Design</span>
+  <h2>KYC review: automation design summary</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Automate</span>
+      <p>Queue assignment (round-robin by workload). Completeness check (document classifier). Field extraction (OCR with confidence scoring). Data comparison (rule-based matching). Notification (template-based email).</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Keep manual</span>
+      <p>Risk summary (AI drafts, analyst reviews). Senior approval (human judgment required). Sanctions escalation (compliance team only). Any case below confidence thresholds.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s33">
+  <span class="eyebrow">Guided Walkthrough | KYC Metrics</span>
+  <h2>KYC review: pilot metrics</h2>
+  <table class="spacer">
+    <tr><th>Metric</th><th>Baseline</th><th>Target</th><th>Alert threshold</th></tr>
+    <tr><td>Average turnaround time</td><td>48 hours</td><td>24 hours</td><td>Above 36 hours</td></tr>
+    <tr><td>Manual extraction rate</td><td>100%</td><td>Below 25%</td><td>Above 40%</td></tr>
+    <tr><td>OCR accuracy (sampled)</td><td>N/A</td><td>Above 92%</td><td>Below 88%</td></tr>
+    <tr><td>Exception escalation rate</td><td>12%</td><td>Below 15%</td><td>Above 20%</td></tr>
+    <tr><td>Customer resubmission rate</td><td>18%</td><td>Below 12%</td><td>Above 18%</td></tr>
+  </table>
+</section>
+
+<section class="slide" id="s34">
+  <span class="eyebrow">Guided Walkthrough | KYC Reflection</span>
+  <h2>KYC walkthrough: reflection</h2>
+  <blockquote>Discuss with your table group before we continue.</blockquote>
+  <ol>
+    <li>What is the highest-risk automation step in this workflow? Why?</li>
+    <li>If OCR accuracy drops below 88%, what should happen immediately?</li>
+    <li>How would you phase the rollout: which step would you automate first?</li>
+  </ol>
+</section>
+
+<section class="slide" id="s35">
+  <span class="eyebrow">Guided Walkthrough | Reconciliation Overview</span>
+  <h2>Walkthrough 2: daily transaction reconciliation</h2>
+  <p>Every day, AJB reconciles transactions between its core banking system, payment gateway, and card processor. The team manually investigates mismatches. Current volume: approximately 15,000 transactions per day with a 2.3% mismatch rate.</p>
+</section>
+
+<section class="slide" id="s36">
+  <span class="eyebrow">Guided Walkthrough | Reconciliation Steps</span>
+  <h2>Reconciliation: current workflow</h2>
+  <ol>
+    <li>Extract transaction records from core banking, payment gateway, and card processor.</li>
+    <li>Load records into a reconciliation spreadsheet.</li>
+    <li>Match transactions by reference number, amount, and date.</li>
+    <li>Flag unmatched records as exceptions.</li>
+    <li>Analyst investigates each exception manually.</li>
+    <li>Analyst classifies the exception (timing difference, duplicate, genuine error).</li>
+    <li>Analyst resolves or escalates the exception.</li>
+    <li>Supervisor reviews and signs off on the daily reconciliation report.</li>
+  </ol>
+</section>
+
+<section class="slide" id="s37">
+  <span class="eyebrow">Guided Walkthrough | Reconciliation Automation</span>
+  <h2>Reconciliation: automation opportunities</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">High potential</span>
+      <p>Data extraction (automated feeds). Record matching (deterministic logic). Timing-difference classification (rule-based: auto-resolve if matched within T+1). Report generation (templated output).</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Requires judgment</span>
+      <p>Genuine error investigation (context-dependent). Duplicate detection in ambiguous cases (fuzzy matching + analyst review). Escalation decisions (materiality thresholds). Final sign-off (supervisor accountability).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s38">
+  <span class="eyebrow">Guided Walkthrough | Reconciliation Exceptions</span>
+  <h2>Reconciliation: exception design</h2>
+  <ul>
+    <li><strong>Data feed failure:</strong> If any source system feed is missing or incomplete, halt reconciliation and alert operations. Do not run partial matching.</li>
+    <li><strong>Spike in mismatch rate:</strong> If daily mismatch rate exceeds 5%, trigger a manual review of the matching logic before auto-resolving any cases.</li>
+    <li><strong>Large-value mismatch:</strong> Any mismatch above SAR 50,000 requires immediate manual investigation regardless of category.</li>
+    <li><strong>Duplicate transaction:</strong> Flag both records and prevent auto-resolution. Analyst must confirm which record is correct.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s39">
+  <span class="eyebrow">Guided Walkthrough | Reconciliation Metrics</span>
+  <h2>Reconciliation: success metrics</h2>
+  <table class="spacer">
+    <tr><th>Metric</th><th>Baseline</th><th>Target</th></tr>
+    <tr><td>Auto-match rate</td><td>0% (all manual)</td><td>Above 85%</td></tr>
+    <tr><td>Time to complete daily reconciliation</td><td>4 hours</td><td>1.5 hours</td></tr>
+    <tr><td>Manual investigation cases per day</td><td>345</td><td>Below 100</td></tr>
+    <tr><td>False auto-resolution rate</td><td>N/A</td><td>Below 0.5%</td></tr>
+    <tr><td>Escalation response time</td><td>Next day</td><td>Within 2 hours</td></tr>
+  </table>
+</section>
+
+<section class="slide" id="s40">
+  <span class="eyebrow">Guided Walkthrough | Integration Points</span>
+  <h2>Integration architecture for reconciliation</h2>
+  <p>Automated reconciliation requires reliable data pipelines between systems. Design considerations:</p>
+  <ul>
+    <li>Data extraction: scheduled API pulls or file drops from each source system.</li>
+    <li>Data normalization: standardize formats (date, currency, reference) before matching.</li>
+    <li>Matching engine: deterministic first (exact match), then fuzzy match for near-matches.</li>
+    <li>Results storage: write matched and unmatched records to a reconciliation database with full audit trail.</li>
+    <li>Alerting: push notifications to operations team for exceptions that require action.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s41">
+  <span class="eyebrow">Guided Walkthrough | Design Principles</span>
+  <h2>Automation design principles</h2>
+  <ol>
+    <li><strong>Start narrow:</strong> Automate one step well before expanding.</li>
+    <li><strong>Fail safe:</strong> When in doubt, route to a human. Never fail silently.</li>
+    <li><strong>Monitor everything:</strong> If you cannot measure it, do not automate it.</li>
+    <li><strong>Design for rollback:</strong> Every automation must be reversible within a defined time window.</li>
+    <li><strong>Document assumptions:</strong> State what must be true for the automation to work correctly.</li>
+    <li><strong>Review regularly:</strong> Automation that was correct last quarter may not be correct today.</li>
+  </ol>
+</section>
+
+<section class="slide" id="s42">
+  <span class="eyebrow">Guided Walkthrough | Day 1 Close</span>
+  <h2>End of Day 1: what you have learned</h2>
+  <ul>
+    <li>How to map a banking workflow from trigger to output.</li>
+    <li>How to classify automation opportunities by type and risk.</li>
+    <li>How to design exception paths for common failure modes.</li>
+    <li>How to define pilot metrics with alert thresholds.</li>
+  </ul>
+  <blockquote>Tomorrow: hands-on activities, case critiques, and your end-to-end automation design mission.</blockquote>
+</section>
+
+<!-- ============================================================ -->
+<!-- HANDS-ON ACTIVITIES  (s43-s58)                                -->
+<!-- ============================================================ -->
+
+<section class="slide" id="s43">
+  <span class="eyebrow">Hands-On | Day 2 Opening</span>
+  <h2>Day 2: hands-on automation design</h2>
+  <p class="lede">Today you apply what you learned. You will analyze real workflow data, design automation proposals, and defend your choices under critique.</p>
+</section>
+
+<section class="slide" id="s44">
+  <span class="eyebrow">Hands-On | Data Introduction</span>
+  <h2>Working with the workflow inventory</h2>
+  <p>You have a dataset of 60 AJB workflows. Each row includes the department, process name, step count, manual hours per week, error rate, automation potential score, complexity rating, and process owner role.</p>
+  <blockquote>Open the Day 2 notebook and load the workflow inventory CSV. Examine the first five rows.</blockquote>
+</section>
+
+<section class="slide" id="s45">
+  <span class="eyebrow">Hands-On | Lab A Setup</span>
+  <h2>Lab A: workflow prioritization</h2>
+  <p>Your first task is to analyze the workflow inventory and recommend which processes to automate first.</p>
+  <ul>
+    <li>Sort workflows by manual hours and error rate.</li>
+    <li>Identify the top five candidates for automation.</li>
+    <li>For each candidate, state the automation type (rule-based, AI-assisted, or autonomous).</li>
+    <li>Justify why you ranked them in this order.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s46">
+  <span class="eyebrow">Hands-On | Lab A Criteria</span>
+  <h2>Lab A: prioritization criteria</h2>
+  <table class="spacer">
+    <tr><th>Factor</th><th>Weight</th><th>Rationale</th></tr>
+    <tr><td>Manual hours per week</td><td>High</td><td>Direct cost saving opportunity.</td></tr>
+    <tr><td>Error rate</td><td>High</td><td>Quality improvement reduces rework and risk.</td></tr>
+    <tr><td>Automation potential score</td><td>Medium</td><td>Feasibility of implementation.</td></tr>
+    <tr><td>Complexity</td><td>Medium</td><td>Higher complexity means higher implementation risk.</td></tr>
+    <tr><td>Regulatory sensitivity</td><td>Low weight but hard constraint</td><td>Some workflows require human review regardless of potential.</td></tr>
+  </table>
+</section>
+
+<section class="slide" id="s47">
+  <span class="eyebrow">Hands-On | Lab A Deliverable</span>
+  <h2>Lab A: required deliverable</h2>
+  <p>Produce a ranked table of your top five automation candidates with these columns:</p>
+  <ol>
+    <li>Rank</li>
+    <li>Process name</li>
+    <li>Department</li>
+    <li>Proposed automation type</li>
+    <li>Estimated weekly hours saved</li>
+    <li>Key risk or constraint</li>
+    <li>One-sentence justification</li>
+  </ol>
+  <p>Stretch: add a "dependencies" column identifying what other systems or teams must be involved.</p>
+</section>
+
+<section class="slide" id="s48">
+  <span class="eyebrow">Hands-On | Lab B Setup</span>
+  <h2>Lab B: exception path design</h2>
+  <p>Select one of your top five candidates from Lab A. Your task is to design a complete exception handling framework for that workflow.</p>
+  <blockquote>A workflow without exception handling is not a workflow. It is a wish.</blockquote>
+</section>
+
+<section class="slide" id="s49">
+  <span class="eyebrow">Hands-On | Lab B Requirements</span>
+  <h2>Lab B: what to produce</h2>
+  <ul>
+    <li>List every step in the chosen workflow.</li>
+    <li>For each step, identify at least one failure mode.</li>
+    <li>For each failure mode, define: detection method, response action, escalation path, and recovery procedure.</li>
+    <li>Identify which exceptions should halt the workflow entirely versus which can be handled and continued.</li>
+  </ul>
+  <p>Stretch: define confidence thresholds for AI-assisted steps and specify what happens at each threshold band (high confidence: auto-proceed, medium: flag for review, low: route to manual).</p>
+</section>
+
+<section class="slide" id="s50">
+  <span class="eyebrow">Hands-On | Lab B Template</span>
+  <h2>Lab B: exception mapping template</h2>
+  <table class="spacer">
+    <tr><th>Step</th><th>Failure mode</th><th>Detection</th><th>Response</th><th>Escalation</th><th>Halt workflow?</th></tr>
+    <tr><td>(your step)</td><td>(what goes wrong)</td><td>(how you detect it)</td><td>(immediate action)</td><td>(who gets notified)</td><td>(yes/no)</td></tr>
+  </table>
+  <p>Fill this table for every step in your chosen workflow. Be specific. Vague exception paths are worse than no exception paths, because they create false confidence.</p>
+</section>
+
+<section class="slide" id="s51">
+  <span class="eyebrow">Hands-On | Lab C Setup</span>
+  <h2>Lab C: customer service routing design</h2>
+  <p>AJB wants to introduce an AI-assisted customer service routing system. Incoming requests arrive through four channels: phone, email, mobile app, and branch walk-in. Your task is to design the routing logic.</p>
+</section>
+
+<section class="slide" id="s52">
+  <span class="eyebrow">Hands-On | Lab C Requirements</span>
+  <h2>Lab C: routing design requirements</h2>
+  <ol>
+    <li>Define at least six intent categories (e.g., balance inquiry, complaint, loan inquiry, card dispute, account opening, technical support).</li>
+    <li>For each intent, specify: the target team or system, expected response time, and whether AI can handle the first response.</li>
+    <li>Design the escalation matrix: what triggers escalation from AI to human, from L1 to L2, from L2 to specialist?</li>
+    <li>Define fallback behavior when intent classification confidence is below 70%.</li>
+  </ol>
+</section>
+
+<section class="slide" id="s53">
+  <span class="eyebrow">Hands-On | Lab C Deliverable</span>
+  <h2>Lab C: routing matrix</h2>
+  <table class="spacer">
+    <tr><th>Intent</th><th>Channel</th><th>First responder</th><th>AI eligible?</th><th>SLA</th><th>Escalation trigger</th></tr>
+    <tr><td>(category)</td><td>(phone/email/app/branch)</td><td>(AI/L1/L2)</td><td>(yes/no)</td><td>(time)</td><td>(condition)</td></tr>
+  </table>
+  <p>Complete this matrix for all six intent categories across all four channels. Stretch: add a priority weighting for peak-hour routing adjustments.</p>
+</section>
+
+<section class="slide" id="s54">
+  <span class="eyebrow">Hands-On | Lab D Setup</span>
+  <h2>Lab D: pilot plan development</h2>
+  <p>Choose one automation from Labs A through C. Design a pilot plan that you could present to AJB leadership for approval.</p>
+</section>
+
+<section class="slide" id="s55">
+  <span class="eyebrow">Hands-On | Lab D Requirements</span>
+  <h2>Lab D: pilot plan components</h2>
+  <ol>
+    <li><strong>Scope:</strong> Which workflow, which steps, which volume (percentage of total cases)?</li>
+    <li><strong>Duration:</strong> How long will the pilot run? What milestones mark progress?</li>
+    <li><strong>Success criteria:</strong> What metrics must be met for the pilot to be considered successful?</li>
+    <li><strong>Failure criteria:</strong> What metrics, if breached, would cause the pilot to be halted?</li>
+    <li><strong>Rollback plan:</strong> How do you revert to the previous process if the pilot fails?</li>
+    <li><strong>Stakeholders:</strong> Who approves the pilot? Who monitors it? Who decides on expansion?</li>
+  </ol>
+</section>
+
+<section class="slide" id="s56">
+  <span class="eyebrow">Hands-On | Lab D Metrics</span>
+  <h2>Lab D: defining success and failure metrics</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Success metrics</span>
+      <p>Cycle time reduction (target vs. baseline). Error rate change. Volume of cases handled without manual intervention. User satisfaction scores (if customer-facing). Cost per transaction.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Failure triggers</span>
+      <p>Error rate exceeds baseline by more than 10%. Customer complaints increase. System downtime exceeds SLA. False positive/negative rate for AI decisions exceeds threshold. Regulatory finding related to the automation.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s57">
+  <span class="eyebrow">Hands-On | Working Time</span>
+  <h2>Working time: complete your labs</h2>
+  <p>You have 45 minutes to complete Labs A through D. Work in your teams. Use the notebooks and datasets provided. Be prepared to present your Lab D pilot plan to the group.</p>
+  <ul>
+    <li>Lab A: 10 minutes (workflow prioritization)</li>
+    <li>Lab B: 10 minutes (exception path design)</li>
+    <li>Lab C: 10 minutes (routing design)</li>
+    <li>Lab D: 15 minutes (pilot plan)</li>
+  </ul>
+</section>
+
+<section class="slide" id="s58">
+  <span class="eyebrow">Hands-On | Checkpoint</span>
+  <h2>Labs checkpoint</h2>
+  <blockquote>Before presenting, verify your work against this checklist.</blockquote>
+  <ul>
+    <li>Does your prioritization use data from the inventory, not just intuition?</li>
+    <li>Does every automated step have at least one named exception path?</li>
+    <li>Does your routing design handle low-confidence classifications?</li>
+    <li>Does your pilot plan include both success criteria and failure triggers?</li>
+    <li>Can you explain your rollback plan in two sentences?</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<!-- CASE DISCUSSION AND CRITIQUE  (s59-s66)                       -->
+<!-- ============================================================ -->
+
+<section class="slide" id="s59">
+  <span class="eyebrow">Case Critique | Introduction</span>
+  <h2>Case discussion and critique</h2>
+  <p class="lede">Now we examine real-world automation decisions, including ones that went wrong. Critical thinking about failures teaches more than celebrating successes.</p>
+</section>
+
+<section class="slide" id="s60">
+  <span class="eyebrow">Case Critique | Case 1</span>
+  <h2>Case 1: the over-automated loan processor</h2>
+  <p>A regional bank automated 90% of its personal loan decisions, including edge cases that previously required human judgment. Within three months, approval rates for high-risk applicants increased by 35%. The bank discovered the issue only after delinquency rates spiked in the following quarter.</p>
+  <blockquote>What governance gap allowed this to happen? What monitoring would have caught it earlier?</blockquote>
+</section>
+
+<section class="slide" id="s61">
+  <span class="eyebrow">Case Critique | Case 1 Analysis</span>
+  <h2>Case 1: analysis framework</h2>
+  <ul>
+    <li><strong>Root cause:</strong> No separate monitoring of approval rates by risk segment. Aggregate metrics looked normal.</li>
+    <li><strong>Missing control:</strong> Segment-level alerting on approval rate changes. Threshold: flag if any risk segment shifts by more than 10%.</li>
+    <li><strong>Design fix:</strong> High-risk applications should require human review regardless of model confidence.</li>
+    <li><strong>Lesson:</strong> Aggregate metrics hide distribution shifts. Monitor at the segment level.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s62">
+  <span class="eyebrow">Case Critique | Case 2</span>
+  <h2>Case 2: the chatbot that could not say "I don't know"</h2>
+  <p>A bank deployed a customer-facing chatbot for account inquiries. The bot was designed to always provide an answer. When asked questions outside its training scope, it generated plausible but incorrect responses about account features, interest rates, and fee structures. Customer complaints doubled in six weeks.</p>
+  <blockquote>What design decision created this failure? How would you fix it?</blockquote>
+</section>
+
+<section class="slide" id="s63">
+  <span class="eyebrow">Case Critique | Case 2 Analysis</span>
+  <h2>Case 2: analysis framework</h2>
+  <ul>
+    <li><strong>Root cause:</strong> No confidence threshold or scope boundary. The bot was optimized for response rate, not accuracy.</li>
+    <li><strong>Missing control:</strong> Intent confidence scoring with a minimum threshold. Below-threshold queries route to human agents.</li>
+    <li><strong>Design fix:</strong> Implement a "scope fence." If the query does not match a known intent with at least 75% confidence, respond with "Let me connect you with an agent who can help."</li>
+    <li><strong>Lesson:</strong> An AI system that cannot say "I don't know" is dangerous in a regulated environment.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s64">
+  <span class="eyebrow">Case Critique | Case 3</span>
+  <h2>Case 3: reconciliation without rollback</h2>
+  <p>A bank automated daily reconciliation with auto-resolution for timing differences. A software update changed the timestamp format in one source system. The matching engine silently misclassified thousands of genuine mismatches as timing differences and auto-resolved them. The issue was discovered five days later during a manual audit.</p>
+  <blockquote>What assumption broke? What circuit breaker was missing?</blockquote>
+</section>
+
+<section class="slide" id="s65">
+  <span class="eyebrow">Case Critique | Case 3 Analysis</span>
+  <h2>Case 3: analysis framework</h2>
+  <ul>
+    <li><strong>Root cause:</strong> The automation assumed stable input formats. No validation check on incoming data structure.</li>
+    <li><strong>Missing control:</strong> Input schema validation before matching begins. Format change detection triggers a halt and alert.</li>
+    <li><strong>Missing circuit breaker:</strong> Alert if auto-resolution rate exceeds historical average by more than 20%.</li>
+    <li><strong>Design fix:</strong> Add data quality gates at the input stage. Validate schema, format, and completeness before processing.</li>
+    <li><strong>Lesson:</strong> Automation that does not validate its inputs inherits every upstream error silently.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s66">
+  <span class="eyebrow">Case Critique | Synthesis</span>
+  <h2>Patterns across failures</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Monitoring gaps</span>
+      <p>All three cases lacked segment-level or threshold-based monitoring. Aggregate dashboards hid the problem.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Missing boundaries</span>
+      <p>No system knew when to stop. No confidence thresholds, no scope fences, no format validators.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Delayed detection</span>
+      <p>Problems were discovered days or weeks later. Real-time alerting on anomalies would have cut exposure dramatically.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- APPLIED MISSION  (s67-s74)                                    -->
+<!-- ============================================================ -->
+
+<section class="slide" id="s67">
+  <span class="eyebrow">Applied Mission | Introduction</span>
+  <h2>Applied mission: end-to-end automation design</h2>
+  <p class="lede">This is your capstone activity. Your team will design a complete automation proposal for a real AJB process, from workflow mapping to pilot plan.</p>
+</section>
+
+<section class="slide" id="s68">
+  <span class="eyebrow">Applied Mission | Scenario Selection</span>
+  <h2>Choose your scenario</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Scenario A: Trade finance document processing</span>
+      <p>Letters of credit require verification of 12 document types across multiple parties. Current processing: 5 days average. Volume: 80 cases per month.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Scenario B: Internal audit finding remediation tracking</span>
+      <p>Audit findings require action plans, owner assignments, evidence collection, and status reporting. Current backlog: 140 open findings across 8 departments.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s69">
+  <span class="eyebrow">Applied Mission | Requirements</span>
+  <h2>Mission deliverables</h2>
+  <ol>
+    <li><strong>Workflow map:</strong> Complete current-state process map with all steps, decisions, and exception paths.</li>
+    <li><strong>Automation proposal:</strong> For each step, state whether it should be automated, the automation type, and the justification.</li>
+    <li><strong>Exception framework:</strong> Complete exception handling table covering every automated step.</li>
+    <li><strong>Pilot plan:</strong> Scope, duration, metrics, failure triggers, rollback plan, and stakeholder matrix.</li>
+    <li><strong>Risk register:</strong> Top five risks with likelihood, impact, and mitigation actions.</li>
+  </ol>
+</section>
+
+<section class="slide" id="s70">
+  <span class="eyebrow">Applied Mission | Workflow Mapping</span>
+  <h2>Step 1: map the current state</h2>
+  <p>Start by listing every step in the process, including the steps people often forget:</p>
+  <ul>
+    <li>Who initiates the process and how?</li>
+    <li>What handoffs occur between teams or systems?</li>
+    <li>Where do delays typically happen?</li>
+    <li>What informal workarounds exist?</li>
+    <li>What happens when someone is on leave and no backup is assigned?</li>
+    <li>Where are decisions made, and what information supports them?</li>
+  </ul>
+</section>
+
+<section class="slide" id="s71">
+  <span class="eyebrow">Applied Mission | Automation Classification</span>
+  <h2>Step 2: classify and propose</h2>
+  <p>For each step in your workflow map, complete this analysis:</p>
+  <table class="spacer">
+    <tr><th>Step</th><th>Current method</th><th>Automate?</th><th>Type</th><th>Confidence level</th><th>Justification</th></tr>
+    <tr><td>(process step)</td><td>(manual/semi/auto)</td><td>(yes/no/partial)</td><td>(rule/AI-assisted/autonomous)</td><td>(high/medium/low)</td><td>(why)</td></tr>
+  </table>
+  <p>Be honest about confidence levels. A "low confidence" proposal needs more investigation before piloting.</p>
+</section>
+
+<section class="slide" id="s72">
+  <span class="eyebrow">Applied Mission | Risk Register</span>
+  <h2>Step 3: build your risk register</h2>
+  <table class="spacer">
+    <tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th><th>Owner</th></tr>
+    <tr><td>(what could go wrong)</td><td>(low/medium/high)</td><td>(low/medium/high)</td><td>(what you will do about it)</td><td>(who is responsible)</td></tr>
+  </table>
+  <p>Include at least five risks. Consider: data quality risks, integration failures, staff resistance, regulatory changes, and model drift.</p>
+</section>
+
+<section class="slide" id="s73">
+  <span class="eyebrow">Applied Mission | Presentation Prep</span>
+  <h2>Step 4: prepare your presentation</h2>
+  <p>Each team will present their automation proposal in 8 minutes. Structure your presentation:</p>
+  <ol>
+    <li>Current state: what the process looks like today (2 minutes).</li>
+    <li>Proposed automation: what you would change and why (3 minutes).</li>
+    <li>Governance: exception handling, metrics, and rollback (2 minutes).</li>
+    <li>Top risk and mitigation (1 minute).</li>
+  </ol>
+  <blockquote>Other teams will critique your proposal. Be ready to defend your choices.</blockquote>
+</section>
+
+<section class="slide" id="s74">
+  <span class="eyebrow">Applied Mission | Critique Protocol</span>
+  <h2>Peer critique protocol</h2>
+  <p>When critiquing another team's proposal, focus on these questions:</p>
+  <ul>
+    <li>Is the workflow map complete, or are steps missing?</li>
+    <li>Are exception paths specific enough to act on, or are they vague?</li>
+    <li>Are the success metrics measurable and tied to a clear baseline?</li>
+    <li>Is the rollback plan realistic? Could you execute it under pressure?</li>
+    <li>What is the single biggest risk this proposal underestimates?</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<!-- RECAP, RUBRIC, CLOSE  (s75-s80)                               -->
+<!-- ============================================================ -->
+
+<section class="slide" id="s75">
+  <span class="eyebrow">Recap | Module Summary</span>
+  <h2>Module 5 recap</h2>
+  <ol>
+    <li>Workflow mapping is the foundation. If you cannot map it, you cannot automate it.</li>
+    <li>Automation exists on a spectrum. Choose the right level for each step.</li>
+    <li>Exception paths are more important than the happy path.</li>
+    <li>Human-in-the-loop is a design choice, not a weakness.</li>
+    <li>Governance, monitoring, and rollback are not optional add-ons.</li>
+    <li>Start with a narrow, measurable pilot. Expand only after controls are proven.</li>
+  </ol>
+</section>
+
+<section class="slide" id="s76">
+  <span class="eyebrow">Recap | Key Principles</span>
+  <h2>Six principles of automation design</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">1. Map first</span>
+      <p>Never automate a process you have not mapped completely.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">2. Fail safe</span>
+      <p>Default to human review when confidence is low.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">3. Monitor always</span>
+      <p>If you cannot measure it, do not automate it.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">4. Start narrow</span>
+      <p>Pilot with a small percentage of cases first.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">5. Plan rollback</span>
+      <p>Every automation must be reversible.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">6. Review regularly</span>
+      <p>Assumptions change. Automations must be re-validated.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s77">
+  <span class="eyebrow">Recap | Rubric Review</span>
+  <h2>Final assessment rubric</h2>
+  <table class="spacer">
+    <tr><th>Criterion</th><th>Competent</th><th>Strong</th><th>Exceptional</th></tr>
+    <tr><td>Workflow mapping</td><td>Steps are listed accurately.</td><td>Steps include decision points and handoffs.</td><td>Map includes exception paths, timing, and informal workarounds.</td></tr>
+    <tr><td>Automation design</td><td>At least one step has a named automation type.</td><td>Multiple steps classified with justification.</td><td>Classification connects to risk, cost, and feasibility analysis.</td></tr>
+    <tr><td>Exception handling</td><td>At least one exception path identified.</td><td>Exception paths cover all automated steps.</td><td>Exceptions include detection, response, escalation, and recovery.</td></tr>
+    <tr><td>Pilot planning</td><td>Scope and duration defined.</td><td>Success metrics and failure triggers included.</td><td>Rollback plan, stakeholder matrix, and phased expansion defined.</td></tr>
+    <tr><td>Critical thinking</td><td>Identifies obvious risks.</td><td>Analyses trade-offs between speed and control.</td><td>Challenges assumptions with evidence and proposes alternatives.</td></tr>
+  </table>
+</section>
+
+<section class="slide" id="s78">
+  <span class="eyebrow">Recap | Common Pitfalls</span>
+  <h2>Pitfalls to avoid after this module</h2>
+  <ul>
+    <li>Do not automate a decision before you can explain its exception path.</li>
+    <li>Do not measure only throughput. Measure quality, error rate, and customer impact.</li>
+    <li>Do not skip the pilot. "It works in testing" is not evidence of production readiness.</li>
+    <li>Do not treat AI confidence scores as certainty. Calibrate and validate regularly.</li>
+    <li>Do not remove human review to save time. Remove it only when evidence supports doing so.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s79">
+  <span class="eyebrow">Recap | Module close</span>
+  <h2>What you learned, produced, and proved</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">What you learned</span>
+      <p>How to map workflows properly, classify automation opportunities, design exception paths, and scope pilots that can be governed safely.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">What you produced</span>
+      <p>Workflow maps, automation classifications, exception designs, pilot metrics, and a rollout recommendation.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">What proved success</span>
+      <p>Checkpoint completion, explicit control design, measurable pilot logic, and recommendations that balanced speed against operational risk.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s80">
+  <span class="eyebrow">Close | Next move</span>
+  <h2>Module 5 complete</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">What comes next</span>
+      <p>Module 6 focuses on advanced data visualization. You will take the outputs and recommendations from earlier modules and learn how to communicate them clearly to decision-makers.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Carry forward</span>
+      <p>Strong automation design is selective, observable, and reversible. Start with the workflow you can govern best, not the workflow you can demo fastest.</p>
+    </div>
+  </div>
+</section>
+
+</div>
+<script src="/python-training/assets/deck.js"></script>
+</body>
+</html>

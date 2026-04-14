@@ -29,6 +29,8 @@ type PlatformStatus = {
     canViewAllAgents: boolean;
     canManageConsole: boolean;
     canManageAdminTools: boolean;
+    canManageTraining: boolean;
+    canManagePlatformTraining: boolean;
   };
 };
 

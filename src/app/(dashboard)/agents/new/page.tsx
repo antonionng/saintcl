@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { getBuiltInPersonas } from "@/lib/personas";
+import type { PersonaRecord } from "@/types";
 
 const scopeOptions = [
   {
@@ -61,6 +63,8 @@ type Team = {
   description: string;
 };
 
+const fallbackPersonas = getBuiltInPersonas();
+
 export default function NewAgentPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -71,6 +75,9 @@ export default function NewAgentPage() {
   const [assignee, setAssignee] = useState("");
   const [profile, setProfile] = useState<OrgProfile | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
+  const [personas, setPersonas] = useState<PersonaRecord[]>(fallbackPersonas);
+  const [selectedPersonaId, setSelectedPersonaId] = useState("custom");
+  const [personaInstructions, setPersonaInstructions] = useState("");
   const [terminalEnabled, setTerminalEnabled] = useState(false);
   const [terminalRepoPaths, setTerminalRepoPaths] = useState("");
 
@@ -126,7 +133,21 @@ export default function NewAgentPage() {
       }
     }
 
-    void Promise.all([loadCatalog(), loadProfile(), loadTeams()]);
+    async function loadPersonas() {
+      try {
+        const res = await fetch("/api/personas", { cache: "no-store" });
+        if (!res.ok) return;
+        const body = (await res.json()) as { data?: PersonaRecord[] };
+        if (cancelled || !body.data?.length) return;
+        setPersonas(body.data);
+      } catch {
+        if (!cancelled) {
+          setPersonas(fallbackPersonas);
+        }
+      }
+    }
+
+    void Promise.all([loadCatalog(), loadProfile(), loadTeams(), loadPersonas()]);
     return () => {
       cancelled = true;
     };
@@ -135,6 +156,10 @@ export default function NewAgentPage() {
   const selectedMember = useMemo(
     () => profile?.members.find((member) => member.userId === assignee) ?? null,
     [assignee, profile],
+  );
+  const selectedPersona = useMemo(
+    () => personas.find((persona) => persona.id === selectedPersonaId) ?? null,
+    [personas, selectedPersonaId],
   );
 
   useEffect(() => {
@@ -146,6 +171,11 @@ export default function NewAgentPage() {
       setAssignee(teams[0]?.id ?? "");
     }
   }, [assignee, profile, scope, teams]);
+
+  function handlePersonaSelect(persona: PersonaRecord) {
+    setSelectedPersonaId(persona.id);
+    setPersonaInstructions(persona.instructions);
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -161,7 +191,8 @@ export default function NewAgentPage() {
         body: JSON.stringify({
           name: form.get("name") || undefined,
           model: selectedModel || undefined,
-          persona: form.get("persona") || undefined,
+          persona: personaInstructions.trim() || undefined,
+          personaTemplateId: selectedPersonaId !== "custom" ? selectedPersonaId : undefined,
           scope,
           assignee: form.get("assignee") || undefined,
           terminalEnabled,
@@ -293,11 +324,44 @@ export default function NewAgentPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm text-zinc-400">Starter instructions (optional)</label>
+              <label className="text-sm text-zinc-400">Persona</label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {personas.map((persona) => (
+                  <button
+                    key={persona.id}
+                    type="button"
+                    onClick={() => handlePersonaSelect(persona)}
+                    className={`rounded-[1.4rem] border p-4 text-left transition-colors ${
+                      selectedPersonaId === persona.id
+                        ? "border-white/18 bg-white/[0.07]"
+                        : "border-white/8 bg-white/[0.03] hover:border-white/14"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-medium text-white">{persona.name}</p>
+                      <span className="text-[0.7rem] uppercase tracking-[0.14em] text-zinc-500">
+                        {persona.source}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-xs leading-6 text-zinc-500">{persona.description}</p>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-zinc-500">
+                Pick a starting persona, then edit the instructions below before provisioning.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm text-zinc-400">
+                Persona instructions {selectedPersona?.name ? `(${selectedPersona.name})` : ""}
+              </label>
               <Textarea
                 name="persona"
+                value={personaInstructions}
+                onChange={(event) => setPersonaInstructions(event.target.value)}
                 rows={4}
-                placeholder="What should this agent prioritize for this person/team?"
+                placeholder="Describe how this agent should think, communicate, and prioritize work."
               />
             </div>
 
@@ -357,7 +421,7 @@ export default function NewAgentPage() {
               </li>
               <li>
                 3. The agent gets a dedicated workspace, persona, and model
-                binding.
+                binding, plus user and company context at startup.
               </li>
               <li>
                 4. Connect a Telegram or Slack channel to start routing messages

@@ -4,6 +4,7 @@ import type {
   OpenClawRuntimeDescriptor,
 } from "@/lib/openclaw/runtime-types";
 import { buildOpenClawModelAllowlist } from "@/lib/openclaw/model-catalog";
+import { renderOrgContextForAgent } from "@/lib/org-profile";
 
 export function renderTenantOpenClawConfig(
   runtime: OpenClawRuntimeDescriptor,
@@ -62,18 +63,64 @@ export function renderTenantToolsMd() {
 `;
 }
 
+function renderAgentUserMd(options: BootstrapAgentOptions) {
+  const lines = [
+    options.user?.displayName?.trim() ? `- Name: ${options.user.displayName.trim()}` : null,
+    options.user?.email?.trim() ? `- Email: ${options.user.email.trim()}` : null,
+    options.user?.role?.trim() ? `- Workspace role: ${options.user.role.trim()}` : null,
+    options.user?.whatIDo?.trim() ? `- Role in the company: ${options.user.whatIDo.trim()}` : null,
+    options.user?.agentBrief?.trim() ? `- Working notes: ${options.user.agentBrief.trim()}` : null,
+  ].filter((line): line is string => Boolean(line));
+
+  const details = lines.length > 0 ? lines.join("\n") : "- No saved user profile details yet.";
+
+  return `# USER.md - Your Human
+
+${details}
+
+Use this file to understand who you are helping. Personalize your responses when appropriate and address them by name when it feels natural.
+`;
+}
+
+function renderAgentSoulMd(options: BootstrapAgentOptions) {
+  const companyContext = renderOrgContextForAgent({
+    name: options.org?.name,
+    website: options.org?.website,
+    companySummary: options.org?.companySummary,
+    agentBrief: options.org?.agentBrief,
+  });
+
+  return `# SOUL.md - Who You Are
+
+${options.persona}
+${companyContext ? `\n\n${companyContext}` : ""}
+`;
+}
+
 export function renderAgentBootstrapFiles(options: BootstrapAgentOptions) {
   return {
     agents: `# ${options.name}
 
 You are the dedicated agent for this seat.
 
-Persona:
-${options.persona}
+## Session Startup
+
+Before doing anything else:
+1. Read SOUL.md for your persona and working style.
+2. Read USER.md to understand who you are working with.
+3. Read recent memory files if they exist.
+
+## Rules
+
+- Keep work scoped to this workspace.
+- Avoid destructive actions without asking first.
+- Use local files for continuity.
 
 Model:
 ${options.model}
 `,
+    soul: renderAgentSoulMd(options),
+    user: renderAgentUserMd(options),
     tools: `# Tooling
 
 - Default to safe, explainable actions.

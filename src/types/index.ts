@@ -31,6 +31,21 @@ export type EmailEventCategory = "transactional" | "marketing";
 export type EmailEventStatus = "queued" | "sent" | "skipped" | "failed";
 export type OrgInviteStatus = "pending" | "sent" | "accepted" | "revoked" | "expired" | "delivery_failed";
 export type InviteBillingStatus = "pending" | "charged" | "reversed" | "not_required";
+export type TrainingProgrammeStatus = "planning" | "active" | "archived";
+export type TrainingModuleStatus = "draft" | "scheduled" | "ready" | "live" | "complete";
+export type TrainingParticipantStatus = "invited" | "checked_in" | "active" | "completed";
+export type TrainingEnrollmentStatus = "enrolled" | "in_progress" | "completed";
+export type TrainingContentKind =
+  | "slide"
+  | "lab"
+  | "assessment"
+  | "dataset"
+  | "notebook"
+  | "workbook"
+  | "facilitator_guide"
+  | "solution";
+export type TrainingSubmissionStatus = "draft" | "submitted" | "reviewed";
+export type TrainingDeliveryMode = "online" | "hybrid" | "in_person";
 
 export interface AgentRecord {
   id: string;
@@ -88,6 +103,19 @@ export interface TeamRecord {
   createdBy?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PersonaRecord {
+  id: string;
+  orgId?: string | null;
+  name: string;
+  description: string;
+  instructions: string;
+  icon?: string | null;
+  createdBy?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  source: "builtin" | "org";
 }
 
 export interface DashboardStat {
@@ -368,6 +396,159 @@ export interface OrgCapabilities {
   canViewAllAgents: boolean;
   canManageConsole: boolean;
   canManageAdminTools: boolean;
+  canManageTraining: boolean;
+  canManagePlatformTraining: boolean;
+}
+
+export interface TrainingProgrammeRecord {
+  id: string;
+  orgId?: string | null;
+  slug: string;
+  name: string;
+  clientName?: string | null;
+  description: string;
+  status: TrainingProgrammeStatus;
+  targetSlideCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TrainingModuleRecord {
+  id: string;
+  orgId?: string | null;
+  programmeId: string;
+  slug: string;
+  title: string;
+  sequence: number;
+  status: TrainingModuleStatus;
+  deliveryMode: TrainingDeliveryMode;
+  durationDays: number;
+  hoursPerDay: number;
+  startDate?: string | null;
+  endDate?: string | null;
+  targetSlideCount: number;
+  summary: string;
+  learningObjectives: string[];
+  keyThemes: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TrainingCohortRecord {
+  id: string;
+  orgId?: string | null;
+  programmeId: string;
+  slug: string;
+  name: string;
+  audience: string;
+  inviteCode?: string | null;
+  startsOn?: string | null;
+  endsOn?: string | null;
+  status: "draft" | "scheduled" | "active" | "complete";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TrainingParticipantRecord {
+  id: string;
+  orgId?: string | null;
+  authUserId?: string | null;
+  cohortId: string;
+  fullName: string;
+  email: string;
+  employeeId?: string | null;
+  status: TrainingParticipantStatus;
+  checkedInAt?: string | null;
+  lastSeenAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TrainingEnrollmentRecord {
+  id: string;
+  orgId?: string | null;
+  cohortId: string;
+  moduleId: string;
+  participantId: string;
+  status: TrainingEnrollmentStatus;
+  progressPercent: number;
+  completedAt?: string | null;
+  lastEventAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TrainingContentItemRecord {
+  id: string;
+  orgId?: string | null;
+  moduleId: string;
+  kind: TrainingContentKind;
+  slug: string;
+  title: string;
+  sequence: number;
+  estimatedMinutes?: number | null;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TrainingLabWorkspaceRecord {
+  id: string;
+  orgId?: string | null;
+  moduleId: string;
+  participantId: string;
+  contentItemId?: string | null;
+  provider: string;
+  status: "provisioning" | "active" | "paused" | "stopped" | "error";
+  launchUrl?: string | null;
+  runtimeImage?: string | null;
+  notebookPath?: string | null;
+  metadata: Record<string, unknown>;
+  lastHeartbeatAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TrainingSubmissionRecord {
+  id: string;
+  orgId?: string | null;
+  moduleId: string;
+  participantId: string;
+  contentItemId?: string | null;
+  status: TrainingSubmissionStatus;
+  scoreBand?: "competent" | "strong" | "exceptional" | null;
+  artifactUrl?: string | null;
+  summary?: string | null;
+  metadata: Record<string, unknown>;
+  submittedAt?: string | null;
+  reviewedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TrainingLiveSessionRecord {
+  id: string;
+  orgId?: string | null;
+  cohortId: string;
+  moduleId: string;
+  facilitatorUserId?: string | null;
+  currentSlideId?: string | null;
+  currentSlideIndex: number;
+  broadcastEnabled: boolean;
+  metadata: Record<string, unknown>;
+  updatedAt: string;
+}
+
+export interface TrainingParticipantLabCheckpointRecord {
+  participant: TrainingParticipantRecord;
+  labSlug: string;
+  labTitle: string;
+  status: "not_started" | "launched" | "completed";
+  completionMode?: "passed" | "guided_complete" | "retry_needed" | null;
+  taskSummary?: string | null;
+  launchedAt?: string | null;
+  completedAt?: string | null;
+  lastEventAt?: string | null;
 }
 
 export interface WorkspaceMembership {

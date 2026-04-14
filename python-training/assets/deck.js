@@ -1,12 +1,84 @@
 (function () {
   var slides = Array.from(document.querySelectorAll(".slide"));
+  var deck = document.querySelector(".deck");
   var counter = document.getElementById("deck-counter");
   var progressBar = document.getElementById("deck-progress-fill");
   var timerEl = document.getElementById("deck-timer");
   var current = 0;
   var timer = null;
 
+  function getSlideTitle(slide) {
+    var heading = slide.querySelector("h1, h2, h3");
+    return heading ? heading.textContent.trim() : slide.id;
+  }
+
+  function getSlideEyebrow(slide) {
+    var eyebrow = slide.querySelector(".eyebrow");
+    return eyebrow ? eyebrow.textContent.trim() : "";
+  }
+
+  function emitSlidesManifest() {
+    if (!window.parent || window.parent === window) return;
+    window.parent.postMessage({
+      type: "python-training:slides",
+      slides: slides.map(function (slide, index) {
+        return {
+          id: slide.id,
+          index: index,
+          title: getSlideTitle(slide),
+          eyebrow: getSlideEyebrow(slide)
+        };
+      })
+    }, "*");
+  }
+
+  function emitState() {
+    if (!window.parent || window.parent === window) return;
+    var slide = slides[current];
+    window.parent.postMessage({
+      type: "python-training:state",
+      slideId: slide.id,
+      slideIndex: current,
+      totalSlides: slides.length,
+      title: getSlideTitle(slide),
+      eyebrow: getSlideEyebrow(slide),
+      fragmentIndex: Number(slide.dataset.fi || 0),
+      fragmentCount: getFragments(slide).length
+    }, "*");
+  }
+
   function getFragments(s) { return Array.from(s.querySelectorAll(".fragment")); }
+
+  function isProminentSlideNumberDeck() {
+    return Boolean(deck && deck.dataset.prominentSlideNumber === "true");
+  }
+
+  function injectSlideHeaders() {
+    if (!isProminentSlideNumberDeck()) return;
+
+    slides.forEach(function (slide, index) {
+      if (slide.querySelector(".slide-header")) return;
+
+      var header = document.createElement("div");
+      header.className = "slide-header";
+
+      var numberBlock = document.createElement("div");
+      numberBlock.className = "slide-number-badge";
+      numberBlock.innerHTML =
+        '<span class="slide-number-label">Slide</span>' +
+        '<span class="slide-number-value">' + String(index + 1) + '</span>' +
+        '<span class="slide-number-total">of ' + String(slides.length) + '</span>';
+
+      header.appendChild(numberBlock);
+
+      var eyebrow = slide.querySelector(".eyebrow");
+      if (eyebrow) {
+        header.appendChild(eyebrow);
+      }
+
+      slide.insertBefore(header, slide.firstChild);
+    });
+  }
 
   function resetFragments(s) {
     getFragments(s).forEach(function (f) { f.classList.remove("visible"); });
@@ -37,10 +109,11 @@
     current = index;
     slides[current].classList.add("active");
     if (reset !== false) resetFragments(slides[current]);
-    counter.textContent = (current + 1) + " / " + slides.length;
-    progressBar.style.width = ((current + 1) / slides.length * 100) + "%";
+    if (counter) counter.textContent = (current + 1) + " / " + slides.length;
+    if (progressBar) progressBar.style.width = ((current + 1) / slides.length * 100) + "%";
     history.replaceState(null, "", "#" + slides[current].id);
     try { localStorage.setItem("pt-slide", String(current)); } catch (e) {}
+    emitState();
   }
 
   function next() {
@@ -61,6 +134,7 @@
 
   function clearTimer() {
     if (timer) { clearInterval(timer.id); timer = null; }
+    if (!timerEl) return;
     timerEl.textContent = "";
     timerEl.className = "deck-timer";
     document.querySelectorAll(".timer-btn").forEach(function (b) {
@@ -70,6 +144,7 @@
   }
 
   function startTimer(btn, mins) {
+    if (!timerEl) return;
     clearTimer();
     var total = mins * 60;
     var start = Date.now();
@@ -115,13 +190,29 @@
   });
 
   document.addEventListener("click", function (e) {
-    var deck = document.querySelector(".deck");
-    if (!deck.contains(e.target)) return;
+    if (!deck || !deck.contains(e.target)) return;
     if (e.target.closest("button, a, pre, code, .exercise-card")) return;
     var rect = deck.getBoundingClientRect();
     if (e.clientX > rect.left + rect.width * 0.65) next();
   });
 
+  window.addEventListener("message", function (event) {
+    if (!event.data || event.data.type !== "python-training:command") return;
+    if (event.data.command === "next") next();
+    if (event.data.command === "prev") prev();
+    if (event.data.command === "clear-timer") clearTimer();
+    if (event.data.command === "goToSlide") {
+      if (typeof event.data.slideId === "string") {
+        var idx = slides.findIndex(function (slide) { return slide.id === event.data.slideId; });
+        if (idx >= 0) go(idx);
+      }
+      if (typeof event.data.slideIndex === "number") {
+        go(event.data.slideIndex);
+      }
+    }
+  });
+
+  injectSlideHeaders();
   slides.forEach(resetFragments);
 
   var hash = location.hash.replace("#", "");
@@ -131,5 +222,6 @@
   }
 
   slides[0].classList.add("active");
+  emitSlidesManifest();
   go(Math.max(0, Math.min(startIdx, slides.length - 1)));
 })();

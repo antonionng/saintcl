@@ -108,3 +108,13 @@
 Ask each participant to finish with one sentence:
 
 `The first Python-for-data habit I will apply in my role is ...`
+
+## Mixed-Level Delivery Overlay
+- Intro route: keep new Python users on the core path and verify each required artefact before they touch stretch tasks.
+- Advanced route: use stronger participants for stretch analysis, denominator sensitivity checks, and richer challenge questions during debrief.
+- Cut optional clinics before you cut the core debrief. The discussion is where the learning consolidates.
+
+## Virtual Engagement Checkpoints
+- Day 1: stop after the first successful notebook run and confirm paths, imports, and outputs are all working.
+- Day 2: pause after the first join and ask the room to explain table grain before any KPI discussion continues.
+- Day 3: review one chart and one caveat publicly before participants move into the final executive brief.

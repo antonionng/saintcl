@@ -1,0 +1,46 @@
+candidate_id,workflow_id,automation_type,estimated_saving_hours,implementation_effort,risk_level,requires_human_review,data_dependency
+C001,W001,AI-assisted,8,Medium,High,Yes,CRM + document store
+C002,W002,Agentic orchestration,10,High,Medium,Yes,ITSM + knowledge base
+C003,W003,Rule-based,12,Low,Low,No,Payments gateway + ledger
+C004,W004,AI-assisted,14,Medium,High,Yes,HR system + IAM
+C005,W005,Agentic orchestration,16,High,Medium,Yes,Core banking
+C006,W006,Rule-based,18,Low,Low,No,CRM + document store
+C007,W007,AI-assisted,20,Medium,High,Yes,ITSM + knowledge base
+C008,W008,Agentic orchestration,22,High,Medium,Yes,Payments gateway + ledger
+C009,W009,Rule-based,24,Low,Low,No,HR system + IAM
+C010,W010,AI-assisted,26,Medium,High,Yes,Core banking
+C011,W011,Agentic orchestration,28,High,Medium,Yes,CRM + document store
+C012,W012,Rule-based,30,Low,Low,No,ITSM + knowledge base
+C013,W013,AI-assisted,32,Medium,High,Yes,Payments gateway + ledger
+C014,W014,Agentic orchestration,34,High,Medium,Yes,HR system + IAM
+C015,W015,Rule-based,36,Low,Low,No,Core banking
+C016,W016,AI-assisted,38,Medium,High,Yes,CRM + document store
+C017,W017,Agentic orchestration,6,High,Medium,Yes,ITSM + knowledge base
+C018,W018,Rule-based,8,Low,Low,No,Payments gateway + ledger
+C019,W019,AI-assisted,10,Medium,High,Yes,HR system + IAM
+C020,W020,Agentic orchestration,12,High,Medium,Yes,Core banking
+C021,W021,Rule-based,14,Low,Low,No,Core banking + CRM + email archive + document store
+C022,W022,AI-assisted,16,Medium,High,Yes,ITSM + knowledge base
+C023,W023,Agentic orchestration,18,High,Medium,Yes,Payments gateway + ledger
+C024,W024,Rule-based,20,Low,Low,No,HR system + IAM
+C025,W025,AI-assisted,22,Medium,High,Yes,Core banking
+C026,W026,Agentic orchestration,24,High,Medium,Yes,CRM + document store
+C027,W027,Rule-based,26,Low,Low,No,ITSM + knowledge base
+C028,W028,AI-assisted,28,Medium,High,Yes,Payments gateway + ledger
+C029,W029,Agentic orchestration,30,High,Medium,Yes,HR system + IAM
+C030,W030,Rule-based,32,Low,Low,No,Core banking
+C031,W031,AI-assisted,34,Medium,High,Yes,CRM + document store
+C032,W032,Agentic orchestration,36,High,Medium,Yes,ITSM + knowledge base
+C033,W033,Rule-based,38,Low,Low,No,Payments gateway + ledger
+C034,W034,AI-assisted,6,Medium,High,Yes,HR system + IAM
+C035,W035,Agentic orchestration,8,High,Medium,Yes,Core banking
+C036,W036,Rule-based,10,Low,Low,No,CRM + document store
+C037,W037,AI-assisted,12,Medium,High,Yes,ITSM + knowledge base
+C038,W038,Agentic orchestration,14,High,Medium,Yes,Payments gateway + ledger
+C039,W039,Rule-based,16,Low,Low,No,HR system + IAM
+C040,W040,AI-assisted,18,Medium,High,Yes,Core banking
+C041,W041,Agentic orchestration,20,High,Medium,Yes,CRM + document store
+C042,W042,Rule-based,22,Low,Low,No,ITSM + knowledge base
+C043,W043,AI-assisted,24,Medium,High,Yes,Payments gateway + ledger
+C044,W044,Agentic orchestration,26,High,Medium,Yes,HR system + IAM
+C045,W045,Rule-based,28,Low,Low,No,Core banking

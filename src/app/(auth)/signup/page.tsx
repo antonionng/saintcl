@@ -17,6 +17,7 @@ function SignupPageContent() {
   const selectedPlan = normalizePlanTier(searchParams.get("plan"));
   const selectedInterval = searchParams.get("interval") === "annual" ? "annual" : "monthly";
   const nextPath = searchParams.get("next");
+  const isAcademyFlow = Boolean(nextPath && nextPath.startsWith("/academy/"));
   const [form, setForm] = useState({
     orgName: "",
     email: "",
@@ -46,11 +47,15 @@ function SignupPageContent() {
       email: form.email,
       password: form.password,
       options: {
-        data: {
-          org_name: form.orgName,
-          trial_plan: selectedPlan,
-          billing_interval: selectedInterval,
-        },
+        data: isAcademyFlow
+          ? {
+              academy_invite_flow: true,
+            }
+          : {
+              org_name: form.orgName,
+              trial_plan: selectedPlan,
+              billing_interval: selectedInterval,
+            },
         emailRedirectTo: `${window.location.origin}/callback${nextPath && nextPath.startsWith("/") ? `?next=${encodeURIComponent(nextPath)}` : ""}`,
       },
     });
@@ -61,14 +66,18 @@ function SignupPageContent() {
       return;
     }
 
-    router.push("/auth/landing");
+    router.push(isAcademyFlow && nextPath ? nextPath : "/auth/landing");
     router.refresh();
   }
 
   return (
     <AuthShell
-      title="Create workspace"
-      description={`Start a 14-day ${getPlanDisplayName(selectedPlan)} trial billed ${getPlanIntervalLabel(selectedInterval).toLowerCase()} if you upgrade.`}
+      title={isAcademyFlow ? "Create training account" : "Create workspace"}
+      description={
+        isAcademyFlow
+          ? "Create your Saint account to join the academy and return over the full delivery programme."
+          : `Start a 14-day ${getPlanDisplayName(selectedPlan)} trial billed ${getPlanIntervalLabel(selectedInterval).toLowerCase()} if you upgrade.`
+      }
       footer={
         <>
           Already have access?{" "}
@@ -82,22 +91,26 @@ function SignupPageContent() {
       }
     >
       <form className="space-y-4" onSubmit={handleSubmit}>
-        <div className="rounded-[1.35rem] border border-white/8 bg-white/[0.03] p-4 text-sm leading-6 text-zinc-300">
-          <p className="text-white">
-            Selected plan: {getPlanDisplayName(selectedPlan)} ({getPlanIntervalLabel(selectedInterval)})
-          </p>
-          <p className="mt-2 text-zinc-400">
-            No credit card is required to start. Your workspace begins on a 14-day trial with one agent.
-          </p>
-        </div>
-        <div className="space-y-2">
-          <label className="app-field-label">Organization name</label>
-          <Input
-            value={form.orgName}
-            onChange={(event) => setForm((current) => ({ ...current, orgName: event.target.value }))}
-            placeholder="Organization name"
-          />
-        </div>
+        {!isAcademyFlow ? (
+          <>
+            <div className="rounded-[1.35rem] border border-white/8 bg-white/[0.03] p-4 text-sm leading-6 text-zinc-300">
+              <p className="text-white">
+                Selected plan: {getPlanDisplayName(selectedPlan)} ({getPlanIntervalLabel(selectedInterval)})
+              </p>
+              <p className="mt-2 text-zinc-400">
+                No credit card is required to start. Your workspace begins on a 14-day trial with one agent.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <label className="app-field-label">Organization name</label>
+              <Input
+                value={form.orgName}
+                onChange={(event) => setForm((current) => ({ ...current, orgName: event.target.value }))}
+                placeholder="Organization name"
+              />
+            </div>
+          </>
+        ) : null}
         <div className="space-y-2">
           <label className="app-field-label">Email</label>
           <Input
@@ -123,7 +136,7 @@ function SignupPageContent() {
         ) : null}
         {error ? <p className="text-sm text-red-400">{error}</p> : null}
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Creating workspace..." : "Create workspace"}
+          {loading ? (isAcademyFlow ? "Creating account..." : "Creating workspace...") : isAcademyFlow ? "Create account" : "Create workspace"}
         </Button>
       </form>
     </AuthShell>

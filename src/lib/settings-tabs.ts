@@ -1,6 +1,14 @@
 import type { OrgCapabilities } from "@/types";
 
-export type SettingsTabId = "general" | "members" | "governance" | "billing" | "integrations" | "security" | "email";
+export type SettingsTabId =
+  | "general"
+  | "members"
+  | "personas"
+  | "governance"
+  | "billing"
+  | "integrations"
+  | "security"
+  | "email";
 
 export const settingsTabs: Array<{
   id: SettingsTabId;
@@ -24,6 +32,14 @@ export const settingsTabs: Array<{
     description: "Invite teammates, review workspace access, and keep invite billing under control.",
     section: "organization",
     requires: "canManageBilling",
+  },
+  {
+    id: "personas",
+    label: "Personas",
+    heading: "Personas",
+    description: "Built-in templates and custom org personas for agent provisioning.",
+    section: "organization",
+    requires: "canManagePolicies",
   },
   {
     id: "governance",

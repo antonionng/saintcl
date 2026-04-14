@@ -55,6 +55,8 @@ export async function bootstrapAgentWorkspace(
   await ensureDir(workspacePath);
   await Promise.all([
     writeFileIfMissing(path.join(workspacePath, "AGENTS.md"), files.agents),
+    writeFileIfMissing(path.join(workspacePath, "SOUL.md"), files.soul),
+    writeFileIfMissing(path.join(workspacePath, "USER.md"), files.user),
     writeFileIfMissing(path.join(workspacePath, "TOOLS.md"), files.tools),
   ]);
 

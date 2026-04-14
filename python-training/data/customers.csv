@@ -1,14 +1,101 @@
 customer_id,onboarding_date,region,city,segment,kyc_status
-C1001,2023-01-15,Riyadh,Riyadh,Mass,Complete
-C1002,2023-02-11,Riyadh,Al Kharj,Affluent,Complete
-C1003,2023-03-07,Makkah,Jeddah,Mass,Pending
-C1004,2023-03-29,Eastern,Dammam,SME,Complete
-C1005,2023-04-08,Eastern,Khobar,Mass,Complete
-C1005,2023-04-08,Riydh,Khobar,Mass,Complete
-C1006,2023-04-14,Madinah,Madinah,Affluent,Review
-C1007,2023-05-03,Asir,Abha,Mass,Complete
-C1008,2023-05-11,Makkah,Taif,SME,
-C1009,2023-06-05,Riyadh,Riyadh,Private,Complete
-C1010,2023-06-18,Eastern,Dammam,Mass,Complete
-C1011,2023-07-09,Makkah,Jeddah,Affluent,Complete
-C1012,2023-07-22,Madinah,Madinah,Mass,Pending
+C1001,2017-01-06,Riyadh,Riyadh,Mass,Complete
+C1002,2017-02-06,Makkah,Jeddah,SME,Complete
+C1003,2017-03-09,Eastern,Dammam,Mass,Complete
+C1004,2017-04-09,Madinah,Madinah,SME,Pending
+C1005,2017-05-10,Eastern,Khobar,Mass,Complete
+C1005,2017-05-10,Riydh,Khobar,Mass,Complete
+C1007,2017-07-11,Riyadh,Al Kharj,Mass,Complete
+C1008,2017-08-11,Makkah,Makkah,SME,Complete
+C1009,2017-09-11,Eastern,Khobar,Mass,Pending
+C1010,2017-10-12,Madinah,Yanbu,SME,Review
+C1011,2017-11-12,Asir,Khamis Mushait,Mass,Complete
+C1012,2017-12-13,Qassim,Unaizah,SME,Complete
+C1013,2018-01-13,Riyadh,Diriyah,Mass,Complete
+C1014,2018-02-13,Makkah,Taif,SME,Pending
+C1015,2018-03-16,Eastern,Jubail,Mass,Review
+C1016,2018-04-16,Madinah,Madinah,SME,Complete
+C1017,2018-05-17,Asir,Abha,Mass,Complete
+C1018,2018-06-17,Qassim,Buraydah,SME,
+C1019,2018-07-18,Riyadh,Riyadh,Mass,Pending
+C1020,2018-08-18,Makkah,Jeddah,SME,Review
+C1021,2018-09-18,Eastern,Dammam,Mass,Complete
+C1022,2018-10-19,Madinah,Yanbu,SME,Complete
+C1023,2018-11-19,Asir,Khamis Mushait,Mass,Complete
+C1024,2018-12-20,Qassim,Unaizah,SME,Pending
+C1025,2019-01-20,Riyadh,Al Kharj,Mass,Review
+C1026,2019-02-20,Makkah,Makkah,SME,Complete
+C1027,2019-03-23,Eastern,Khobar,Mass,Complete
+C1028,2019-04-23,Madinah,Madinah,SME,Complete
+C1029,2019-05-24,Asir,Abha,Mass,Pending
+C1030,2019-06-24,Qassim,Buraydah,SME,Review
+C1031,2019-07-25,Riyadh,Diriyah,Mass,Complete
+C1032,2019-08-25,Makkah,Taif,SME,Complete
+C1033,2019-09-25,Eastern,Jubail,Mass,Complete
+C1034,2019-10-26,Eastern Province,Yanbu,SME,Pending
+C1035,2019-11-26,Asir,Khamis Mushait,Mass,Review
+C1036,2019-12-27,Qassim,Unaizah,SME,Complete
+C1037,2020-01-27,Riyadh,Riyadh,Mass,Complete
+C1038,2020-02-27,Makkah,Jeddah,SME,Complete
+C1039,2020-03-29,Eastern,Dammam,Mass,Pending
+C1040,2020-04-29,Madinah,Madinah,SME,Review
+C1041,2020-05-30,Asir,Abha,Mass,Complete
+C1042,2020-06-30,Makkah ,Buraydah,SME,Complete
+C1043,2020-07-31,Riyadh,Al Kharj,Mass,Complete
+C1044,2020-08-31,Makkah,Makkah,SME,Pending
+C1045,2020-10-01,Eastern,Khobar,Mass,Review
+C1046,2020-11-01,Madinah,Yanbu,SME,Complete
+C1047,2020-12-02,Asir,Khamis Mushait,Mass,Complete
+C1048,2021-01-02,Qassim,Unaizah,SME,Complete
+C1049,2021-02-02,Riyadh,Diriyah,Mass,Pending
+C1050,2021-03-05,Makkah,Taif,SME,Review
+C1051,2021-04-05,Eastern,Jubail,Mass,Complete
+C1052,2021-05-06,Madinah,Madinah,SME,Complete
+C1053,2021-06-06,Asir,Abha,Mass,Complete
+C1054,2021-07-07,Qassim,Buraydah,SME,Pending
+C1055,2021-08-07,Riyadh,Riyadh,Mass,Review
+C1056,2021-09-07,Makkah,Jeddah,SME,Complete
+C1057,2021-10-08,Eastern,Dammam,Mass,Complete
+C1058,2021-11-08,Madinah,Yanbu,SME,Complete
+C1059,2021-12-09,Asir,Khamis Mushait,Mass,Pending
+C1060,2022-01-09,Qassim,Unaizah,SME,Review
+C1061,2022-02-09,Riyadh,Al Kharj,Mass,Complete
+C1062,2022-03-12,Makkah,Makkah,SME,Complete
+C1063,2022-04-12,Eastern,Khobar,SME,Complete
+C1064,2022-05-13,Madinah,Madinah,SME,Pending
+C1065,2022-06-13,Asir,Abha,Mass,Review
+C1066,2022-07-14,Qassim,Buraydah,SME,Complete
+C1067,2022-08-14,Riyadh,Diriyah,Mass,Complete
+C1068,2022-09-14,Makkah,Taif,SME,Complete
+C1069,2022-10-15,Eastern,Jubail,Mass,Pending
+C1070,2022-11-15,Madinah,Yanbu,SME,Review
+C1071,2022-12-16,Asir,Khamis Mushait,Mass,Complete
+C1072,2023-01-16,Qassim,Unaizah,SME,Complete
+C1073,2023-02-16,Riyadh,Riyadh,Mass,Complete
+C1074,2023-03-19,Makkah,Jeddah,SME,Pending
+C1075,2023-04-19,Eastern,Dammam,Mass,Review
+C1076,2023-05-20,Madinah,Madinah,SME,Complete
+C1077,2023-06-20,Asir,Abha,Mass,Complete
+C1078,2023-07-21,Qassim,Buraydah,SME,Complete
+C1079,2023-08-21,Riyadh,Jedah,Mass,Pending
+C1080,2023-09-21,Makkah,Makkah,SME,Review
+C1081,2023-10-22,Eastern,Khobar,Mass,Complete
+C1082,2023-11-22,Madinah,Yanbu,SME,Complete
+C1083,2023-12-23,Asir,Khamis Mushait,Mass,Complete
+C1084,2024-01-23,Qassim,Unaizah,SME,Pending
+C1085,2024-02-23,Riyadh,Diriyah,Mass,Review
+C1086,2024-03-25,Makkah,Taif,SME,Complete
+C1087,2024-04-25,Eastern,Jubail,Mass,Complete
+C1088,2024-05-26,Madinah,Madinah,SME,Complete
+C1089,2024-06-26,Asir,Abha,Mass,Pending
+C1090,2024-07-27,Qassim,Buraydah,SME,Review
+C1091,2024-08-27,Riyadh,Riyadh,Mass,
+C1092,2024-09-27,Makkah,Jeddah,SME,Complete
+C1093,2024-10-28,Eastern,Dammam,Mass,Complete
+C1094,2024-11-28,Madinah,Yanbu,SME,Pending
+C1095,2024-12-29,Asir,Khamis Mushait,Mass,Review
+C1096,2025-01-29,Qassim,Unaizah,SME,Complete
+C1097,2025-03-01,Riyadh,Al Kharj,Mass,Complete
+C1098,2025-04-01,Makkah,Makkah,SME,Complete
+C1099,2025-05-02,Eastern,Khobar,Mass,Pending
+C1100,2025-06-02,Madinah,Madinah,SME,Review

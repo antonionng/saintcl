@@ -5,7 +5,7 @@ import { isOpenClawConfigured } from "@/lib/env";
 import { syncKnowledgeToAgent } from "@/lib/openclaw/knowledge-sync";
 import { getAgentWorkspacePath } from "@/lib/openclaw/paths";
 import { resolveModelSelection } from "@/lib/openclaw/model-governance";
-import { appendOrgContextToPersona, appendProfileContextToPersona, writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
+import { writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { insertAgentMetadata, upsertAgentAssignment } from "@/lib/openclaw/runtime-store";
 
@@ -38,18 +38,8 @@ export async function POST() {
   const agentName = "My Agent";
   const slug = slugify(`${session.userId.slice(0, 8)}-my-agent`);
   const profile = await loadCurrentUserProfile();
-  const persona = appendProfileContextToPersona(
-    appendOrgContextToPersona(
-      "You are my work copilot. Help me move faster while respecting company mission, policy, and approval guardrails.\n\nKnowledge scope:\n- You can rely on company knowledge plus my personal knowledge when relevant.\n- Use memory search before guessing when a document-backed answer may exist.",
-      {
-        name: session.org.name,
-        website: session.org.website,
-        companySummary: session.org.company_summary,
-        agentBrief: session.org.agent_brief,
-      },
-    ),
-    profile,
-  );
+  const persona =
+    "You are my work copilot. Help me move faster while respecting company mission, policy, and approval guardrails.\n\nKnowledge scope:\n- You can rely on company knowledge plus my personal knowledge when relevant.\n- Use memory search before guessing when a document-backed answer may exist.";
 
   try {
     const { model, snapshot } = await resolveModelSelection({
@@ -84,6 +74,21 @@ export async function POST() {
       name: agentName,
       model,
       persona,
+      org: {
+        name: session.org.name,
+        website: session.org.website,
+        companySummary: session.org.company_summary,
+        agentBrief: session.org.agent_brief,
+      },
+      profile: profile
+        ? {
+            displayName: profile.displayName,
+            email: profile.email,
+            role: profile.role,
+            whatIDo: profile.whatIDo,
+            agentBrief: profile.agentBrief,
+          }
+        : null,
     });
 
     const row = await insertAgentMetadata({

@@ -1,5 +1,3 @@
-import { renderOrgContextForAgent } from "@/lib/org-profile";
-import { renderProfileContextForAgent } from "@/lib/account-profile";
 import { getAgents, getUserProfileRecordById } from "@/lib/dal";
 import { isOpenClawConfigured } from "@/lib/env";
 import { getOrgModelCatalogState } from "@/lib/openclaw/model-governance";
@@ -9,6 +7,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 type ProfileContextInput = {
   displayName?: string | null;
+  email?: string | null;
+  role?: string | null;
   whatIDo?: string | null;
   agentBrief?: string | null;
 } | null;
@@ -39,37 +39,6 @@ function stripExistingProfileContext(persona: string) {
   return persona.trim();
 }
 
-export function appendProfileContextToPersona(basePersona: string, profile: ProfileContextInput) {
-  const normalizedPersona = stripExistingProfileContext(basePersona);
-  const context = renderProfileContextForAgent({
-    displayName: profile?.displayName,
-    whatIDo: profile?.whatIDo,
-    agentBrief: profile?.agentBrief,
-  });
-
-  if (!context) {
-    return normalizedPersona;
-  }
-
-  return `${normalizedPersona}\n\n${context}`;
-}
-
-export function appendOrgContextToPersona(basePersona: string, org: OrgContextInput) {
-  const normalizedPersona = stripExistingOrgContext(basePersona);
-  const context = renderOrgContextForAgent({
-    name: org?.name,
-    website: org?.website,
-    companySummary: org?.companySummary,
-    agentBrief: org?.agentBrief,
-  });
-
-  if (!context) {
-    return normalizedPersona;
-  }
-
-  return `${normalizedPersona}\n\n${context}`;
-}
-
 function stripAllInjectedContexts(persona: string) {
   return stripExistingProfileContext(stripExistingOrgContext(persona));
 }
@@ -83,18 +52,6 @@ function getStoredBasePersona(agent: {
       ? String(agent.config.persona)
       : `You are ${agent.name}. Follow the assigned human's direction inside organization guardrails and focus on practical outcomes.`;
   return stripAllInjectedContexts(storedPersona);
-}
-
-function composeAgentPersona(input: {
-  agent: {
-    name: string;
-    config?: Record<string, unknown> | null;
-  };
-  org?: OrgContextInput;
-  profile?: ProfileContextInput;
-}) {
-  const basePersona = getStoredBasePersona(input.agent);
-  return appendProfileContextToPersona(appendOrgContextToPersona(basePersona, input.org ?? null), input.profile ?? null);
 }
 
 async function persistAgentPersona(input: {
@@ -131,6 +88,8 @@ export async function writeAgentBootstrapFiles(input: {
   name: string;
   model: string;
   persona: string;
+  org?: OrgContextInput;
+  profile?: ProfileContextInput;
 }) {
   if (!isOpenClawConfigured()) {
     return;
@@ -150,6 +109,8 @@ export async function writeAgentBootstrapFiles(input: {
     name: input.name,
     model: input.model,
     persona: input.persona,
+    org: input.org ?? null,
+    user: input.profile ?? null,
   });
 
   await Promise.all([
@@ -157,6 +118,16 @@ export async function writeAgentBootstrapFiles(input: {
       agentId: input.agentId,
       name: "AGENTS.md",
       content: files.agents,
+    }),
+    client.setAgentFile({
+      agentId: input.agentId,
+      name: "SOUL.md",
+      content: files.soul,
+    }),
+    client.setAgentFile({
+      agentId: input.agentId,
+      name: "USER.md",
+      content: files.user,
     }),
     client.setAgentFile({
       agentId: input.agentId,
@@ -188,13 +159,9 @@ export async function syncProfileContextToAssignedAgents(input: {
   await Promise.all(
     assignedAgents.map((agent) =>
       (async () => {
-        const persona = composeAgentPersona({
-          agent: {
-            name: agent.name,
-            config: (agent.config as Record<string, unknown> | null) ?? null,
-          },
-          org: input.org ?? null,
-          profile: input.profile,
+        const persona = getStoredBasePersona({
+          name: agent.name,
+          config: (agent.config as Record<string, unknown> | null) ?? null,
         });
         await Promise.all([
           writeAgentBootstrapFiles({
@@ -203,6 +170,8 @@ export async function syncProfileContextToAssignedAgents(input: {
             name: agent.name,
             model: agent.model,
             persona,
+            org: input.org ?? null,
+            profile: input.profile,
           }),
           persistAgentPersona({
             orgId: input.orgId,
@@ -235,13 +204,9 @@ export async function syncOrgContextToAgents(input: {
             ? agent.user_id
             : null;
       const profile = profileUserId ? await getUserProfileRecordById(profileUserId) : null;
-      const persona = composeAgentPersona({
-        agent: {
-          name: agent.name,
-          config: (agent.config as Record<string, unknown> | null) ?? null,
-        },
-        org: input.org,
-        profile,
+      const persona = getStoredBasePersona({
+        name: agent.name,
+        config: (agent.config as Record<string, unknown> | null) ?? null,
       });
 
       await Promise.all([
@@ -251,6 +216,8 @@ export async function syncOrgContextToAgents(input: {
           name: agent.name,
           model: agent.model,
           persona,
+          org: input.org,
+          profile,
         }),
         persistAgentPersona({
           orgId: input.orgId,

@@ -1,0 +1,926 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Machine Learning Training | Participant Deck</title>
+  <link rel="stylesheet" href="/python-training/assets/theme.css" />
+</head>
+<body>
+<div class="deck">
+<div class="deck-brand"><img class="emft-logo" src="/emft-logo.png" alt="Emerging Market Financial Training" /><span class="deck-brand-divider"></span><img src="/ajb-logo.png" alt="Al Jazira Bank" /></div>
+
+<!-- ======================================================= -->
+<!--  DAY 1: FRAMING, SUPERVISED LEARNING, EVALUATION        -->
+<!-- ======================================================= -->
+
+<section class="slide active" id="s01">
+  <span class="eyebrow">EMFT x Al Jazira Bank | Machine Learning Training</span>
+  <h1>Machine Learning Training</h1>
+  <p class="lede">Three days. From ML problem framing and baseline models to governance, deployment thinking, and executive-ready recommendations.</p>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Duration</span>
+      <p>3 days, 4 hours per day</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Dates</span>
+      <p>17 to 19 May 2026</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Format</span>
+      <p>Live online with labs, critique, and capstone recommendation</p>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" id="s01a">
+  <span class="eyebrow">Day 1 | Banking value map</span>
+  <h2>How this module creates value</h2>
+  <div class="columns three spacer">
+    <div class="card"><span class="card-label">Decisions</span><p>Clarify which banking action changes because of the model output.</p></div>
+    <div class="card"><span class="card-label">Controls</span><p>Match metrics, monitoring, and governance to regulated use cases.</p></div>
+    <div class="card"><span class="card-label">Outcomes</span><p>Turn technical evaluation into leadership-ready model recommendations.</p></div>
+  </div>
+</section>
+
+<section class="slide" id="s01b">
+  <span class="eyebrow">Day 1 | Delivery routes</span>
+  <h2>Choose your learning route</h2>
+  <div class="columns two spacer">
+    <div class="card"><span class="card-label">Intro path</span><p>Prioritise baseline workflows, metric interpretation, and plain-language business reasoning.</p></div>
+    <div class="card"><span class="card-label">Advanced path</span><p>Use stretch time for threshold tuning, richer comparisons, and stronger monitoring design.</p></div>
+  </div>
+</section>
+
+<section class="slide" id="s02">
+  <span class="eyebrow">Day 1 | Why this matters</span>
+  <h2>Why machine learning matters in banking</h2>
+  <p>Machine learning helps banks detect patterns, prioritise action, reduce manual effort, and improve consistency. It is useful when the task is repetitive, data-rich, and important enough to justify disciplined monitoring.</p>
+  <div class="columns three spacer">
+    <div class="card"><span class="card-label">Revenue</span><p>Propensity, cross-sell, retention, and customer prioritisation.</p></div>
+    <div class="card"><span class="card-label">Risk</span><p>Fraud, delinquency, exceptions, and early warning indicators.</p></div>
+    <div class="card"><span class="card-label">Service</span><p>Routing, triage, forecasting, and workload allocation.</p></div>
+  </div>
+</section>
+
+<section class="slide" id="s03">
+  <span class="eyebrow">Day 1 | Outcomes</span>
+  <h2>What you will be able to do by the end of the module</h2>
+  <ol>
+    <li>Frame a banking problem so it is suitable for machine learning.</li>
+    <li>Prepare features, labels, and evaluation sets with less leakage risk.</li>
+    <li>Evaluate supervised and unsupervised models using business-relevant metrics.</li>
+    <li>Discuss fairness, monitoring, governance, and deployment implications clearly.</li>
+    <li>Recommend an ML path to leaders without overselling confidence.</li>
+  </ol>
+</section>
+
+<section class="slide" id="s04">
+  <span class="eyebrow">Day 1 | Journey</span>
+  <h2>The three-day learning journey</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Day 1</span>
+      <p>Problem framing, labels, features, baselines, and classification metrics.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Day 2</span>
+      <p>Clustering, model families, comparison discipline, and governance questions.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Day 3</span>
+      <p>Deployment thinking, monitoring, executive communication, and capstone recommendation.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s05">
+  <span class="eyebrow">Day 1 | Outputs and validation</span>
+  <h2>What you will produce and how we will judge it</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Outputs</span>
+      <ul>
+        <li>Problem framing and target definition</li>
+        <li>Baseline and comparison outputs</li>
+        <li>Segmentation and governance reasoning</li>
+        <li>Deployment and leadership recommendation</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Validation</span>
+      <ul>
+        <li>Clear target definition and leakage control</li>
+        <li>Metrics matched to the banking decision</li>
+        <li>Governance, monitoring, and ownership surfaced</li>
+        <li>Recommendations suitable for leadership discussion</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s06">
+  <span class="eyebrow">Day 1 | Regulation</span>
+  <h2>What changes in a regulated environment</h2>
+  <p>In banking, accuracy is not the only question. You also need auditability, fairness, clear ownership, data lineage, monitoring, and escalation paths when the model behaves unexpectedly.</p>
+  <ul class="spacer">
+    <li>Can we explain how the score influences action?</li>
+    <li>Can we show what data was used and when?</li>
+    <li>Can we detect drift, failure, or bias quickly?</li>
+    <li>Can a human intervene before harm scales?</li>
+  </ul>
+</section>
+
+<section class="slide" id="s07">
+  <span class="eyebrow">Day 1 | Positioning</span>
+  <h2>Machine learning versus rules and BI</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Rules</span>
+      <p>Good when logic is explicit, stable, and easy to maintain.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">BI and reporting</span>
+      <p>Good when you need visibility, trends, and human-led interpretation.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Machine learning</span>
+      <p>Good when patterns are too complex for manual rules and the decision repeats often.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s08">
+  <span class="eyebrow">Day 1 | Workflow</span>
+  <h2>The end-to-end machine learning workflow</h2>
+  <ol>
+    <li>Define the decision and business objective.</li>
+    <li>Define label, horizon, and unit of analysis.</li>
+    <li>Assemble and validate features.</li>
+    <li>Create train, validation, and test sets.</li>
+    <li>Build baselines and candidate models.</li>
+    <li>Evaluate against business trade-offs.</li>
+    <li>Document assumptions, risks, and controls.</li>
+    <li>Deploy, monitor, and retrain when needed.</li>
+  </ol>
+</section>
+
+<section class="slide" id="s09">
+  <span class="eyebrow">Day 1 | Use cases</span>
+  <h2>Banking use cases by ML problem type</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Classification</span>
+      <p>Fraud flagging, likely churn, likely default, complaint escalation.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Regression</span>
+      <p>Expected balance, ticket volume, recovery value, forecast demand.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Clustering</span>
+      <p>Customer segmentation, behaviour grouping, branch pattern discovery.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s10">
+  <span class="eyebrow">Day 1 | Problem framing</span>
+  <h2>What makes a good ML problem statement</h2>
+  <p>A good ML problem statement is decision-led. It states what action will change, what the model predicts, over what time horizon, for which unit, and what trade-off matters most.</p>
+  <div class="card spacer">
+    <span class="card-label">Example</span>
+    <p>"Predict which service tickets are likely to breach SLA within 24 hours so supervisors can intervene earlier, with recall prioritised over precision."</p>
+  </div>
+</section>
+
+<section class="slide" id="s11">
+  <span class="eyebrow">Day 1 | Fundamentals</span>
+  <h2>Features, labels, targets, and observations</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Observation</span>
+      <p>One row. A customer, account, transaction window, or support case.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Label or target</span>
+      <p>The outcome you want to predict, such as churn within 90 days.</p>
+    </div>
+  </div>
+  <p class="spacer">Features are the input columns used to predict the label. They must exist before the prediction moment, not after it.</p>
+</section>
+
+<section class="slide" id="s12">
+  <span class="eyebrow">Day 1 | Data sources</span>
+  <h2>Common banking data sources for ML</h2>
+  <ul>
+    <li>Customer master tables and demographics</li>
+    <li>Accounts, balances, and product holdings</li>
+    <li>Transactions and channel activity</li>
+    <li>Service tickets and complaints</li>
+    <li>Branch, region, and campaign context</li>
+    <li>Repayment history and collections outcomes</li>
+  </ul>
+</section>
+
+<section class="slide" id="s13">
+  <span class="eyebrow">Day 1 | Context first</span>
+  <h2>Business context before modelling</h2>
+  <p>Before writing code, ask what action the model changes, who owns that action, and what the cost of a wrong prediction will be. This determines the correct label, horizon, and metric.</p>
+  <div class="columns three spacer">
+    <div class="card"><span class="card-label">Owner</span><p>Who acts on the output?</p></div>
+    <div class="card"><span class="card-label">Cadence</span><p>How often is the prediction refreshed?</p></div>
+    <div class="card"><span class="card-label">Cost</span><p>What is the harm of being wrong?</p></div>
+  </div>
+</section>
+
+<section class="slide" id="s14">
+  <span class="eyebrow">Day 1 | Splits</span>
+  <h2>Train, validation, and test sets</h2>
+  <p>The training set teaches the model. The validation set helps you compare and tune. The test set is the final untouched check of likely real-world performance.</p>
+  <div class="card spacer">
+    <span class="card-label">Discipline</span>
+    <p>If you use the test set repeatedly while tuning, it stops being a real test and becomes part of the training process.</p>
+  </div>
+</section>
+
+<section class="slide" id="s15">
+  <span class="eyebrow">Day 1 | Leakage</span>
+  <h2>Why leakage breaks trust</h2>
+  <p>Leakage happens when your model sees information that would not exist at prediction time. It creates scores that look impressive in development but collapse in production.</p>
+  <ul class="spacer">
+    <li>Using post-outcome data in the feature table</li>
+    <li>Aggregations that look ahead in time</li>
+    <li>Data preparation steps fitted on the full dataset</li>
+  </ul>
+</section>
+
+<section class="slide" id="s16">
+  <span class="eyebrow">Day 1 | Leakage examples</span>
+  <h2>Leakage examples in banking datasets</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Bad feature</span>
+      <p>"Collections contact count in the next 30 days" when predicting default risk today.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Bad join</span>
+      <p>Joining a complaint status updated after escalation into a model predicting which tickets escalate.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s17">
+  <span class="eyebrow">Day 1 | Features</span>
+  <h2>Feature types and preprocessing choices</h2>
+  <table class="spacer">
+    <tr><th>Type</th><th>Example</th><th>Common treatment</th></tr>
+    <tr><td>Numeric</td><td>Balance, income, count</td><td>Scale if model family needs it</td></tr>
+    <tr><td>Categorical</td><td>Region, channel, segment</td><td>Encode categories</td></tr>
+    <tr><td>Date</td><td>Open date, last activity</td><td>Turn into age or recency</td></tr>
+    <tr><td>Text</td><td>Ticket subject</td><td>Use text features only with clear purpose</td></tr>
+  </table>
+</section>
+
+<section class="slide" id="s18">
+  <span class="eyebrow">Day 1 | Missing data</span>
+  <h2>Missing data strategies for ML</h2>
+  <div class="columns three spacer">
+    <div class="card"><span class="card-label">Drop</span><p>Use when missingness is tiny and low-risk.</p></div>
+    <div class="card"><span class="card-label">Impute</span><p>Use median, mode, or domain logic carefully.</p></div>
+    <div class="card"><span class="card-label">Flag</span><p>Sometimes missingness itself is informative.</p></div>
+  </div>
+</section>
+
+<section class="slide" id="s19">
+  <span class="eyebrow">Day 1 | Encoding</span>
+  <h2>Encoding categories carefully</h2>
+  <p>Models need numeric input. Categorical features like branch region or account type must be encoded, but encoding choices can create false order or unhelpful sparsity if used carelessly.</p>
+  <ul class="spacer">
+    <li>One-hot encoding for most nominal categories</li>
+    <li>Ordinal encoding only when order is real</li>
+    <li>Group rare categories before explosion</li>
+  </ul>
+</section>
+
+<section class="slide" id="s20">
+  <span class="eyebrow">Day 1 | Scaling</span>
+  <h2>Scaling and standardisation. When it matters</h2>
+  <p>Distance-based and gradient-based models often behave better when features are on comparable scales. Tree-based models usually care much less.</p>
+  <div class="card spacer">
+    <span class="card-label">Rule of thumb</span>
+    <p>Scale for logistic regression, k-nearest neighbours, SVM, and k-means. It is usually optional for decision trees and random forests.</p>
+  </div>
+</section>
+
+<section class="slide" id="s21">
+  <span class="eyebrow">Day 1 | Baselines</span>
+  <h2>Baselines before sophistication</h2>
+  <p>A baseline forces you to ask whether complexity is actually earning its keep. If a simple rule or simple model performs well enough, it may be the safer operational choice.</p>
+  <ul class="spacer">
+    <li>Majority class baseline</li>
+    <li>Simple logistic model</li>
+    <li>Current manual rule benchmark</li>
+  </ul>
+</section>
+
+<section class="slide" id="s22">
+  <span class="eyebrow">Day 1 | Workflow</span>
+  <h2>The first baseline classification workflow</h2>
+  <pre><code>from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train, y_train)
+pred = model.predict(X_test)
+print(classification_report(y_test, pred))</code></pre>
+</section>
+
+<section class="slide" id="s23">
+  <span class="eyebrow">Day 1 | Metrics</span>
+  <h2>Accuracy is not enough</h2>
+  <p>In imbalanced banking problems, accuracy can be misleading. A model can look strong while missing most of the rare but important cases.</p>
+  <div class="card spacer">
+    <span class="card-label">Example</span>
+    <p>If only 2% of cases are fraud, a model that predicts "not fraud" every time is 98% accurate and still useless.</p>
+  </div>
+</section>
+
+<section class="slide" id="s24">
+  <span class="eyebrow">Day 1 | Metrics</span>
+  <h2>Precision, recall, and F1</h2>
+  <div class="columns three spacer">
+    <div class="card"><span class="card-label">Precision</span><p>Of the cases we flagged, how many were truly positive?</p></div>
+    <div class="card"><span class="card-label">Recall</span><p>Of all true positives, how many did we catch?</p></div>
+    <div class="card"><span class="card-label">F1</span><p>A balance measure when precision and recall both matter.</p></div>
+  </div>
+</section>
+
+<section class="slide" id="s25">
+  <span class="eyebrow">Day 1 | Metrics</span>
+  <h2>Confusion matrix walkthrough</h2>
+  <table class="spacer">
+    <tr><th></th><th>Predicted positive</th><th>Predicted negative</th></tr>
+    <tr><td>Actual positive</td><td>True positive</td><td>False negative</td></tr>
+    <tr><td>Actual negative</td><td>False positive</td><td>True negative</td></tr>
+  </table>
+  <p class="spacer">This is the most concrete way to discuss errors with a non-technical stakeholder.</p>
+</section>
+
+<section class="slide" id="s26">
+  <span class="eyebrow">Day 1 | Thresholds</span>
+  <h2>Thresholds and business trade-offs</h2>
+  <p>Many models produce probabilities. The threshold decides when you act. Lowering it usually catches more positives but also creates more false alarms.</p>
+  <ul class="spacer">
+    <li>Collections may prefer higher recall</li>
+    <li>Fraud operations may tune by alert handling capacity</li>
+    <li>Customer messaging may require higher precision</li>
+  </ul>
+</section>
+
+<section class="slide" id="s27">
+  <span class="eyebrow">Day 1 | Error cost</span>
+  <h2>False positives and false negatives in banking</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">False positive</span>
+      <p>You intervene on the wrong case. Cost may be customer friction, wasted analyst time, or revenue loss.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">False negative</span>
+      <p>You miss the case you needed to catch. Cost may be fraud loss, default, churn, or SLA breach.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s28">
+  <span class="eyebrow">Day 1 | Ranking metrics</span>
+  <h2>ROC and PR curve intuition</h2>
+  <p>ROC curves are useful when classes are balanced enough to compare ranking quality. Precision-recall curves become especially important when the positive class is rare and operational focus is on the positives.</p>
+</section>
+
+<section class="slide" id="s29">
+  <span class="eyebrow">Day 1 | Checklist</span>
+  <h2>Model evaluation checklist</h2>
+  <ol>
+    <li>Is the target and horizon clearly defined?</li>
+    <li>Is there leakage risk?</li>
+    <li>Is the split strategy realistic?</li>
+    <li>Are metrics aligned to operational cost?</li>
+    <li>Has a baseline been compared?</li>
+    <li>Are caveats documented for leadership?</li>
+  </ol>
+</section>
+
+<section class="slide" id="s30">
+  <span class="eyebrow">Day 1 | Lab 1</span>
+  <h2>Lab 1. Build and evaluate a baseline classifier</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Task</span>
+      <p>Build a simple classification workflow, evaluate it, and explain the trade-off between precision and recall for a banking action.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Evidence expected</span>
+      <p>Target definition, split logic, baseline metrics, confusion matrix, and recommendation on threshold logic.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= -->
+<!--  DAY 2: UNSUPERVISED LEARNING, COMPARISON, GOVERNANCE   -->
+<!-- ======================================================= -->
+
+<section class="slide" id="s31">
+  <span class="eyebrow">Day 2 | Recap</span>
+  <h2>Day 1 recap and reset</h2>
+  <ul>
+    <li>Good ML starts with a decision, not an algorithm.</li>
+    <li>Leakage and weak splits can fake performance.</li>
+    <li>Metrics only matter if they map to cost and action.</li>
+    <li>Baselines prevent unnecessary complexity.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s32">
+  <span class="eyebrow">Day 2 | Unsupervised learning</span>
+  <h2>What unsupervised learning is for</h2>
+  <p>Unsupervised learning helps when you do not have labels but still want to find structure. In banking, that often means grouping customers, accounts, or behaviours to guide strategy and intervention.</p>
+</section>
+
+<section class="slide" id="s33">
+  <span class="eyebrow">Day 2 | Segmentation</span>
+  <h2>Segmentation in a banking context</h2>
+  <div class="columns three spacer">
+    <div class="card"><span class="card-label">Customer strategy</span><p>Discover patterns in balance, usage, and engagement.</p></div>
+    <div class="card"><span class="card-label">Service design</span><p>Group tickets or journeys to improve service operations.</p></div>
+    <div class="card"><span class="card-label">Risk insight</span><p>Find unusual behavioural groups worth deeper analysis.</p></div>
+  </div>
+</section>
+
+<section class="slide" id="s34">
+  <span class="eyebrow">Day 2 | Workflow</span>
+  <h2>Clustering workflow overview</h2>
+  <ol>
+    <li>Define the business question.</li>
+    <li>Select features that describe behaviour meaningfully.</li>
+    <li>Scale when required.</li>
+    <li>Run candidate cluster solutions.</li>
+    <li>Interpret clusters in business language.</li>
+    <li>Validate usefulness, stability, and actionability.</li>
+  </ol>
+</section>
+
+<section class="slide" id="s35">
+  <span class="eyebrow">Day 2 | Feature design</span>
+  <h2>Feature selection for segmentation</h2>
+  <p>Good segmentation features describe stable behaviour or value. Bad segmentation features simply reproduce noise, one-off campaigns, or identifiers.</p>
+  <div class="card spacer">
+    <span class="card-label">Examples</span>
+    <p>Average balance, digital activity rate, product diversity, complaint frequency, salary inflow regularity, and branch dependence.</p>
+  </div>
+</section>
+
+<section class="slide" id="s36">
+  <span class="eyebrow">Day 2 | Intuition</span>
+  <h2>Distance and similarity intuition</h2>
+  <p>Many clustering methods group observations that are close together in feature space. If scales are inconsistent or noisy features dominate, the groups become hard to trust.</p>
+</section>
+
+<section class="slide" id="s37">
+  <span class="eyebrow">Day 2 | K-means</span>
+  <h2>K-means explained simply</h2>
+  <p>K-means starts with candidate centres, assigns each observation to the nearest centre, then updates centres repeatedly until assignments stabilise.</p>
+  <pre><code>from sklearn.cluster import KMeans
+
+kmeans = KMeans(n_clusters=4, random_state=42)
+clusters = kmeans.fit_predict(X_scaled)</code></pre>
+</section>
+
+<section class="slide" id="s38">
+  <span class="eyebrow">Day 2 | Model choice</span>
+  <h2>Choosing the number of clusters</h2>
+  <ul>
+    <li>Use elbow and silhouette methods as input, not as final truth.</li>
+    <li>Prefer solutions that are interpretable and operationally distinct.</li>
+    <li>A mathematically neat segmentation can still be useless in business.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s39">
+  <span class="eyebrow">Day 2 | Interpretation</span>
+  <h2>Interpreting clusters for business use</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Weak interpretation</span>
+      <p>Cluster 2 has higher values on features 4 and 7.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Strong interpretation</span>
+      <p>This cluster represents digitally active salary customers with low service friction and high cross-sell potential.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s40">
+  <span class="eyebrow">Day 2 | Risk</span>
+  <h2>Cluster risk and misuse</h2>
+  <p>Clusters are descriptive, not moral categories. Do not treat them as permanent truths or use them without checking for sensitive bias, instability, or weak business meaning.</p>
+</section>
+
+<section class="slide" id="s41">
+  <span class="eyebrow">Day 2 | Lab 2</span>
+  <h2>Lab 2. Customer segmentation studio</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Task</span>
+      <p>Create a segmentation proposal and explain which customer groups the bank should treat differently.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Evidence expected</span>
+      <p>Feature choice rationale, chosen cluster count, segment summary table, and a business action for each segment.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s42">
+  <span class="eyebrow">Day 2 | Model families</span>
+  <h2>Supervised model families at a glance</h2>
+  <table class="spacer">
+    <tr><th>Family</th><th>Strength</th><th>Typical caution</th></tr>
+    <tr><td>Linear</td><td>Simple and interpretable</td><td>May miss complex patterns</td></tr>
+    <tr><td>Trees</td><td>Flexible and intuitive</td><td>Can overfit without controls</td></tr>
+    <tr><td>Ensembles</td><td>Often strong predictive power</td><td>Harder to explain and govern</td></tr>
+  </table>
+</section>
+
+<section class="slide" id="s43">
+  <span class="eyebrow">Day 2 | Simplicity</span>
+  <h2>Linear and logistic models. When simplicity wins</h2>
+  <p>Simple models are often easier to audit, explain, and monitor. In regulated settings, a modestly weaker but far clearer model may still be the better choice.</p>
+</section>
+
+<section class="slide" id="s44">
+  <span class="eyebrow">Day 2 | Trees</span>
+  <h2>Tree-based models. Why they are popular</h2>
+  <ul>
+    <li>Handle nonlinear patterns well</li>
+    <li>Work with mixed feature types</li>
+    <li>Need less feature scaling</li>
+    <li>Often provide strong practical baselines</li>
+  </ul>
+</section>
+
+<section class="slide" id="s45">
+  <span class="eyebrow">Day 2 | Ensembles</span>
+  <h2>Ensemble intuition. Random forest and boosting</h2>
+  <p>Ensembles combine many trees to improve stability or predictive power. They are powerful, but the governance burden also rises because their decisions are harder to explain end to end.</p>
+</section>
+
+<section class="slide" id="s46">
+  <span class="eyebrow">Day 2 | Trade-offs</span>
+  <h2>Bias variance trade-off</h2>
+  <p>High bias means the model is too simple to capture the signal. High variance means the model is too sensitive to the training data. Strong model selection is about managing both.</p>
+</section>
+
+<section class="slide" id="s47">
+  <span class="eyebrow">Day 2 | Fit quality</span>
+  <h2>Underfitting and overfitting</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Underfitting</span>
+      <p>Poor performance on train and test. The model never learned enough.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Overfitting</span>
+      <p>Strong training performance, weak test performance. The model learned the noise.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s48">
+  <span class="eyebrow">Day 2 | Validation</span>
+  <h2>Cross-validation discipline</h2>
+  <p>Cross-validation reduces the risk of being fooled by one lucky split. It gives a more stable sense of model performance, especially when datasets are not huge.</p>
+</section>
+
+<section class="slide" id="s49">
+  <span class="eyebrow">Day 2 | Fair comparison</span>
+  <h2>Comparing models fairly</h2>
+  <ul>
+    <li>Use the same split logic</li>
+    <li>Use the same target and horizon</li>
+    <li>Hold preprocessing discipline constant</li>
+    <li>Compare against the same metric and threshold assumptions</li>
+  </ul>
+</section>
+
+<section class="slide" id="s50">
+  <span class="eyebrow">Day 2 | Interpretation</span>
+  <h2>Feature importance. Promise and limits</h2>
+  <p>Feature importance can help explain a model, but it does not automatically prove causality. It shows what the model used, not what the business should assume is truly driving behaviour.</p>
+</section>
+
+<section class="slide" id="s51">
+  <span class="eyebrow">Day 2 | Explainability</span>
+  <h2>Explainability versus predictive strength</h2>
+  <p>Sometimes the most powerful model is not the best operating choice. If explainability is required for review, challenge, or customer impact, a slightly weaker but clearer model may be more valuable.</p>
+</section>
+
+<section class="slide" id="s52">
+  <span class="eyebrow">Day 2 | Governance</span>
+  <h2>Governance questions every model owner must answer</h2>
+  <ol>
+    <li>What decision does the model change?</li>
+    <li>What data enters the model and from where?</li>
+    <li>How is performance measured and monitored?</li>
+    <li>Who owns action when the model drifts or fails?</li>
+    <li>What human review exists for sensitive cases?</li>
+  </ol>
+</section>
+
+<section class="slide" id="s53">
+  <span class="eyebrow">Day 2 | Fairness</span>
+  <h2>Fairness and bias in banking decisions</h2>
+  <p>Bias can enter through the target, features, labels, sampling, operational history, or intervention policy. Fairness review should happen before deployment and continue after go-live.</p>
+</section>
+
+<section class="slide" id="s54">
+  <span class="eyebrow">Day 2 | Monitoring</span>
+  <h2>Monitoring drift and degradation</h2>
+  <div class="columns three spacer">
+    <div class="card"><span class="card-label">Data drift</span><p>Inputs change from training conditions.</p></div>
+    <div class="card"><span class="card-label">Concept drift</span><p>The relationship between input and outcome changes.</p></div>
+    <div class="card"><span class="card-label">Outcome drift</span><p>Base rates and operating context move.</p></div>
+  </div>
+</section>
+
+<section class="slide" id="s55">
+  <span class="eyebrow">Day 2 | Human oversight</span>
+  <h2>Human oversight and escalation points</h2>
+  <p>Not every model output should lead directly to action. High-impact decisions often need review queues, override logic, and documented escalation rules.</p>
+</section>
+
+<section class="slide" id="s56">
+  <span class="eyebrow">Day 2 | Risk management</span>
+  <h2>Model risk management essentials</h2>
+  <ul>
+    <li>Inventory and ownership</li>
+    <li>Validation and challenge</li>
+    <li>Approval before release</li>
+    <li>Performance monitoring after release</li>
+    <li>Change control and retirement plan</li>
+  </ul>
+</section>
+
+<section class="slide" id="s57">
+  <span class="eyebrow">Day 2 | Auditability</span>
+  <h2>Documentation and audit trails</h2>
+  <p>A strong ML process leaves evidence: dataset version, feature logic, split logic, metrics, parameter settings, approval notes, and post-deployment monitoring logs.</p>
+</section>
+
+<section class="slide" id="s58">
+  <span class="eyebrow">Day 2 | Lab 3</span>
+  <h2>Lab 3. Compare two candidate models</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Task</span>
+      <p>Compare two model approaches and recommend one for a banking use case with both performance and governance in view.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Evidence expected</span>
+      <p>Comparison table, metric rationale, governance caveats, and final recommendation.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s59">
+  <span class="eyebrow">Day 2 | Case studio</span>
+  <h2>Case discussion. When a weaker model is the better choice</h2>
+  <p>Discuss a situation where a simpler, more explainable model is operationally superior because it is easier to challenge, audit, and act on responsibly.</p>
+</section>
+
+<section class="slide" id="s60">
+  <span class="eyebrow">Day 2 | Close</span>
+  <h2>Day 2 close. What to carry into deployment thinking</h2>
+  <ul>
+    <li>Model comparison is not only a leaderboard exercise.</li>
+    <li>Interpretability and governance affect real deployment choices.</li>
+    <li>Monitoring and ownership must be designed before go-live.</li>
+  </ul>
+</section>
+
+<!-- ======================================================= -->
+<!--  DAY 3: DEPLOYMENT, COMMUNICATION, CAPSTONE             -->
+<!-- ======================================================= -->
+
+<section class="slide" id="s61">
+  <span class="eyebrow">Day 3 | Reset</span>
+  <h2>Day 3 reset. From model to decision system</h2>
+  <p>A model alone creates no value. Value appears when the model is embedded into a decision process with ownership, monitoring, and clear action rules.</p>
+</section>
+
+<section class="slide" id="s62">
+  <span class="eyebrow">Day 3 | Deployment</span>
+  <h2>What deployment actually means in practice</h2>
+  <ol>
+    <li>Move code and data logic into a controlled environment.</li>
+    <li>Define interfaces, schedules, and failure handling.</li>
+    <li>Connect scores to workflow or queue logic.</li>
+    <li>Monitor health, performance, and user response.</li>
+  </ol>
+</section>
+
+<section class="slide" id="s63">
+  <span class="eyebrow">Day 3 | Delivery model</span>
+  <h2>Batch scoring versus real-time scoring</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Batch</span>
+      <p>Good for overnight prioritisation, campaigns, and periodic review lists.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Real time</span>
+      <p>Good for fraud, alerts, routing, or decisions that must happen during interaction.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s64">
+  <span class="eyebrow">Day 3 | Production assumptions</span>
+  <h2>Input contracts and production assumptions</h2>
+  <p>Production systems need explicit contracts. Which fields must arrive? Which can be missing? What ranges are valid? What should happen when a feed breaks?</p>
+</section>
+
+<section class="slide" id="s65">
+  <span class="eyebrow">Day 3 | Monitoring</span>
+  <h2>Monitoring metrics after go-live</h2>
+  <ul>
+    <li>Input quality and schema health</li>
+    <li>Score distribution stability</li>
+    <li>Prediction outcome quality over time</li>
+    <li>Operational queue size and action rate</li>
+    <li>Business outcome lift versus baseline</li>
+  </ul>
+</section>
+
+<section class="slide" id="s66">
+  <span class="eyebrow">Day 3 | Retraining</span>
+  <h2>Feedback loops and retraining triggers</h2>
+  <p>Retraining should be triggered by evidence, not by habit alone. Drift, degraded performance, new policy, or changed product strategy may all require a refresh.</p>
+</section>
+
+<section class="slide" id="s67">
+  <span class="eyebrow">Day 3 | Failure modes</span>
+  <h2>Model failure modes in banking operations</h2>
+  <div class="columns three spacer">
+    <div class="card"><span class="card-label">Data failure</span><p>Broken feeds, stale extracts, schema changes.</p></div>
+    <div class="card"><span class="card-label">Logic failure</span><p>Unexpected feature distributions or hidden leakage.</p></div>
+    <div class="card"><span class="card-label">Operational failure</span><p>Scores generated but no one acts on them.</p></div>
+  </div>
+</section>
+
+<section class="slide" id="s68">
+  <span class="eyebrow">Day 3 | Resilience</span>
+  <h2>Incident handling and rollback logic</h2>
+  <p>When a model behaves badly, the business needs a clear response: alert, investigate, switch to fallback rules, document the event, and review before returning to service.</p>
+</section>
+
+<section class="slide" id="s69">
+  <span class="eyebrow">Day 3 | Third-party models</span>
+  <h2>Responsible use of third-party models</h2>
+  <p>Outsourcing the model does not outsource accountability. The bank still needs clarity on data use, drift handling, explainability, human review, and service-level commitments.</p>
+</section>
+
+<section class="slide" id="s70">
+  <span class="eyebrow">Day 3 | Vendor scrutiny</span>
+  <h2>Vendor questions for ML platforms</h2>
+  <ol>
+    <li>How is performance measured and monitored?</li>
+    <li>What data leaves the bank?</li>
+    <li>What explainability artifacts are available?</li>
+    <li>What rollback and support process exists?</li>
+    <li>What evidence supports fairness and robustness?</li>
+  </ol>
+</section>
+
+<section class="slide" id="s71">
+  <span class="eyebrow">Day 3 | Executive communication</span>
+  <h2>How to communicate model results to non-technical leaders</h2>
+  <p>Leaders do not need every parameter. They need to know what decision changes, how much confidence to place in the result, what risks remain, and what governance surrounds the model.</p>
+</section>
+
+<section class="slide" id="s72">
+  <span class="eyebrow">Day 3 | Translation</span>
+  <h2>Translating metrics into decisions</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Technical</span>
+      <p>Recall improved from 0.58 to 0.76.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Decision-ready</span>
+      <p>The model catches more likely breach cases earlier, but supervisors must accept a higher number of false alerts.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s73">
+  <span class="eyebrow">Day 3 | Honest communication</span>
+  <h2>Telling the story of uncertainty honestly</h2>
+  <p>Strong communicators do not hide uncertainty. They explain which assumptions matter, where evidence is strongest, and what should be monitored after rollout.</p>
+</section>
+
+<section class="slide" id="s74">
+  <span class="eyebrow">Day 3 | Executive summary</span>
+  <h2>Executive summary structure for ML recommendations</h2>
+  <ol>
+    <li>Business objective and decision context</li>
+    <li>Recommended model path</li>
+    <li>Expected benefit and major limitation</li>
+    <li>Governance requirements before deployment</li>
+    <li>Pilot scope and success criteria</li>
+  </ol>
+</section>
+
+<section class="slide" id="s75">
+  <span class="eyebrow">Day 3 | Visual communication</span>
+  <h2>Visuals for model comparison and governance</h2>
+  <div class="columns three spacer">
+    <div class="card"><span class="card-label">Use</span><p>Simple metric tables, confusion matrix views, threshold trade-off charts.</p></div>
+    <div class="card"><span class="card-label">Add</span><p>Clear caveats, ownership notes, and monitoring expectations.</p></div>
+    <div class="card"><span class="card-label">Avoid</span><p>Overloaded charts with no decision message.</p></div>
+  </div>
+</section>
+
+<section class="slide" id="s76">
+  <span class="eyebrow">Day 3 | Capstone</span>
+  <h2>Capstone brief. Recommend a model path for an AJB use case</h2>
+  <p>You will receive a business case and recommend an ML approach. Your recommendation must cover the problem statement, data logic, candidate model path, evaluation metric, governance concerns, and proposed pilot design.</p>
+</section>
+
+<section class="slide" id="s77">
+  <span class="eyebrow">Day 3 | Rubric</span>
+  <h2>Scoring bands. Competent, strong, and exceptional</h2>
+  <table class="spacer">
+    <tr><th>Band</th><th>Standard</th></tr>
+    <tr><td>Competent</td><td>Recommendation is logically structured, metrics are broadly sensible, and governance is acknowledged.</td></tr>
+    <tr><td>Strong</td><td>Recommendation is clearly tied to business action, trade-offs are explicit, and governance is integrated into the model choice.</td></tr>
+    <tr><td>Exceptional</td><td>Recommendation shows disciplined judgement, anticipates challenge questions, and communicates technical nuance in executive-ready language.</td></tr>
+  </table>
+</section>
+
+<section class="slide" id="s78">
+  <span class="eyebrow">Day 3 | Peer review</span>
+  <h2>Peer review prompts for the capstone</h2>
+  <ul>
+    <li>Is the decision context clear?</li>
+    <li>Is the target and time horizon defensible?</li>
+    <li>Are metric choices aligned to operational cost?</li>
+    <li>Are governance and monitoring concrete enough?</li>
+    <li>Would a senior leader trust this recommendation?</li>
+  </ul>
+</section>
+
+<section class="slide" id="s79">
+  <span class="eyebrow">Day 3 | Module close</span>
+  <h2>What you learned, produced, and proved</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">What you learned</span>
+      <p>How to frame ML problems properly, compare models with discipline, and connect metrics to banking decisions and governance.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">What you produced</span>
+      <p>Problem framing artefacts, baseline and comparison outputs, segmentation reasoning, governance notes, and a deployment recommendation.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">What proved success</span>
+      <p>Checkpoint completion, defensible metric choice, explicit caveats, and recommendations that stayed useful for leadership and risk review.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s80">
+  <span class="eyebrow">Day 3 | Next move</span>
+  <h2>Module 2 complete</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">What comes next</span>
+      <p>Module 3 explores neural networks. You will carry forward model judgement, evaluation discipline, and governance thinking into more complex architectures.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Carry forward</span>
+      <p>Start with the decision, protect against leakage, choose metrics that reflect cost, and communicate uncertainty honestly.</p>
+    </div>
+  </div>
+</section>
+
+</div>
+<script src="/python-training/assets/deck.js"></script>
+</body>
+</html>

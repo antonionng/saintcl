@@ -1,4 +1,15 @@
-# Participant Workbook
+# Module 1 | Python for Data -- Participant Workbook
+
+## Programme Context
+
+This workbook supports Module 1 of the AJB AI and Data Training Programme. It is the technical foundation for everything that follows. The module runs across three days and teaches you how to move from raw banking extracts to analysis that can be challenged, trusted, and handed into later machine learning work.
+
+## Start Here
+
+- Why this module matters: if you cannot inspect, clean, and explain the data properly, every later model, dashboard, or recommendation becomes weaker.
+- Your journey in this module: set up the notebook correctly, inspect the data carefully, build trustworthy outputs, and finish with leadership-ready reporting plus ML handoff artefacts.
+- What you will produce: triage summaries, cleaned tables, KPI views, charts, exception views, and handoff files.
+- How validation works: each lab has required artefacts, rubrics, and reflection prompts. Your work should be evidence-based and defendable under challenge.
 
 ## How To Use This Workbook
 - Treat each activity as a professional simulation, not only a coding task.
@@ -15,6 +26,13 @@
 - `Exceptional`: analytically defensible under challenge, selective in evidence, and clear about limits.
 
 ## Day 1 | Triage and Transformation
+
+### Setup Checklist
+- open `notebooks/day1_python_foundations.ipynb`
+- run the setup cell before anything else
+- confirm `DATA_DIR` points to `../data`
+- confirm `OUTPUT_DIR` points to `../outputs/day1`
+- stop and fix any import, path, or kernel issue before moving into Exercise A
 
 ### Mission Outcome
 By the end of Day 1 you should be able to inspect a new banking extract, state whether it is fit for first-pass analysis, and explain the main data risks clearly.
@@ -347,3 +365,20 @@ Complete these prompts before closing:
 - One way I will improve how I define metrics:
 - One way I will communicate uncertainty more clearly:
 - One assumption I will now test before I trust a dataset:
+
+## Delivery Routes
+
+### Intro Route
+- Stay on the core tasks first and make each checkpoint visible before moving on.
+- Prioritise defendable outputs over extra coding flourishes.
+- Use stretch tasks only after your core artefacts are complete.
+
+### Advanced Route
+- Move through the core tasks quickly, then test alternative denominator choices, richer QC exports, and stronger executive notes.
+- Use the stretch prompts to make your reasoning more challenge-ready, not just longer.
+- Help peers during debriefs by explaining your assumptions clearly rather than skipping ahead silently.
+
+## Virtual Pacing Reminders
+- Treat the first 10 to 15 minutes of each day as environment and orientation time.
+- Expect a checkpoint after each major lab block so the group can re-align.
+- If you fall behind, finish the required artefact first and return to stretch work only if time allows.

@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Command,
   Database,
+  GraduationCap,
   LayoutDashboard,
   type LucideIcon,
   Settings,
@@ -28,7 +29,7 @@ type NavigationItem = {
   href: string;
   label: string;
   icon: LucideIcon;
-  requires?: "canManageConsole";
+  requires?: "canManageConsole" | "canManagePlatformTraining";
 };
 
 type NavigationSection = {
@@ -64,6 +65,8 @@ export function DashboardSidebar({
       canViewAllAgents: boolean;
       canManageConsole: boolean;
       canManageAdminTools: boolean;
+      canManageTraining: boolean;
+      canManagePlatformTraining: boolean;
     };
   };
   collapsed?: boolean;
@@ -178,6 +181,7 @@ export function DashboardSidebar({
         { href: "/agents", label: "Agents", icon: Command },
         { href: "/observability", label: "Observability", icon: Activity },
         { href: "/knowledge", label: "Knowledge", icon: Database },
+        { href: "/training", label: "Training", icon: GraduationCap, requires: "canManagePlatformTraining" },
         { href: "/account", label: "Account", icon: UserCircle2 },
       ],
     },

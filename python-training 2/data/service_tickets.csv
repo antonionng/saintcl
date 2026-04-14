@@ -1,0 +1,9 @@
+ticket_id,customer_id,opened_ts,category,resolution_mins,branch_id,channel
+S4001,C1001,2026-04-03 09:10:00,Card dispute,95,B-101,Call Centre
+S4002,C1003,2026-04-11 14:40:00,Mobile app,42,B-118,Digital
+S4003,C1004,2026-04-17 10:05:00,Statement request,18,B-201,Branch
+S4004,C1005,2026-05-02 16:20:00,KYC query,125,B-224,Call Centre
+S4005,C1007,2026-05-15 11:30:00,ATM issue,34,B-411,Branch
+S4006,C1009,2026-05-21 15:50:00,Fee query,28,B-101,Digital
+S4007,C1011,2026-06-09 09:45:00,Loan status,64,B-118,Call Centre
+S4008,C1012,2026-06-23 13:15:00,Account closure,80,B-313,Branch

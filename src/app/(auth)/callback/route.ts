@@ -9,10 +9,15 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next");
+  const isAcademyNext = Boolean(next && next.startsWith("/academy/"));
 
   if (code) {
     const supabase = await createClient();
     await supabase?.auth.exchangeCodeForSession(code);
+  }
+
+  if (isAcademyNext) {
+    return NextResponse.redirect(`${origin}${next}`);
   }
 
   const session = await getCurrentOrg();

@@ -1,0 +1,25 @@
+scenario,control_owner,rollback_trigger,monitoring_metric
+SLA breach predictor,operations lead,recall below 0.72,weekly recall
+Retention propensity,product owner,precision below 0.68,precision by segment
+Complaint escalation,risk manager,drift above threshold,prediction drift
+Collections prioritisation,compliance lead,false positives spike,override rate
+Fraud review assist,service head,override rate rises above 20%,false-negative review
+Trade finance routing,operations lead,recall below 0.72,weekly recall
+KYC refresh triage,product owner,precision below 0.68,precision by segment
+Cross-sell next best action,risk manager,drift above threshold,prediction drift
+SLA breach predictor,compliance lead,false positives spike,override rate
+Retention propensity,service head,override rate rises above 20%,false-negative review
+Complaint escalation,operations lead,recall below 0.72,weekly recall
+Collections prioritisation,product owner,precision below 0.68,precision by segment
+Fraud review assist,risk manager,drift above threshold,prediction drift
+Trade finance routing,compliance lead,false positives spike,override rate
+KYC refresh triage,service head,override rate rises above 20%,false-negative review
+Cross-sell next best action,operations lead,recall below 0.72,weekly recall
+SLA breach predictor,product owner,precision below 0.68,precision by segment
+Retention propensity,risk manager,drift above threshold,prediction drift
+Complaint escalation,compliance lead,false positives spike,override rate
+Collections prioritisation,service head,override rate rises above 20%,false-negative review
+Fraud review assist,operations lead,recall below 0.72,weekly recall
+Trade finance routing,product owner,precision below 0.68,precision by segment
+KYC refresh triage,risk manager,drift above threshold,prediction drift
+Cross-sell next best action,compliance lead,false positives spike,override rate
