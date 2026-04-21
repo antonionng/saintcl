@@ -82,6 +82,18 @@ pnpm openclaw onboard --auth-choice apiKey --token-provider openrouter --token "
 
 OpenRouter does offer many free models, usually marked with a `:free` suffix. Availability and rate limits change over time, so `openrouter/auto` is the safer default for general use, while a specific `:free` model is better if you want to constrain cost.
 
+## Training Copilot
+
+The AJB training programme has its own governed AI surface so participants can use GenAI inside notebooks without bypassing the platform. The same `OPENROUTER_API_KEY` powers it.
+
+- API: `POST /api/training/participant/copilot` (auth via the academy cookie or a Bearer token equal to the participant's check-in token).
+- Lib: `src/lib/training-copilot.ts` (per-module default model, participant allowlist, PII redaction, audit log).
+- Notebook helper: `notebook-helpers/saintclaw_copilot.py` exposes `ask`, `compare`, `critique`, `explain`.
+- Audit table: `public.training_copilot_calls` records model, tokens, cost, redactions, and exercise per call.
+- Policy: see `docs/training/copilot-ai-use-policy.md` for what participants may and may not do.
+
+A worked example using `compare()` against two OpenRouter models lives in `ai-in-banking-and-finance/notebooks/day1_use_case_and_prompt_studio.ipynb` (Exercise 3.5).
+
 ## Batch Prerequisites
 
 Use these prerequisites when turning the current working tree into staged deployments instead of one broad rollout.

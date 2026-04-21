@@ -19,8 +19,12 @@ export function assertCommandAllowed(command: string) {
 }
 
 export function assertRepoAllowed(repo: string | undefined, allowlists: string[]) {
-  if (!repo || allowlists.length === 0) {
+  if (!repo) {
     return;
+  }
+
+  if (allowlists.length === 0) {
+    throw new Error("No repo allowlists configured. Add at least one allowlist entry before running repo-scoped commands.");
   }
 
   const allowed = allowlists.some((pattern) => repo.includes(pattern));

@@ -60,7 +60,17 @@ export type TrainingModuleEnhancement = {
   toolComparisonRows?: TrainingModuleToolComparisonRow[];
 };
 
-export type TrainingParticipantExperience = "python-workspace" | "checkpoint" | "deck";
+export type TrainingParticipantExperience =
+  | "python-workspace"
+  | "checkpoint"
+  | "deck"
+  | "cohort-orientation"
+  | "ml-lab"
+  | "neural-lab"
+  | "viz-studio"
+  | "flow-designer"
+  | "strategy-canvas"
+  | "prompt-studio";
 
 export type TrainingModuleDelivery = {
   deck: TrainingModuleDeck;
@@ -70,6 +80,17 @@ export type TrainingModuleDelivery = {
   notebookPreviewPaths?: string[];
   resources: TrainingModuleResource[];
 };
+
+// Default participant access for a module.
+//   - "open": every checked-in participant can open the module regardless of
+//     prior progress. Use for modules we have explicitly released to the
+//     cohort.
+//   - "locked": participants cannot open the module from the academy by
+//     default; only a per-cohort facilitator unlock or an existing started
+//     enrollment grants access. Use for modules we are not ready to release.
+//   - omitted: fall back to sequential gating (open the next module after the
+//     previous one is completed).
+export type ParticipantAccessPolicy = "open" | "locked";
 
 export type TrainingModuleBlueprint = {
   slug: string;
@@ -91,6 +112,7 @@ export type TrainingModuleBlueprint = {
   labs: TrainingLabBlueprint[];
   contentModel: TrainingContentModel;
   reviewWindow?: TrainingReviewWindow;
+  participantAccess?: ParticipantAccessPolicy;
 };
 
 export type TrainingProgrammeBlueprint = {
@@ -134,46 +156,113 @@ export const ajbTrainingProgramme: TrainingProgrammeBlueprint = {
   status: "active",
   audience: sharedAudience,
   description:
-    "A seven-module academy covering Python, machine learning, neural networks, business AI, automation, advanced visualisation, and AI in banking and finance.",
+    "A seven-module academy covering Python, machine learning, neural networks, business AI, automation, advanced visualisation, and AI in banking and finance, opened by a Day 1 programme orientation that lays the foundations for the three months ahead.",
   deliveryMode: "online",
   modules: [
+    {
+      slug: "programme-orientation",
+      title: "Programme Orientation",
+      sequence: 0,
+      status: "ready",
+      deliveryMode: "online",
+      durationDays: 1,
+      hoursPerDay: 5,
+      dates: { startsOn: "2026-04-18", endsOn: "2026-04-18" },
+      summary:
+        "A Day 1 orientation that welcomes the cohort, walks the seven-module journey, activates the studio, and leaves every learner with a written personal achievement plan locked down for the night.",
+      audience: sharedAudience,
+      learningObjectives: [
+        "Meet the cohort and the facilitation team and agree how the programme will run.",
+        "Understand the arc of the seven modules and the artefacts that link them together.",
+        "Sign in to the SaintClaw studio, complete a profile, and post on the cohort feed.",
+        "Write a four-section personal achievement plan, lock it down for tonight, and commit to it aloud.",
+      ],
+      keyThemes: [
+        "Cohort connection",
+        "Programme journey and artefact chain",
+        "Studio activation",
+        "Personal achievement planning",
+      ],
+      coreOutputs: [
+        "32-slide orientation deck",
+        "Three breakouts (35 min future-self portrait, 30 min studio shakedown, 40 min achievement plan)",
+        "Personal achievement plan written and locked down (offline) with a one-line headline posted in the cohort feed",
+        "Spoken commitments captured on Day 1",
+      ],
+      labs: [],
+      contentModel: {
+        targetSlideCount: 32,
+        labCount: 0,
+        assetPack: ["participant slide deck", "facilitator guide", "personal achievement plan template"],
+        sections: [
+          { id: "welcome", title: "Welcome and cohort connection", slideCount: 6 },
+          { id: "journey", title: "Programme arc and future-self portrait", slideCount: 11 },
+          { id: "studio", title: "Studio activation and shakedown", slideCount: 6 },
+          { id: "plan", title: "Personal achievement plan and Day 1 close", slideCount: 9 },
+        ],
+      },
+    },
     {
       slug: "python-for-data",
       title: "Python for Data",
       sequence: 1,
       status: "ready",
+      participantAccess: "open",
       deliveryMode: "online",
-      durationDays: 3,
+      durationDays: 2,
       hoursPerDay: 4,
-      dates: { startsOn: "2026-04-19", endsOn: "2026-04-21" },
+      dates: { startsOn: "2026-04-20", endsOn: "2026-04-21" },
       summary:
-        "Beginner-to-intermediate Python for banking analytics, built around retail banking datasets, data quality, visualisation, and ML handoff readiness.",
+        "Use AI to surface defendable truths from bank data. A two-day, hands-on module that teaches banking data judgement, prompting and verification craft, and the just-enough Python literacy needed to read and challenge AI-assisted analysis.",
       audience: sharedAudience,
       learningObjectives: [
-        "Explain the role of Python in banking analytics, reporting, and automation.",
-        "Write structured Python scripts and notebooks to process banking datasets.",
-        "Use NumPy and Pandas to clean, validate, and transform customer, account, and transaction data.",
-        "Create charts and summaries suitable for leadership communication.",
+        "Brief, engage, verify, and defend AI-assisted analysis on real bank data.",
+        "Make defendable judgements about extract fitness, KPI definitions, and data quality posture.",
+        "Read AI-generated python well enough to spot wrong joins, drifted definitions, and silent leakage.",
+        "Produce leadership-ready outputs and an ML handoff that survive challenge.",
       ],
-      keyThemes: ["Python scripting fundamentals", "Pandas and NumPy", "Data quality", "Visual storytelling"],
-      coreOutputs: ["80-slide deck", "8 labs", "participant workbook", "solution notebook"],
+      keyThemes: [
+        "Working with AI on banking data",
+        "Banking data judgement",
+        "Definition discipline and KPI defence",
+        "Verification habits and challenge questions",
+        "ML handoff readiness",
+      ],
+      coreOutputs: [
+        "Two-day deck",
+        "4 labs running the brief-engage-verify-defend loop",
+        "Pre-baked challenge-question bank per lab",
+        "ML-ready handoff table plus participant-written data dictionary",
+      ],
       labs: [
         {
-          slug: "setup-sprint",
-          title: "Complete the setup sprint",
-          deliverable: "A working notebook environment with visible datasets",
-          successSignal: "Participants can run the first import and inspection cells without errors",
+          slug: "lab-a-triage",
+          title: "Triage an extract",
+          deliverable: "A defendable fitness judgement plus a one-paragraph defence",
+          successSignal: "Participants commit to fit / partly fit / not yet fit with evidence",
         },
         {
-          slug: "data-triage",
-          title: "Triage and clean the transaction extract",
-          deliverable: "A triage summary and cleaned transaction frame",
-          successSignal: "Participants can defend data fitness and export rejects",
+          slug: "lab-b-kpi",
+          title: "Define and build a branch KPI",
+          deliverable: "A branch KPI table with explicit numerator, denominator, exclusion, and cut-off rules",
+          successSignal: "Participants ship a defended version after stress-testing one alternative denominator",
+        },
+        {
+          slug: "lab-c-pack",
+          title: "Executive performance pack",
+          deliverable: "Two charts, one exception view, and one written caveat",
+          successSignal: "The pack survives the coach arguing against its interpretation",
+        },
+        {
+          slug: "lab-d-handoff",
+          title: "ML-ready handoff table",
+          deliverable: "A customer-level feature table with explicit cut-off plus a hand-written data dictionary",
+          successSignal: "Participants identify and document at least one leakage risk in their own words",
         },
       ],
       contentModel: {
-        targetSlideCount: 80,
-        labCount: 8,
+        targetSlideCount: 60,
+        labCount: 4,
         assetPack: standardModuleAssets,
         sections: buildStandardSections(),
       },
@@ -188,6 +277,7 @@ export const ajbTrainingProgramme: TrainingProgrammeBlueprint = {
       title: "Machine Learning Training",
       sequence: 2,
       status: "scheduled",
+      participantAccess: "locked",
       deliveryMode: "online",
       durationDays: 3,
       hoursPerDay: 4,
@@ -234,6 +324,7 @@ export const ajbTrainingProgramme: TrainingProgrammeBlueprint = {
       title: "Neural Networks",
       sequence: 3,
       status: "scheduled",
+      participantAccess: "locked",
       deliveryMode: "online",
       durationDays: 2,
       hoursPerDay: 4,
@@ -280,6 +371,7 @@ export const ajbTrainingProgramme: TrainingProgrammeBlueprint = {
       title: "Business Applications in AI",
       sequence: 4,
       status: "draft",
+      participantAccess: "locked",
       deliveryMode: "online",
       durationDays: 2,
       hoursPerDay: 4,
@@ -314,6 +406,7 @@ export const ajbTrainingProgramme: TrainingProgrammeBlueprint = {
       title: "Automation in AI",
       sequence: 5,
       status: "draft",
+      participantAccess: "locked",
       deliveryMode: "online",
       durationDays: 2,
       hoursPerDay: 4,
@@ -348,6 +441,7 @@ export const ajbTrainingProgramme: TrainingProgrammeBlueprint = {
       title: "Advanced Data Visualization",
       sequence: 6,
       status: "draft",
+      participantAccess: "locked",
       deliveryMode: "online",
       durationDays: 3,
       hoursPerDay: 4,
@@ -382,6 +476,7 @@ export const ajbTrainingProgramme: TrainingProgrammeBlueprint = {
       title: "AI in Banking and Finance",
       sequence: 7,
       status: "draft",
+      participantAccess: "locked",
       deliveryMode: "online",
       durationDays: 1,
       hoursPerDay: 4,
@@ -415,6 +510,19 @@ export const ajbTrainingProgramme: TrainingProgrammeBlueprint = {
 };
 
 const trainingModuleDeliveryMap: Record<string, TrainingModuleDelivery> = {
+  "programme-orientation": {
+    deck: {
+      href: "/programme-orientation",
+      title: "Programme Orientation participant deck",
+    },
+    workbookHref: "/programme-orientation/participant-workbook.md",
+    facilitatorHref: "/facilitator/programme-orientation",
+    participantExperience: "cohort-orientation",
+    resources: [
+      { label: "Participant deck", href: "/programme-orientation", kind: "deck" },
+      { label: "Facilitator guide", href: "/programme-orientation/facilitator-guide.md", kind: "guide" },
+    ],
+  },
   "python-for-data": {
     deck: {
       href: "/python-training",
@@ -450,7 +558,7 @@ const trainingModuleDeliveryMap: Record<string, TrainingModuleDelivery> = {
     },
     workbookHref: "/machine-learning-training/participant-workbook.md",
     facilitatorHref: "/facilitator/machine-learning-training",
-    participantExperience: "python-workspace",
+    participantExperience: "ml-lab",
     notebookPreviewPaths: [
       "notebooks/day1_problem_framing_and_baselines.ipynb",
       "notebooks/day2_segmentation_and_model_review.ipynb",
@@ -492,7 +600,7 @@ const trainingModuleDeliveryMap: Record<string, TrainingModuleDelivery> = {
     },
     workbookHref: "/neural-networks/participant-workbook.md",
     facilitatorHref: "/facilitator/neural-networks",
-    participantExperience: "python-workspace",
+    participantExperience: "neural-lab",
     notebookPreviewPaths: [
       "notebooks/day1_neural_foundations.ipynb",
       "notebooks/day2_cnn_transfer_learning.ipynb",
@@ -519,7 +627,7 @@ const trainingModuleDeliveryMap: Record<string, TrainingModuleDelivery> = {
     },
     workbookHref: "/business-applications-in-ai/participant-workbook.md",
     facilitatorHref: "/facilitator/business-applications-in-ai",
-    participantExperience: "checkpoint",
+    participantExperience: "strategy-canvas",
     resources: [
       { label: "Participant deck", href: "/business-applications-in-ai", kind: "deck" },
       { label: "Participant workbook", href: "/business-applications-in-ai/participant-workbook.md", kind: "workbook" },
@@ -538,7 +646,7 @@ const trainingModuleDeliveryMap: Record<string, TrainingModuleDelivery> = {
     },
     workbookHref: "/automation-in-ai/participant-workbook.md",
     facilitatorHref: "/facilitator/automation-in-ai",
-    participantExperience: "checkpoint",
+    participantExperience: "flow-designer",
     resources: [
       { label: "Participant deck", href: "/automation-in-ai", kind: "deck" },
       { label: "Participant workbook", href: "/automation-in-ai/participant-workbook.md", kind: "workbook" },
@@ -557,7 +665,7 @@ const trainingModuleDeliveryMap: Record<string, TrainingModuleDelivery> = {
     },
     workbookHref: "/advanced-data-visualization/participant-workbook.md",
     facilitatorHref: "/facilitator/advanced-data-visualization",
-    participantExperience: "python-workspace",
+    participantExperience: "viz-studio",
     notebookPreviewPaths: [
       "notebooks/day1_chart_fundamentals.ipynb",
       "notebooks/day2_dashboard_composition.ipynb",
@@ -583,7 +691,7 @@ const trainingModuleDeliveryMap: Record<string, TrainingModuleDelivery> = {
     },
     workbookHref: "/ai-in-banking-and-finance/participant-workbook.md",
     facilitatorHref: "/facilitator/ai-in-banking-and-finance",
-    participantExperience: "checkpoint",
+    participantExperience: "prompt-studio",
     resources: [
       { label: "Participant deck", href: "/ai-in-banking-and-finance", kind: "deck" },
       { label: "Participant workbook", href: "/ai-in-banking-and-finance/participant-workbook.md", kind: "workbook" },
@@ -597,6 +705,39 @@ const trainingModuleDeliveryMap: Record<string, TrainingModuleDelivery> = {
 };
 
 const trainingModuleEnhancementMap: Record<string, TrainingModuleEnhancement> = {
+  "programme-orientation": {
+    bankingContext: [
+      "Day 1 is the cohort's first shared experience as a working unit; warm introductions and a shared working agreement set the tone for every later module.",
+      "AJB participants arrive from different functions, so the orientation gives the room a common map of the seven-module journey before any technical content begins.",
+      "The studio is the bank's home for the programme; activating it on Day 1 prevents access and login friction from polluting Module 1 the next morning.",
+    ],
+    pacingNotes: [
+      "Five hours including breaks. Use the four blocks (welcome, journey, studio, plan) as your spine and protect each breakout's full timer.",
+      "Resist the urge to make Day 1 technical. The value is connection, navigation, and a written personal plan, not pre-teaching Python.",
+      "If the room moves quickly, lengthen the trio review in Breakout 3 so each plan gets sharper, not so the day finishes early.",
+    ],
+    engagementPrompts: [
+      "Use the paired icebreaker to make sure every voice is heard before any module is described.",
+      "After the future-self portrait breakout, surface the two or three worries that appear across multiple groups as cohort signals to coach into.",
+      "Close with each participant speaking one specific, dated commitment aloud to the room.",
+    ],
+    learnerTracks: [
+      {
+        id: "intro",
+        title: "Intro path",
+        fit: "Best for participants who are newer to AI, data work, or formal cohort programmes.",
+        guidance: "Stay close to the four-block structure, use the worked example for the achievement plan, and lean on your trio for sharpening questions.",
+        outcome: "Finish Day 1 inside the studio with a clear, concise four-section achievement plan and a spoken commitment.",
+      },
+      {
+        id: "advanced",
+        title: "Advanced path",
+        fit: "Best for participants who already lead programmes, projects, or technical teams at the bank.",
+        guidance: "Use Breakout 1 to mentor someone newer in your group and use Breakout 3 to write a more ambitious capstone-grade plan.",
+        outcome: "Finish Day 1 with a stretch achievement plan, named delivery moments inside your function, and a leadership-quality commitment.",
+      },
+    ],
+  },
   "python-for-data": {
     bankingContext: [
       "Banking data comes from customer, account, transaction, branch, and service systems. Analysts need a repeatable way to inspect and join them before any KPI or model work starts.",
@@ -900,7 +1041,15 @@ export function getTrainingModuleWorkbookHref(moduleSlug: string) {
   return getTrainingModuleDelivery(moduleSlug)?.workbookHref ?? null;
 }
 
-export function getTrainingModuleFacilitatorHref(moduleSlug: string) {
+export function getTrainingModuleFacilitatorHref(
+  moduleSlug: string,
+  mode: "prepare" | "deliver" | "review" = "prepare",
+) {
+  if (!getTrainingModuleDelivery(moduleSlug)) return null;
+  return `/facilitator/m/${moduleSlug}/${mode}`;
+}
+
+export function getTrainingModuleLegacyFacilitatorHref(moduleSlug: string) {
   return getTrainingModuleDelivery(moduleSlug)?.facilitatorHref ?? null;
 }
 

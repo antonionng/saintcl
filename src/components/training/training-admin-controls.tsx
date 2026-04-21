@@ -16,8 +16,8 @@ type ApiResponse = {
 };
 
 export function TrainingAdminControls() {
-  const [cohortName, setCohortName] = useState("AJB April 2026 Cohort");
-  const [inviteCode, setInviteCode] = useState("ajb-apr-2026");
+  const [cohortName, setCohortName] = useState("AJB Enterprise Banking Cohort");
+  const [inviteCode, setInviteCode] = useState("ajb-enterprise-banking");
   const [startsOn, setStartsOn] = useState("2026-04-19");
   const [endsOn, setEndsOn] = useState("2026-07-16");
   const [loadingAction, setLoadingAction] = useState<string | null>(null);

@@ -45,6 +45,22 @@ export type TrainingContentKind =
   | "facilitator_guide"
   | "solution";
 export type TrainingSubmissionStatus = "draft" | "submitted" | "reviewed";
+export type TrainingScope =
+  | "module"
+  | "checkpoint"
+  | "task"
+  | "assessment_question"
+  | "notebook";
+export type TrainingSubmissionKind =
+  | "notebook_snapshot"
+  | "artifact_link"
+  | "file_upload"
+  | "workbench_state"
+  | "prompt_variant"
+  | "model_card"
+  | "chart_spec"
+  | "flow_design"
+  | "strategy_canvas";
 export type TrainingDeliveryMode = "online" | "hybrid" | "in_person";
 
 export interface AgentRecord {
@@ -302,6 +318,11 @@ export interface OrgPolicyRecord {
     premiumOutputCostPerMillionCents?: number | null;
   };
   requireApprovalOnSpend: boolean;
+  skillPolicy?: {
+    allowedSources: Array<"clawhub" | "github" | "custom">;
+    allowedTrustTiers: Array<"official" | "curated" | "community">;
+    requireApprovalForCommunity: boolean;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -445,6 +466,7 @@ export interface TrainingCohortRecord {
   startsOn?: string | null;
   endsOn?: string | null;
   status: "draft" | "scheduled" | "active" | "complete";
+  metadata: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
@@ -458,10 +480,33 @@ export interface TrainingParticipantRecord {
   email: string;
   employeeId?: string | null;
   status: TrainingParticipantStatus;
+  checkInToken?: string | null;
   checkedInAt?: string | null;
   lastSeenAt?: string | null;
+  displayName?: string | null;
+  roleAtCompany?: string | null;
+  bio?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TrainingCohortPostRecord {
+  id: string;
+  orgId?: string | null;
+  cohortId: string;
+  participantId: string | null;
+  facilitatorUserId: string | null;
+  body: string;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+  author: {
+    kind: "participant" | "facilitator";
+    participantId?: string | null;
+    facilitatorUserId?: string | null;
+    displayName: string;
+    roleAtCompany?: string | null;
+  };
 }
 
 export interface TrainingEnrollmentRecord {
@@ -520,8 +565,59 @@ export interface TrainingSubmissionRecord {
   artifactUrl?: string | null;
   summary?: string | null;
   metadata: Record<string, unknown>;
+  scope: TrainingScope;
+  scopeId?: string | null;
+  kind?: TrainingSubmissionKind | null;
   submittedAt?: string | null;
   reviewedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type TrainingAiAssessmentScoreBand =
+  | "proficient"
+  | "developing"
+  | "needs_retry"
+  | "not_graded";
+
+export interface TrainingAiAssessmentCriterionScore {
+  criterion: string;
+  score: TrainingAiAssessmentScoreBand;
+  notes: string;
+}
+
+export interface TrainingAiAssessmentRuleSignal {
+  taskId?: string | null;
+  taskTitle?: string | null;
+  state: "passed" | "retry_needed" | "guided_complete" | "not_started";
+  message?: string | null;
+}
+
+export interface TrainingAiAssessmentRecord {
+  scoreBand: TrainingAiAssessmentScoreBand;
+  criterionScores: TrainingAiAssessmentCriterionScore[];
+  summary: string;
+  suggestedNextStep: string;
+  ruleSignals: TrainingAiAssessmentRuleSignal[];
+  model: string | null;
+  status: "completed" | "failed" | "skipped";
+  facilitatorOverride?: {
+    scoreBand?: TrainingAiAssessmentScoreBand | null;
+    notes?: string | null;
+    reviewedAt?: string | null;
+  } | null;
+}
+
+export interface TrainingParticipantNoteRecord {
+  id: string;
+  orgId?: string | null;
+  participantId: string;
+  moduleId: string;
+  scope: TrainingScope;
+  scopeId: string;
+  bodyMarkdown: string;
+  bodyJson: Record<string, unknown>;
+  metadata: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
@@ -572,6 +668,8 @@ export interface WorkspaceMembership {
     agent_brief?: string;
     logo_path?: string | null;
     logoUrl?: string | null;
+    website_enriched_url?: string | null;
+    website_enriched_at?: string | null;
     created_at: string;
   };
   role: OrgRole;
@@ -599,6 +697,8 @@ export interface CurrentOrgSession {
     agent_brief?: string;
     logo_path?: string | null;
     logoUrl?: string | null;
+    website_enriched_url?: string | null;
+    website_enriched_at?: string | null;
     created_at: string;
   };
   role: OrgRole;

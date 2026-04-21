@@ -22,6 +22,13 @@ export async function POST() {
     return NextResponse.json({ error: { message: "Not authenticated" } }, { status: 401 });
   }
 
+  if (!session.capabilities.canManageAgents) {
+    return NextResponse.json(
+      { error: { message: "Agent provisioning requires admin access." } },
+      { status: 403 },
+    );
+  }
+
   if (!isOpenClawConfigured()) {
     return NextResponse.json(
       { error: { message: "OpenClaw gateway is not configured for this environment." } },

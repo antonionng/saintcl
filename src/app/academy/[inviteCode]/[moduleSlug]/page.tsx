@@ -6,7 +6,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { PageHeader } from "@/components/dashboard/page-header";
-import { ModuleLearningShell } from "@/components/training/module-learning-shell";
+import { ModuleJourneyShell } from "@/components/training/module-journey-shell";
+import { ModuleMap } from "@/components/training/module-map";
+import { isTrainingUxUnifiedEnabled } from "@/lib/training-feature-flags";
+import { getModuleScriptPack } from "@/lib/training-scripts/registry";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveTrainingLabCheckpoints } from "@/lib/training-lab-checkpoints";
 import { createClient } from "@/lib/supabase/server";
@@ -224,6 +227,11 @@ export default async function AcademyModulePage({
   const { inviteCode, moduleSlug } = await params;
   const trainingModule = ajbTrainingProgramme.modules.find((candidate) => candidate.slug === moduleSlug);
   const cohort = await getTrainingCohortByInviteCode(inviteCode);
+
+  if (!cohort) {
+    redirect(`/academy/${inviteCode}`);
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -231,7 +239,7 @@ export default async function AcademyModulePage({
   const checkInToken = await getTrainingParticipantCheckInToken();
   const cookieParticipantSession = checkInToken ? await getTrainingParticipantByCheckInToken(checkInToken) : null;
   const authParticipantSession =
-    user && cohort
+    user
       ? await getTrainingParticipantByInviteForAuthUser({
           inviteCode,
           authUserId: user.id,
@@ -239,30 +247,40 @@ export default async function AcademyModulePage({
         })
       : null;
   const participantSession =
-    cookieParticipantSession?.cohort?.id === cohort?.id ? cookieParticipantSession : authParticipantSession;
-  const isReviewPreview = !cohort;
-  const isPublicReview = isReviewPreview || (Boolean(cohort) && !participantSession);
-  const cohortLabel = cohort?.name ?? "AJB review preview";
+    cookieParticipantSession?.cohort?.id === cohort.id ? cookieParticipantSession : authParticipantSession;
+
+  if (!participantSession || participantSession.cohort?.id !== cohort.id) {
+    redirect(`/academy/${inviteCode}`);
+  }
+
+  const cohortLabel = cohort.name ?? "AJB cohort";
   const moduleResources = getTrainingModuleResources(moduleSlug);
   const moduleDeck = getTrainingModuleDeck(moduleSlug);
   const moduleWorkbookHref = getTrainingModuleWorkbookHref(moduleSlug) ?? "#";
   const participantExperience = getTrainingModuleParticipantExperience(moduleSlug);
   const executableNotebookResources = moduleResources.filter((resource) => resource.kind === "notebook");
-  const pythonWorkspacePreviews =
-    participantExperience === "python-workspace"
-      ? await getExecutableWorkspacePreviews({
-          notebookResources: executableNotebookResources.map((resource) => ({
-            label: resource.label,
-            href: resource.href,
-          })),
-          successSignals: trainingModule?.labs.map((lab) => lab.successSignal) ?? [],
-        })
-      : [];
-  const checkpointNotebookResources =
-    participantExperience === "checkpoint" ? moduleResources.filter((resource) => resource.kind === "notebook") : [];
+  const experiencesWithExecutableNotebooks: typeof participantExperience[] = [
+    "python-workspace",
+    "ml-lab",
+    "neural-lab",
+    "viz-studio",
+  ];
+  const wantsExecutableNotebooks = experiencesWithExecutableNotebooks.includes(participantExperience);
+  const pythonWorkspacePreviews = wantsExecutableNotebooks
+    ? await getExecutableWorkspacePreviews({
+        notebookResources: executableNotebookResources.map((resource) => ({
+          label: resource.label,
+          href: resource.href,
+        })),
+        successSignals: trainingModule?.labs.map((lab) => lab.successSignal) ?? [],
+      })
+    : [];
+  const checkpointNotebookResources = !wantsExecutableNotebooks
+    ? moduleResources.filter((resource) => resource.kind === "notebook")
+    : [];
   const [workbookHtml, renderedNotebookPreviews] = await Promise.all([
     moduleWorkbookHref !== "#" ? renderWorkbookHtmlFromHref(moduleWorkbookHref) : Promise.resolve(null),
-    participantExperience === "checkpoint"
+    !wantsExecutableNotebooks
       ? Promise.all(
           checkpointNotebookResources.map((resource) =>
             readRenderedNotebookFromHref({
@@ -286,12 +304,10 @@ export default async function AcademyModulePage({
     redirect(`/academy/${inviteCode}`);
   }
 
-  const [syncedModules, facilitatorUnlocks] = cohort
-    ? await Promise.all([
-        getTrainingModulesForProgramme(cohort.programmeId),
-        getTrainingModuleUnlockMapByInvite(inviteCode),
-      ])
-    : [[], {}];
+  const [syncedModules, facilitatorUnlocks] = await Promise.all([
+    getTrainingModulesForProgramme(cohort.programmeId),
+    getTrainingModuleUnlockMapByInvite(inviteCode),
+  ]);
   const moduleAccessStates = buildParticipantModuleAccessState({
     modules: ajbTrainingProgramme.modules,
     syncedModules,
@@ -309,7 +325,7 @@ export default async function AcademyModulePage({
       : [];
   const currentAccess = moduleAccessStates.find((item) => item.moduleSlug === moduleSlug);
 
-  if (!isPublicReview && !currentAccess?.canOpen) {
+  if (!currentAccess?.canOpen) {
     redirect(`/academy/${inviteCode}`);
   }
 
@@ -330,16 +346,13 @@ export default async function AcademyModulePage({
   const moduleConnectionCopy = prevModule
     ? `This module builds on ${prevModule.title} and prepares you for ${nextModule?.title ?? "the programme close"}.`
     : `This is the foundation module for the full programme and sets up ${nextModule?.title ?? "the next stage"}.`;
-  const defaultModuleTab = currentAccess?.enrollmentStatus === "in_progress" ? "workspace" : "overview";
-  const progressLabel = isPublicReview
-    ? "Review mode"
-    : currentAccess?.enrollmentStatus === "completed"
+  const progressLabel =
+    currentAccess?.enrollmentStatus === "completed"
       ? "Completed"
       : currentAccess?.enrollmentStatus === "in_progress"
         ? `${Math.round(currentAccess?.progressPercent ?? 0)}% complete`
         : "Ready to start";
-  const shellParticipantExperience =
-    participantExperience === "python-workspace" ? "python-workspace" : "checkpoint";
+  const shellParticipantExperience = participantExperience;
 
   const navBar = (
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -554,11 +567,24 @@ export default async function AcademyModulePage({
     </div>
   );
 
-  if (moduleDeck && (participantExperience === "python-workspace" || moduleLabCheckpoints.length > 0)) {
+  if (
+    moduleDeck &&
+    isTrainingUxUnifiedEnabled({ cohort }) &&
+    (participantExperience !== "checkpoint" || moduleLabCheckpoints.length > 0)
+  ) {
+    const scriptPack = getModuleScriptPack(moduleSlug);
+    const moduleOutline = scriptPack ? (
+      <ModuleMap
+        moduleTitle={trainingModule.title}
+        totalSlides={scriptPack.totalSlides}
+        segments={scriptPack.segments}
+        labCheckpoints={moduleLabCheckpoints}
+      />
+    ) : null;
     return (
       <div className="flex flex-col gap-6">
         {navBar}
-        <ModuleLearningShell
+        <ModuleJourneyShell
           inviteCode={inviteCode}
           moduleSlug={trainingModule.slug}
           moduleTitle={trainingModule.title}
@@ -566,20 +592,9 @@ export default async function AcademyModulePage({
           totalModules={ajbTrainingProgramme.modules.length}
           deckHref={moduleDeck.href}
           deckTitle={moduleDeck.title}
-          overviewContent={
-            <div className="space-y-4">
-              {isPublicReview ? (
-                <Card className="border-amber-400/20 bg-amber-400/[0.04]">
-                  <CardContent className="px-5 py-4 text-sm text-amber-100">
-                    This module is open in review mode. Anyone with the link can view the full learning flow. Progress tracking is disabled for anonymous reviewers.
-                  </CardContent>
-                </Card>
-              ) : null}
-              {moduleBrief}
-            </div>
-          }
+          briefContent={moduleBrief}
+          moduleOutline={moduleOutline ?? undefined}
           progressLabel={progressLabel}
-          defaultTab={defaultModuleTab}
           workbookHref={moduleWorkbookHref}
           workbookHtml={workbookHtml}
           resources={moduleResources}
@@ -590,7 +605,8 @@ export default async function AcademyModulePage({
           initialLabProgress={initialLabProgress}
           initialSubmissions={initialSubmissions}
           initialWorkspaces={initialWorkspaces}
-          enableProgressTracking={!isPublicReview}
+          participantActionsBySlide={scriptPack?.participantActions}
+          enableLabRoute={moduleLabCheckpoints.length > 0}
         />
       </div>
     );

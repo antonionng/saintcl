@@ -20,6 +20,7 @@ type WorkspaceShellProps = {
   error?: string;
   requiresOnboarding?: boolean;
   hasProvisionedAgent?: boolean;
+  canProvisionAgent?: boolean;
   initialProfile: {
     displayName: string;
     whatIDo: string;
@@ -68,6 +69,7 @@ export function WorkspaceShell({
   error,
   requiresOnboarding = false,
   hasProvisionedAgent = true,
+  canProvisionAgent = false,
   initialProfile,
 }: WorkspaceShellProps) {
   const router = useRouter();
@@ -294,10 +296,11 @@ export function WorkspaceShell({
         <div className="fixed inset-0 z-20 flex items-center justify-center bg-[#05060a]/96 px-4 py-20">
           <Card className="w-full max-w-2xl border-white/10 bg-[#090b10]/96">
             <CardHeader>
-              <CardTitle>Create your first agent</CardTitle>
+              <CardTitle>{canProvisionAgent ? "Create your first agent" : "Waiting for your agent"}</CardTitle>
               <CardDescription>
-                Your workspace stays empty until you explicitly provision an agent. We will create a starter agent,
-                assign it to you, and then open chat.
+                {canProvisionAgent
+                  ? "Your workspace stays empty until you explicitly provision an agent. We will create a starter agent, assign it to you, and then open chat."
+                  : "Your workspace will activate once an admin provisions and assigns an agent to you."}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
@@ -307,26 +310,40 @@ export function WorkspaceShell({
                     <Bot className="size-5 text-white" />
                   </div>
                   <div className="space-y-1">
-                    <p className="font-medium text-white">Provisioning creates one default workspace agent</p>
-                    <p className="text-zinc-400">
-                      The starter agent uses your profile context, inherits current org guidance, and becomes your
-                      default chat session.
-                    </p>
+                    {canProvisionAgent ? (
+                      <>
+                        <p className="font-medium text-white">Provisioning creates one default workspace agent</p>
+                        <p className="text-zinc-400">
+                          The starter agent uses your profile context, inherits current org guidance, and becomes your
+                          default chat session.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-medium text-white">Agent provisioning is admin-managed</p>
+                        <p className="text-zinc-400">
+                          Ask a workspace admin to create an agent for you from the provisioning wizard or the dashboard.
+                          Once assigned, your workspace will load automatically.
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
 
               {provisioningError ? <p className="text-sm text-red-400">{provisioningError}</p> : null}
 
-              <div className="flex flex-wrap items-center gap-3">
-                <Button type="button" onClick={provisionAgent} disabled={provisioning}>
-                  {provisioning ? <LoaderCircle className="size-4 animate-spin" /> : null}
-                  <span>{provisioning ? "Creating agent..." : "Create my first agent"}</span>
-                </Button>
-                <Button type="button" variant="secondary" asChild>
-                  <Link href="/agents/new">Open advanced setup</Link>
-                </Button>
-              </div>
+              {canProvisionAgent ? (
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button type="button" onClick={provisionAgent} disabled={provisioning}>
+                    {provisioning ? <LoaderCircle className="size-4 animate-spin" /> : null}
+                    <span>{provisioning ? "Creating agent..." : "Create my first agent"}</span>
+                  </Button>
+                  <Button type="button" variant="secondary" asChild>
+                    <Link href="/agents/new">Open advanced setup</Link>
+                  </Button>
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         </div>

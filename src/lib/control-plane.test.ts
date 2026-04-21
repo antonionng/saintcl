@@ -14,6 +14,11 @@ import {
   normalizeAgentTerminalRepoPaths,
   resolveAgentWorkspaceFromConfig,
 } from "./openclaw/agent-terminal";
+import {
+  assertAdminRole,
+  assertCommandAllowed,
+  assertRepoAllowed,
+} from "./openclaw/terminal-policy";
 import { paginateDiscoveryCatalog } from "./openclaw/discovery-pagination";
 import { resolveKnowledgeMimeType } from "./knowledge";
 import { resolveActiveWorkspace } from "./org-selection";
@@ -492,6 +497,80 @@ describe("agent terminal policy", () => {
         source: "env",
       }),
     ).toBe("/data/workspace/org-123/alpha-agent");
+  });
+});
+
+describe("terminal security policy", () => {
+  it("allows owner and admin roles", () => {
+    expect(() => assertAdminRole("owner")).not.toThrow();
+    expect(() => assertAdminRole("admin")).not.toThrow();
+  });
+
+  it("rejects non-admin roles", () => {
+    expect(() => assertAdminRole("employee")).toThrow("Terminal access is restricted to tenant admins.");
+    expect(() => assertAdminRole("member")).toThrow("Terminal access is restricted to tenant admins.");
+  });
+
+  it("blocks dangerous commands", () => {
+    expect(() => assertCommandAllowed("rm -rf /")).toThrow("blocked");
+    expect(() => assertCommandAllowed("shutdown")).toThrow("blocked");
+    expect(() => assertCommandAllowed("reboot")).toThrow("blocked");
+    expect(() => assertCommandAllowed("mkfs /dev/sda")).toThrow("blocked");
+    expect(() => assertCommandAllowed("dd if=/dev/zero")).toThrow("blocked");
+  });
+
+  it("allows safe commands", () => {
+    expect(() => assertCommandAllowed("ls -la")).not.toThrow();
+    expect(() => assertCommandAllowed("git status")).not.toThrow();
+    expect(() => assertCommandAllowed("npm run build")).not.toThrow();
+  });
+
+  it("denies repo-scoped commands when no allowlists are configured", () => {
+    expect(() => assertRepoAllowed("my-repo", [])).toThrow(
+      "No repo allowlists configured",
+    );
+  });
+
+  it("allows commands without a repo regardless of allowlist state", () => {
+    expect(() => assertRepoAllowed(undefined, [])).not.toThrow();
+    expect(() => assertRepoAllowed(undefined, ["pattern"])).not.toThrow();
+  });
+
+  it("allows repos that match an allowlist pattern", () => {
+    expect(() => assertRepoAllowed("repos/app", ["repos/app", "repos/docs"])).not.toThrow();
+  });
+
+  it("rejects repos not in the allowlist", () => {
+    expect(() => assertRepoAllowed("repos/secret", ["repos/app"])).toThrow(
+      "not included in the tenant allowlist",
+    );
+  });
+});
+
+describe("provisioning role requirements", () => {
+  it("gives admins the canManageAgents capability required for provisioning", () => {
+    const admin = getRoleCapabilities("admin");
+    expect(admin.canManageAgents).toBe(true);
+  });
+
+  it("denies employees the canManageAgents capability", () => {
+    const employee = getRoleCapabilities("employee");
+    expect(employee.canManageAgents).toBe(false);
+  });
+
+  it("gives super admins provisioning access even in an employee role", () => {
+    const superEmployee = getRoleCapabilities("employee", { isSuperAdmin: true });
+    expect(superEmployee.canManageAgents).toBe(true);
+  });
+
+  it("requires canManageAdminTools for terminal access", () => {
+    expect(getRoleCapabilities("admin").canManageAdminTools).toBe(true);
+    expect(getRoleCapabilities("employee").canManageAdminTools).toBe(false);
+  });
+
+  it("requires canManageConsole for gateway console access", () => {
+    expect(getRoleCapabilities("owner").canManageConsole).toBe(true);
+    expect(getRoleCapabilities("employee").canManageConsole).toBe(false);
   });
 });
 

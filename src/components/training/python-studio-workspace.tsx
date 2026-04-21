@@ -4,11 +4,25 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { CodeEditor } from "@/components/training/code-editor";
 import { FileExplorer, type WorkspaceFileRecord } from "@/components/training/file-explorer";
+import { publishLabCoachContext } from "@/components/training/lab-coach-context";
 import { OutputPanel, type ChartPreview, type DataFramePreview } from "@/components/training/output-panel";
+import { ParticipantNotes } from "@/components/training/participant-notes";
 import { SubmissionPanel } from "@/components/training/submission-panel";
 import type { PythonTaskCheck } from "@/lib/python-task-checks";
-import { resolveCheckpointInterventionPrompt, type TrainingLabCheckpoint } from "@/lib/training-lab-checkpoints";
+import {
+  isWorkbenchTask,
+  resolveCheckpointInterventionPrompt,
+  type TrainingLabCheckpoint,
+  type TrainingLabCheckpointTask,
+} from "@/lib/training-lab-checkpoints";
+
+function pythonTasksOf(
+  tasks: TrainingLabCheckpointTask[] | undefined | null,
+): PythonTaskCheck[] {
+  return (tasks ?? []).filter((task): task is PythonTaskCheck => !isWorkbenchTask(task));
+}
 import type {
+  TrainingAiAssessmentRecord,
   TrainingLabWorkspaceRecord,
   TrainingParticipantLabCheckpointRecord,
   TrainingSubmissionRecord,
@@ -33,6 +47,8 @@ type ResourceLink = {
   kind: string;
 };
 
+export type PythonLearningWorkspaceVariant = "module" | "lab";
+
 export type PythonLearningWorkspaceProps = {
   inviteCode: string;
   moduleSlug: string;
@@ -47,7 +63,18 @@ export type PythonLearningWorkspaceProps = {
   currentSlideIndex?: number | null;
   currentSlideTitle?: string | null;
   facilitatorPrompt?: string | null;
-  enableProgressTracking?: boolean;
+  /**
+   * `"module"` renders the full workspace with deck chips, materials, managed
+   * Jupyter card, and the file browser details. `"lab"` hides these so a
+   * dedicated lab route can provide its own top bar, data pane, and AI coach.
+   */
+  variant?: PythonLearningWorkspaceVariant;
+  /**
+   * When provided, the workspace focuses the matching checkpoint on mount
+   * instead of inferring from the deck slide. Used by the full-viewport lab
+   * route which selects the checkpoint from its URL segment.
+   */
+  initialCheckpointSlug?: string | null;
 };
 
 type PyodideFsStat = {
@@ -111,12 +138,13 @@ type TaskCheckResult = {
 const PYODIDE_INDEX_URL = "https://cdn.jsdelivr.net/pyodide/v0.27.5/full";
 
 function getDefaultTaskForCheckpoint(checkpoint: TrainingLabCheckpoint | null, taskStatusById: Record<string, TaskStatusState>) {
-  if (!checkpoint?.tasks?.length) return null;
+  const tasks = pythonTasksOf(checkpoint?.tasks);
+  if (!tasks.length) return null;
   return (
-    checkpoint.tasks.find((task) => {
+    tasks.find((task) => {
       const status = taskStatusById[task.id]?.state ?? "not_started";
       return status !== "passed" && status !== "guided_complete";
-    }) ?? checkpoint.tasks[0]
+    }) ?? tasks[0]
   );
 }
 
@@ -151,8 +179,10 @@ export function PythonLearningWorkspace({
   currentSlideIndex = null,
   currentSlideTitle = null,
   facilitatorPrompt = null,
-  enableProgressTracking = true,
+  variant = "module",
+  initialCheckpointSlug = null,
 }: PythonLearningWorkspaceProps) {
+  const isLabVariant = variant === "lab";
   const [activeNotebookSlug, setActiveNotebookSlug] = useState(notebookPreviews[0]?.slug ?? "");
   const [selectedCodeBlockIndex, setSelectedCodeBlockIndex] = useState(0);
   const [editorCodeByNotebook, setEditorCodeByNotebook] = useState<Record<string, string>>({});
@@ -170,6 +200,9 @@ export function PythonLearningWorkspace({
   const [dataPreview, setDataPreview] = useState<DataFramePreview | null>(null);
   const [chartPreviews, setChartPreviews] = useState<ChartPreview[]>([]);
   const [submissions, setSubmissions] = useState(initialSubmissions);
+  const [aiAssessmentsBySubmissionId, setAiAssessmentsBySubmissionId] = useState<
+    Record<string, TrainingAiAssessmentRecord | null>
+  >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [managedWorkspace, setManagedWorkspace] = useState<TrainingLabWorkspaceRecord | null>(initialWorkspaces[0] ?? null);
   const [managedWorkspaceLaunchUrl, setManagedWorkspaceLaunchUrl] = useState<string | null>(null);
@@ -211,13 +244,17 @@ export function PythonLearningWorkspace({
   );
   const currentSlideNumber = typeof currentSlideIndex === "number" ? currentSlideIndex + 1 : null;
   const activeCheckpoint = useMemo(() => {
+    if (initialCheckpointSlug) {
+      const pinned = labCheckpointCards.find((checkpoint) => checkpoint.slug === initialCheckpointSlug);
+      if (pinned) return pinned;
+    }
     if (currentSlideNumber === null) return null;
     return (
       labCheckpointCards.find(
         (checkpoint) => currentSlideNumber >= checkpoint.startSlide && currentSlideNumber <= checkpoint.endSlide,
       ) ?? null
     );
-  }, [currentSlideNumber, labCheckpointCards]);
+  }, [currentSlideNumber, initialCheckpointSlug, labCheckpointCards]);
   const overdueCheckpoint = useMemo(() => {
     if (currentSlideNumber === null) return null;
     return (
@@ -236,7 +273,7 @@ export function PythonLearningWorkspace({
       message: intervention?.prompt ?? activeCheckpoint.facilitatorPrompt,
     };
   }, [activeCheckpoint, currentSlideNumber]);
-  const activeCheckpointTasks = activeCheckpoint?.tasks ?? [];
+  const activeCheckpointTasks = pythonTasksOf(activeCheckpoint?.tasks);
   const activeTask =
     activeCheckpointTasks.find((task) => task.id === activeTaskId) ??
     getDefaultTaskForCheckpoint(activeCheckpoint, taskStatusById);
@@ -267,7 +304,7 @@ export function PythonLearningWorkspace({
   useEffect(() => {
     const nextTaskState = Object.fromEntries(
       labCheckpoints.flatMap((checkpoint) =>
-        (checkpoint.tasks ?? []).map((task) => {
+        pythonTasksOf(checkpoint.tasks).map((task) => {
           const checkpointRecord = initialLabProgress.find((item) => item.labSlug === checkpoint.slug) ?? null;
           const state =
             checkpointRecord?.status === "completed"
@@ -336,7 +373,7 @@ export function PythonLearningWorkspace({
     }
     const fallbackTask = getDefaultTaskForCheckpoint(activeCheckpoint, taskStatusById);
     setActiveTaskId((current) => {
-      if (current && activeCheckpoint.tasks?.some((task) => task.id === current)) {
+      if (current && pythonTasksOf(activeCheckpoint.tasks).some((task) => task.id === current)) {
         return current;
       }
       return fallbackTask?.id ?? null;
@@ -344,7 +381,44 @@ export function PythonLearningWorkspace({
   }, [activeCheckpoint, taskStatusById]);
 
   useEffect(() => {
-    if (!enableProgressTracking) return;
+    if (!isLabVariant) return;
+    publishLabCoachContext({
+      taskId: activeTask?.id ?? null,
+      taskTitle: activeTask?.title ?? null,
+      taskSuccessCriteria: activeTask?.successCriteria ?? null,
+      code: editorCode || null,
+      stdout: runStdout || null,
+      stderr: runStderr || null,
+    });
+  }, [activeTask?.id, activeTask?.title, activeTask?.successCriteria, editorCode, isLabVariant, runStderr, runStdout]);
+
+  const initialCheckpointAppliedRef = useRef(false);
+  useEffect(() => {
+    if (initialCheckpointAppliedRef.current) return;
+    if (!initialCheckpointSlug) return;
+    const checkpoint = labCheckpoints.find((item) => item.slug === initialCheckpointSlug);
+    if (!checkpoint) return;
+    const notebook = notebookPreviews.find((item) => item.slug === checkpoint.notebookSlug);
+    if (!notebook) return;
+    const block = notebook.codeBlocks[checkpoint.blockIndex] ?? notebook.codeBlocks[0];
+    if (!block) return;
+    initialCheckpointAppliedRef.current = true;
+    const tasks = pythonTasksOf(checkpoint.tasks);
+    const fallbackTask = tasks.find((task) => {
+      const status = taskStatusById[task.id]?.state ?? "not_started";
+      return status !== "passed" && status !== "guided_complete";
+    }) ?? tasks[0] ?? null;
+    setFollowSlideGuidance(false);
+    setActiveNotebookSlug(notebook.slug);
+    setSelectedCodeBlockIndex(checkpoint.blockIndex);
+    setActiveTaskId(fallbackTask?.id ?? null);
+    setEditorCodeByNotebook((current) => ({
+      ...current,
+      [notebook.slug]: block.code,
+    }));
+  }, [initialCheckpointSlug, labCheckpoints, notebookPreviews, taskStatusById]);
+
+  useEffect(() => {
     if (progressSentRef.current) return;
     progressSentRef.current = true;
     void fetch("/api/training/participant/progress", {
@@ -362,7 +436,7 @@ export function PythonLearningWorkspace({
         },
       }),
     }).catch(() => undefined);
-  }, [enableProgressTracking, inviteCode, moduleSlug]);
+  }, [inviteCode, moduleSlug]);
 
   function focusNotebook(notebookSlug: string, blockIndex: number, preferredTaskId?: string | null) {
     const notebook = notebookPreviews.find((item) => item.slug === notebookSlug);
@@ -689,7 +763,7 @@ __cursor_artifacts = json.dumps({
   }
 
   function buildTaskSummary(checkpoint: TrainingLabCheckpoint) {
-    const tasks = checkpoint.tasks ?? [];
+    const tasks = pythonTasksOf(checkpoint.tasks);
     const autoTasks = tasks.filter((task) => task.mode === "auto");
     const guidedTasks = tasks.filter((task) => task.mode === "guided");
     const passedAuto = autoTasks.filter((task) => taskStatusById[task.id]?.state === "passed").length;
@@ -698,7 +772,7 @@ __cursor_artifacts = json.dumps({
   }
 
   function canCompleteCheckpoint(checkpoint: TrainingLabCheckpoint) {
-    const tasks = checkpoint.tasks ?? [];
+    const tasks = pythonTasksOf(checkpoint.tasks);
     const autoReady = tasks
       .filter((task) => task.mode === "auto")
       .every((task) => taskStatusById[task.id]?.state === "passed");
@@ -713,26 +787,24 @@ __cursor_artifacts = json.dumps({
     eventType: "lab_launched" | "lab_completed",
     metadata: Record<string, unknown> = {},
   ) {
-    const response = enableProgressTracking
-      ? await fetch("/api/training/participant/progress", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            inviteCode,
-            moduleSlug,
-            eventType,
-            metadata: {
-              labSlug: checkpoint.slug,
-              labTitle: checkpoint.title,
-              notebookSlug: checkpoint.notebookSlug,
-              blockIndex: checkpoint.blockIndex,
-              ...metadata,
-            },
-          }),
-        }).catch(() => null)
-      : ({ ok: true } as Response);
+    const response = await fetch("/api/training/participant/progress", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        inviteCode,
+        moduleSlug,
+        eventType,
+        metadata: {
+          labSlug: checkpoint.slug,
+          labTitle: checkpoint.title,
+          notebookSlug: checkpoint.notebookSlug,
+          blockIndex: checkpoint.blockIndex,
+          ...metadata,
+        },
+      }),
+    }).catch(() => null);
 
     if (!response?.ok) return;
 
@@ -759,15 +831,11 @@ __cursor_artifacts = json.dumps({
 
     if (eventType === "lab_launched") {
       setRuntimeMessage(
-        enableProgressTracking
-          ? `Checkpoint started: ${checkpoint.title}. Work through the tasks in order before you record completion.`
-          : `Checkpoint started: ${checkpoint.title}. Review mode keeps this progress local to your browser.`,
+        `Checkpoint started: ${checkpoint.title}. Work through the tasks in order before you record completion.`,
       );
     } else {
       setRuntimeMessage(
-        enableProgressTracking
-          ? `Checkpoint completed: ${checkpoint.title}. Your facilitator can now see the updated status.`
-          : `Checkpoint completed: ${checkpoint.title}. Review mode does not write this status back to participant records.`,
+        `Checkpoint completed: ${checkpoint.title}. Your facilitator can now see the updated status.`,
       );
     }
   }
@@ -916,7 +984,7 @@ finally:
   }
 
   async function recordCheckpointCompletion(checkpoint: TrainingLabCheckpoint) {
-    const hasGuidedTask = (checkpoint.tasks ?? []).some((task) => task.mode === "guided");
+    const hasGuidedTask = pythonTasksOf(checkpoint.tasks).some((task) => task.mode === "guided");
     await sendLabCheckpointEvent(checkpoint, "lab_completed", {
       completionMode: hasGuidedTask ? "guided_complete" : "passed",
       taskSummary: buildTaskSummary(checkpoint),
@@ -967,9 +1035,15 @@ finally:
           inviteCode,
           moduleSlug,
           summary: `Snapshot from ${activeNotebook.title}`,
+          scope: activeTask ? "task" : activeCheckpoint ? "checkpoint" : "module",
+          scopeId: activeTask?.id ?? activeCheckpoint?.slug ?? null,
+          kind: "notebook_snapshot",
           metadata: {
             notebookSlug: activeNotebook.slug,
             notebookTitle: activeNotebook.title,
+            checkpointSlug: activeCheckpoint?.slug ?? null,
+            taskId: activeTask?.id ?? null,
+            taskTitle: activeTask?.title ?? null,
             code: editorCode,
             stdout: runStdout,
             stderr: runStderr,
@@ -986,11 +1060,28 @@ finally:
         throw new Error(payload?.error?.message ?? "Submission failed.");
       }
 
-      const payload = (await response.json()) as { data?: TrainingSubmissionRecord };
+      const payload = (await response.json()) as {
+        data?: TrainingSubmissionRecord;
+        assessment?: TrainingAiAssessmentRecord | null;
+      };
       if (payload.data) {
-        setSubmissions((current) => [payload.data as TrainingSubmissionRecord, ...current]);
+        const submissionRecord = payload.data;
+        setSubmissions((current) => [submissionRecord, ...current]);
+        if (payload.assessment) {
+          const assessmentRecord = payload.assessment;
+          setAiAssessmentsBySubmissionId((current) => ({
+            ...current,
+            [submissionRecord.id]: assessmentRecord,
+          }));
+        }
       }
-      setRuntimeMessage("Snapshot submitted. Your latest code, output, and generated files are now saved for review.");
+      const assessmentMessage =
+        payload.assessment && payload.assessment.status === "completed"
+          ? ` AI assessor: ${payload.assessment.scoreBand.replace(/_/g, " ")}.`
+          : "";
+      setRuntimeMessage(
+        `Snapshot submitted. Your latest code, output, and generated files are now saved for review.${assessmentMessage}`,
+      );
     } catch (error) {
       setRuntimeMessage(error instanceof Error ? error.message : "Submission failed.");
     } finally {
@@ -1039,46 +1130,51 @@ finally:
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.65fr)]">
       <div className="space-y-4">
-        {/* compact status bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 py-3">
-          <div className="flex flex-wrap items-center gap-3">
-            {currentSlideNumber ? (
+        {/* compact status bar (module variant only; lab variant surfaces signals inside the workspace card) */}
+        {isLabVariant ? null : (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 py-3">
+            <div className="flex flex-wrap items-center gap-3">
+              {currentSlideNumber ? (
+                <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-300">
+                  Slide {currentSlideNumber}{currentSlideTitle ? ` · ${currentSlideTitle}` : ""}
+                </span>
+              ) : (
+                <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-500">Deck not synced</span>
+              )}
+              <span className={`rounded-full border px-3 py-1 text-xs ${runtimeBadgeClass}`}>
+                {runtimeState === "ready" ? "Lab ready" : runtimeState === "loading" ? "Loading lab" : runtimeState === "error" ? "Lab error" : "Lab not loaded"}
+              </span>
               <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-300">
-                Slide {currentSlideNumber}{currentSlideTitle ? ` · ${currentSlideTitle}` : ""}
+                {completedCheckpointCount}/{labCheckpointCards.length} checkpoints
               </span>
-            ) : (
-              <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-500">Deck not synced</span>
-            )}
-            <span className={`rounded-full border px-3 py-1 text-xs ${runtimeBadgeClass}`}>
-              {runtimeState === "ready" ? "Lab ready" : runtimeState === "loading" ? "Loading lab" : runtimeState === "error" ? "Lab error" : "Lab not loaded"}
-            </span>
-            <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-300">
-              {completedCheckpointCount}/{labCheckpointCards.length} checkpoints
-            </span>
-            {overdueCheckpoint ? (
-              <span className="rounded-full border border-rose-400/20 bg-rose-400/[0.08] px-3 py-1 text-xs text-rose-200">
-                Overdue: {overdueCheckpoint.title}
-              </span>
-            ) : null}
-            {lastRunFailed ? (
-              <span className="rounded-full border border-rose-400/20 bg-rose-400/[0.08] px-3 py-1 text-xs text-rose-200">
-                Last run failed
-              </span>
-            ) : null}
-            {facilitatorPrompt ? (
-              <span className="rounded-full border border-amber-400/20 bg-amber-400/[0.08] px-3 py-1 text-xs text-amber-200">
-                {facilitatorPrompt}
-              </span>
-            ) : null}
+              {overdueCheckpoint ? (
+                <span className="rounded-full border border-rose-400/20 bg-rose-400/[0.08] px-3 py-1 text-xs text-rose-200">
+                  Overdue: {overdueCheckpoint.title}
+                </span>
+              ) : null}
+              {lastRunFailed ? (
+                <span className="rounded-full border border-rose-400/20 bg-rose-400/[0.08] px-3 py-1 text-xs text-rose-200">
+                  Last run failed
+                </span>
+              ) : null}
+              {facilitatorPrompt ? (
+                <span className="rounded-full border border-amber-400/20 bg-amber-400/[0.08] px-3 py-1 text-xs text-amber-200">
+                  {facilitatorPrompt}
+                </span>
+              ) : null}
+            </div>
+            <div className="flex items-center gap-2">
+              <a href={deckHref} className="rounded-full border border-white/10 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-white/20 hover:bg-white/[0.05]">Deck</a>
+              <a href={workbookHref} className="rounded-full border border-white/10 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-white/20 hover:bg-white/[0.05]">Workbook</a>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <a href={deckHref} className="rounded-full border border-white/10 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-white/20 hover:bg-white/[0.05]">Deck</a>
-            <a href={workbookHref} className="rounded-full border border-white/10 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-white/20 hover:bg-white/[0.05]">Workbook</a>
+        )}
+        {isLabVariant && runtimeState === "idle" ? null : (
+          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-zinc-300">
+            {runtimeMessage}
           </div>
-        </div>
-        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-zinc-300">
-          {runtimeMessage}
-        </div>
+        )}
+        {isLabVariant ? null : (
         <div className="rounded-[1.5rem] border border-white/8 bg-black/15 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -1128,6 +1224,7 @@ finally:
             </p>
           ) : null}
         </div>
+        )}
 
         {/* active task */}
         <div className="rounded-[1.75rem] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-5 shadow-[0_20px_64px_rgba(0,0,0,0.2)]">
@@ -1135,7 +1232,9 @@ finally:
             <div>
               {activeTask ? (
                 <>
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">{activeCheckpoint?.title ?? "Task"}</p>
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">
+                    {isLabVariant ? "Verify" : activeCheckpoint?.title ?? "Task"}
+                  </p>
                   <h3 className="mt-1.5 text-xl font-semibold text-white">{activeTask.title}</h3>
                   <p className="mt-1.5 text-sm text-zinc-400">{activeTask.successCriteria}</p>
                 </>
@@ -1149,12 +1248,39 @@ finally:
                 </>
               )}
             </div>
-            {activeTask ? (
-              <div className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium ${getTaskTone(activeTaskStatus?.state ?? "not_started")}`}>
-                {getTaskLabel(activeTaskStatus?.state ?? "not_started", activeTask.mode)}
-              </div>
-            ) : null}
+            <div className="flex shrink-0 flex-col items-end gap-1.5">
+              {activeTask ? (
+                <div className={`rounded-full border px-3 py-1 text-xs font-medium ${getTaskTone(activeTaskStatus?.state ?? "not_started")}`}>
+                  {getTaskLabel(activeTaskStatus?.state ?? "not_started", activeTask.mode)}
+                </div>
+              ) : null}
+              {isLabVariant ? (
+                <span className={`rounded-full border px-2.5 py-0.5 text-[10px] uppercase tracking-[0.16em] ${runtimeBadgeClass}`}>
+                  {runtimeState === "ready" ? "Lab ready" : runtimeState === "loading" ? "Loading lab" : runtimeState === "error" ? "Lab error" : "Lab not loaded"}
+                </span>
+              ) : null}
+            </div>
           </div>
+
+          {isLabVariant && (overdueCheckpoint || lastRunFailed || facilitatorPrompt) ? (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {overdueCheckpoint ? (
+                <span className="rounded-full border border-rose-400/20 bg-rose-400/[0.08] px-3 py-1 text-xs text-rose-200">
+                  Overdue: {overdueCheckpoint.title}
+                </span>
+              ) : null}
+              {lastRunFailed ? (
+                <span className="rounded-full border border-rose-400/20 bg-rose-400/[0.08] px-3 py-1 text-xs text-rose-200">
+                  Last run failed
+                </span>
+              ) : null}
+              {facilitatorPrompt ? (
+                <span className="rounded-full border border-amber-400/20 bg-amber-400/[0.08] px-3 py-1 text-xs text-amber-200">
+                  {facilitatorPrompt}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
 
           {activeTaskStatus?.message ? (
             <div className={`mt-4 rounded-2xl border px-4 py-3 text-sm ${getTaskTone(activeTaskStatus.state)}`}>
@@ -1259,6 +1385,7 @@ finally:
                   canSubmit={runtimeState === "ready" && !isRunning}
                   isSubmitting={isSubmitting}
                   onSubmit={() => submitCurrentSnapshot()}
+                  aiAssessments={aiAssessmentsBySubmissionId}
                 />
               </div>
             </div>
@@ -1268,30 +1395,34 @@ finally:
 
       {/* right rail */}
       <div className="space-y-4 xl:sticky xl:top-6 xl:self-start">
-        {/* guidance + follow toggle */}
-        <div className="rounded-[1.75rem] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-4 shadow-[0_20px_64px_rgba(0,0,0,0.2)]">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-medium text-white">{activeCheckpoint?.title ?? "Awaiting checkpoint"}</p>
-            <button
-              type="button"
-              onClick={() => setFollowSlideGuidance((current) => !current)}
-              className={`shrink-0 rounded-full border px-3 py-1.5 text-xs transition ${
-                followSlideGuidance ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-100" : "border-white/10 text-zinc-400 hover:border-white/20 hover:bg-white/[0.05]"
-              }`}
-            >
-              {followSlideGuidance ? "Following" : "Paused"}
-            </button>
+        {/* guidance + follow toggle (deck-driven; hidden in lab variant where there is no deck context) */}
+        {isLabVariant ? null : (
+          <div className="rounded-[1.75rem] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-4 shadow-[0_20px_64px_rgba(0,0,0,0.2)]">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-white">{activeCheckpoint?.title ?? "Awaiting checkpoint"}</p>
+              <button
+                type="button"
+                onClick={() => setFollowSlideGuidance((current) => !current)}
+                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs transition ${
+                  followSlideGuidance ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-100" : "border-white/10 text-zinc-400 hover:border-white/20 hover:bg-white/[0.05]"
+                }`}
+              >
+                {followSlideGuidance ? "Following" : "Paused"}
+              </button>
+            </div>
+            {slideGuidance ? (
+              <p className="mt-2 text-xs leading-5 text-zinc-500">{slideGuidance.message}</p>
+            ) : null}
           </div>
-          {slideGuidance ? (
-            <p className="mt-2 text-xs leading-5 text-zinc-500">{slideGuidance.message}</p>
-          ) : null}
-        </div>
+        )}
 
         {/* active checkpoint tasks */}
         {activeCheckpoint ? (
           <div className="rounded-[1.75rem] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-4 shadow-[0_20px_64px_rgba(0,0,0,0.2)]">
             <div className="flex items-center justify-between gap-2 pb-3">
-              <p className="text-xs font-medium text-white">{activeCheckpoint.title}</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                {isLabVariant ? "Tasks" : activeCheckpoint.title}
+              </p>
               <div className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[10px] font-medium ${getTaskTone(activeCheckpoint.status === "completed" ? "passed" : activeCheckpoint.completionMode === "retry_needed" ? "retry_needed" : "not_started")}`}>
                 {activeCheckpoint.status === "completed"
                   ? "Done"
@@ -1355,9 +1486,30 @@ finally:
           </div>
         ) : null}
 
+        {/* notes for the active task / checkpoint */}
+        {activeCheckpoint ? (
+          <div className="rounded-[1.75rem] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-4 shadow-[0_20px_64px_rgba(0,0,0,0.2)]">
+            <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-zinc-500">Workbench notes</p>
+            <ParticipantNotes
+              inviteCode={inviteCode}
+              moduleSlug={moduleSlug}
+              scope={activeTask ? "task" : "checkpoint"}
+              scopeId={activeTask?.id ?? activeCheckpoint.slug}
+              label={activeTask ? activeTask.title : activeCheckpoint.title}
+              placeholder="What did you try, what worked, what didn't? Notes are private unless you share."
+              compact
+            />
+          </div>
+        ) : null}
+
         {/* all checkpoints */}
         <div className="rounded-[1.75rem] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-4 shadow-[0_20px_64px_rgba(0,0,0,0.2)]">
-          <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-zinc-500">Progress</p>
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">Progress</p>
+            <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-medium text-zinc-300">
+              {completedCheckpointCount}/{labCheckpointCards.length}
+            </span>
+          </div>
           <div className="space-y-2">
             {labCheckpointCards.map((checkpoint) => {
               const dot =
@@ -1385,6 +1537,7 @@ finally:
         </div>
 
         {/* materials */}
+        {isLabVariant ? null : (
         <div className="rounded-[1.75rem] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-4 shadow-[0_20px_64px_rgba(0,0,0,0.2)]">
           <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-zinc-500">Materials</p>
           <div className="space-y-1.5">
@@ -1399,7 +1552,9 @@ finally:
             ))}
           </div>
         </div>
+        )}
 
+        {isLabVariant ? null : (
         <details className="rounded-[1.75rem] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-4">
           <summary className="cursor-pointer list-none text-[11px] uppercase tracking-[0.2em] text-zinc-500">File browser</summary>
           <div className="mt-3">
@@ -1429,6 +1584,7 @@ finally:
             </div>
           </div>
         </details>
+        )}
       </div>
     </div>
   );

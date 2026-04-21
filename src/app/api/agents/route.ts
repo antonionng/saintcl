@@ -4,6 +4,7 @@ import { z } from "zod";
 import { isOpenClawConfigured } from "@/lib/env";
 import {
   getAgentCount,
+  getAgentByOpenClawAgentId,
   getCurrentOrg,
   getOrgMembers,
   getPersona,
@@ -11,6 +12,7 @@ import {
   getVisibleAgentsForSession,
   loadCurrentUserProfile,
 } from "@/lib/dal";
+import { recordSetupAuditEvent, recordFunnelStep } from "@/lib/setup-audit";
 import { getBuiltInPersonaById } from "@/lib/personas";
 import { normalizeAgentTerminalRepoPaths } from "@/lib/openclaw/agent-terminal";
 import { syncKnowledgeToAgent } from "@/lib/openclaw/knowledge-sync";
@@ -89,6 +91,34 @@ function getProvisionErrorStatus(message: string) {
   if (normalized.includes("invalid")) return 400;
 
   return 500;
+}
+
+function slugifyAgentId(value: string) {
+  const slug = value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+/g, "")
+    .replace(/-+$/g, "");
+
+  return slug || "agent";
+}
+
+async function resolveAvailableAgentSlug(orgId: string, name: string) {
+  const baseSlug = slugifyAgentId(name);
+  const baseCollision = await getAgentByOpenClawAgentId(baseSlug, orgId);
+  if (!baseCollision) {
+    return baseSlug;
+  }
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const candidate = `${baseSlug}-${crypto.randomUUID().slice(0, 8)}`;
+    const candidateCollision = await getAgentByOpenClawAgentId(candidate, orgId);
+    if (!candidateCollision) {
+      return candidate;
+    }
+  }
+
+  return `${baseSlug}-${Date.now().toString(36)}`;
 }
 
 async function resolveEmployeeAssignment(
@@ -235,7 +265,7 @@ export async function POST(request: Request) {
         assigneeLabel: employeeAssignment?.assigneeLabel ?? teamAssignment?.name ?? payload.assignee,
       },
     );
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const slug = await resolveAvailableAgentSlug(orgId, name);
     const currentAgentCount = await getAgentCount(orgId);
 
     const trialStatus = getResolvedTrialStatus(session.org.trial_status, session.org.trial_ends_at);
@@ -319,26 +349,35 @@ export async function POST(request: Request) {
     });
 
     if (agentRow?.id) {
-      await Promise.all([
+      const assignmentRef =
+        payload.scope === "org"
+          ? orgId
+          : payload.scope === "employee"
+            ? employeeAssignment?.assigneeRef ?? session.userId
+            : teamAssignment?.id ?? orgId;
+
+      const postProvisionTasks: Promise<unknown>[] = [
         upsertAgentAssignment({
           orgId,
           agentId: agentRow.id,
           assigneeType: payload.scope,
-          assigneeRef:
-            payload.scope === "org"
-              ? orgId
-              : payload.scope === "employee"
-                ? employeeAssignment?.assigneeRef ?? session.userId
-                : teamAssignment?.id ?? orgId,
+          assigneeRef: assignmentRef,
           createdBy: userId,
         }),
-        replaceAgentTerminalRepoAllowlists({
-          orgId,
-          agentId: agentRow.id,
-          repoPaths: terminalRepoPaths,
-          createdBy: userId,
-        }),
-      ]);
+      ];
+
+      if (payload.terminalEnabled === true) {
+        postProvisionTasks.push(
+          replaceAgentTerminalRepoAllowlists({
+            orgId,
+            agentId: agentRow.id,
+            repoPaths: terminalRepoPaths,
+            createdBy: userId,
+          }),
+        );
+      }
+
+      await Promise.all(postProvisionTasks);
     }
 
     if (agentRow) {
@@ -355,6 +394,21 @@ export async function POST(request: Request) {
         },
       }).catch(() => null);
     }
+
+    recordSetupAuditEvent({
+      orgId,
+      agentId: agentRow?.id ?? null,
+      userId,
+      eventType: "agent.provisioned",
+      category: "agent",
+      metadata: { name, scope: payload.scope, model },
+    }).catch(() => null);
+
+    recordFunnelStep({
+      orgId,
+      step: "agent_provisioned",
+      metadata: { agentId: agentRow?.id ?? slug, name },
+    }).catch(() => null);
 
     return NextResponse.json({
       data: {

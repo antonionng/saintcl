@@ -70,7 +70,7 @@ export function buildGatewayConsoleUrl(target: TenantGatewayTarget) {
 function buildGatewayProxyPath(
   target: TenantGatewayTarget,
   basePath: string,
-  options?: { path?: string; embed?: boolean; managedRuntime?: boolean; session?: string },
+  options?: { path?: string; embed?: boolean; managedRuntime?: boolean; session?: string; debug?: boolean },
 ) {
   const params = new URLSearchParams();
   params.set("gatewayUrl", target.wsUrl);
@@ -79,6 +79,9 @@ function buildGatewayProxyPath(
   }
   if (options?.managedRuntime) {
     params.set("managedRuntime", "1");
+  }
+  if (options?.debug) {
+    params.set("debug", "1");
   }
   if (options?.session?.trim()) {
     params.set("session", options.session.trim());
@@ -98,6 +101,7 @@ export function buildGatewayConsoleProxyPath(
 ) {
   return buildGatewayProxyPath(target, "/api/openclaw/console", {
     ...options,
+    debug: true,
     managedRuntime: target.source === "env",
   });
 }
@@ -111,11 +115,14 @@ export function buildGatewayWorkspaceProxyPath(target: TenantGatewayTarget, opti
 }
 
 export async function resolveTenantGatewayTarget(orgId?: string): Promise<TenantGatewayTarget | null> {
-  const fallback = getEnvGatewayTarget();
   if (!orgId) {
-    return fallback;
+    return getEnvGatewayTarget();
   }
 
-  return (await getRuntimeGatewayTarget(orgId)) ?? fallback;
+  if (isOpenClawRuntimeManaged()) {
+    return getRuntimeGatewayTarget(orgId);
+  }
+
+  return getEnvGatewayTarget();
 }
 

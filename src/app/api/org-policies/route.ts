@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { isOpenClawConfigured } from "@/lib/env";
 import { getCurrentOrg } from "@/lib/dal";
+import { recordSetupAuditEvent } from "@/lib/setup-audit";
 import { buildModelCatalogSnapshot } from "@/lib/openclaw/model-catalog";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -25,6 +26,12 @@ const modelGuardrailsSchema = z.object({
   premiumOutputCostPerMillionCents: z.number().int().nonnegative().optional().nullable(),
 });
 
+const skillPolicySchema = z.object({
+  allowedSources: z.array(z.enum(["clawhub", "github", "custom"])).default(["clawhub", "github"]),
+  allowedTrustTiers: z.array(z.enum(["official", "curated", "community"])).default(["official", "curated"]),
+  requireApprovalForCommunity: z.boolean().default(true),
+});
+
 const policySchema = z.object({
   mission: z.string().max(4000).default(""),
   reasonForAgents: z.string().max(4000).default(""),
@@ -38,6 +45,7 @@ const policySchema = z.object({
     allowSessionOverride: true,
     requireApprovalForPremiumModels: false,
   }),
+  skillPolicy: skillPolicySchema.optional(),
 });
 
 function isMissingPolicySchemaError(message: string) {
@@ -97,19 +105,25 @@ export async function PATCH(request: Request) {
         }))
       : [];
 
+  const upsertPayload: Record<string, unknown> = {
+    org_id: session.org.id,
+    mission: payload.mission,
+    reason_for_agents: payload.reasonForAgents,
+    default_model: payload.defaultModel ?? null,
+    require_approval_on_spend: payload.requireApprovalOnSpend,
+    guardrails: payload.guardrails,
+    approved_models: enrichedApprovedModels,
+    blocked_models: payload.blockedModels,
+    model_guardrails: payload.modelGuardrails,
+  };
+
+  if (payload.skillPolicy) {
+    upsertPayload.skill_policy = payload.skillPolicy;
+  }
+
   const { data, error } = await admin
     .from("org_policies")
-    .upsert({
-      org_id: session.org.id,
-      mission: payload.mission,
-      reason_for_agents: payload.reasonForAgents,
-      default_model: payload.defaultModel ?? null,
-      require_approval_on_spend: payload.requireApprovalOnSpend,
-      guardrails: payload.guardrails,
-      approved_models: enrichedApprovedModels,
-      blocked_models: payload.blockedModels,
-      model_guardrails: payload.modelGuardrails,
-    })
+    .upsert(upsertPayload)
     .select()
     .single();
 
@@ -171,6 +185,16 @@ export async function PATCH(request: Request) {
         message: "Policies were saved, but the runtime sync is still pending because OpenClaw is offline.",
       };
     }
+  }
+
+  if (payload.skillPolicy) {
+    recordSetupAuditEvent({
+      orgId: session.org.id,
+      userId: session.userId,
+      eventType: "policy.skill_policy_updated",
+      category: "policy",
+      metadata: { skillPolicy: payload.skillPolicy },
+    }).catch(() => null);
   }
 
   return NextResponse.json({ data, runtimeSync });

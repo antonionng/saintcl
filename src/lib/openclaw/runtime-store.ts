@@ -1,6 +1,18 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { OpenClawRuntimeDescriptor } from "@/lib/openclaw/runtime-types";
 
+function isMissingAgentTerminalAllowlistSchemaError(error: { code?: string | null; message?: string | null } | null | undefined) {
+  const message = error?.message?.toLowerCase() ?? "";
+  return (
+    error?.code === "PGRST205" ||
+    (message.includes("agent_terminal_repo_allowlists") &&
+      (message.includes("schema cache") ||
+        message.includes("does not exist") ||
+        message.includes("could not find the table") ||
+        message.includes("relation")))
+  );
+}
+
 export async function upsertRuntimeMetadata(runtime: OpenClawRuntimeDescriptor) {
   const admin = createAdminClient();
   if (!admin) {
@@ -183,12 +195,19 @@ export async function listAgentTerminalRepoPaths(agentId: string, orgId: string)
     return [];
   }
 
-  const { data } = await admin
+  const { data, error } = await admin
     .from("agent_terminal_repo_allowlists")
     .select("repo_path")
     .eq("org_id", orgId)
     .eq("agent_id", agentId)
     .order("created_at", { ascending: true });
+
+  if (error) {
+    if (isMissingAgentTerminalAllowlistSchemaError(error)) {
+      return [];
+    }
+    throw error;
+  }
 
   return (data ?? []).map((entry) => entry.repo_path);
 }
@@ -212,6 +231,9 @@ export async function replaceAgentTerminalRepoAllowlists(input: {
     .eq("agent_id", input.agentId);
 
   if (deleteResult.error) {
+    if (isMissingAgentTerminalAllowlistSchemaError(deleteResult.error)) {
+      return [];
+    }
     throw deleteResult.error;
   }
 
@@ -232,6 +254,9 @@ export async function replaceAgentTerminalRepoAllowlists(input: {
     .select("*");
 
   if (error) {
+    if (isMissingAgentTerminalAllowlistSchemaError(error)) {
+      return [];
+    }
     throw error;
   }
 

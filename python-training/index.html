@@ -11,1730 +11,1265 @@
 <div class="deck-brand"><img class="emft-logo" src="/emft-logo.png" alt="Emerging Market Financial Training" /><span class="deck-brand-divider"></span><img src="/ajb-logo.png" alt="Al Jazira Bank" /></div>
 
 <!-- ======================================================= -->
-<!--  DAY 1: PYTHON FOUNDATIONS FOR BANK DATA                -->
+<!--  DAY 1: TRUSTWORTHY DATA AND DEFENDABLE DEFINITIONS     -->
 <!-- ======================================================= -->
 
-<section class="slide active" id="s01">
-  <span class="eyebrow">EMFT x Al Jazira Bank | Python for Data</span>
-  <h1>Python for Data</h1>
-  <p class="lede">Three days. From raw bank extracts to leadership-ready analysis and ML-ready handoff tables.</p>
-  <div class="columns three spacer">
-    <div class="card">
-      <span class="card-label">Duration</span>
-      <p>3 days, 4 hours per day</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Dates</span>
-      <p>19 to 21 April 2026</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Format</span>
-      <p>Live online with hands-on labs</p>
-    </div>
-  </div>
-</section>
+<!-- Opening (slides 1-5) -->
 
-<section class="slide" id="s01a">
-  <span class="eyebrow">Day 1 | Banking context</span>
-  <h2>Why data and analytics matter in a bank</h2>
-  <p>Bank decisions depend on trustworthy data. Whether the question is growth, service quality, risk, or operations, the analyst's first job is to understand what the data can support and what it cannot support yet.</p>
-  <div class="columns three spacer">
-    <div class="card">
-      <span class="card-label">Core data sources</span>
-      <p>Customer, account, transaction, branch, and service datasets each describe one part of the operating picture.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Typical use cases</span>
-      <p>Performance packs, quality checks, segmentation prep, exception tracking, and ML-ready handoff files.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Why this course starts here</span>
-      <p>If the data logic is weak, every later dashboard, recommendation, or model becomes harder to trust.</p>
-    </div>
-  </div>
-</section>
-
-<section class="slide" id="s01b">
-  <span class="eyebrow">Day 1 | Tool choice</span>
-  <h2>Where Python helps, and where other tools still fit</h2>
-  <table class="spacer">
-    <thead>
-      <tr>
-        <th>Tool</th>
-        <th>Best for</th>
-        <th>Watchout</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Python</td>
-        <td>Repeatable cleaning, multi-table joins, richer QC, charts, and ML handoff preparation.</td>
-        <td>Needs a little setup and discipline for new users.</td>
-      </tr>
-      <tr>
-        <td>Excel</td>
-        <td>Quick inspection, ad hoc checks, and lightweight manual review.</td>
-        <td>Harder to scale, reproduce, and govern once logic becomes complex.</td>
-      </tr>
-      <tr>
-        <td>SQL</td>
-        <td>Pulling, filtering, and aggregating source data close to the warehouse.</td>
-        <td>Less suited on its own for notebook-style exploration and chart-led storytelling.</td>
-      </tr>
-      <tr>
-        <td>BI tools</td>
-        <td>Dashboards, repeat reporting, and stakeholder consumption.</td>
-        <td>Usually weaker for first-pass triage and custom cleaning logic.</td>
-      </tr>
-    </tbody>
-  </table>
-</section>
-
-
-<section class="slide" id="s01c">
-  <span class="eyebrow">Day 1 | Delivery routes</span>
-  <h2>Two routes, one shared outcome</h2>
-  <div class="columns two spacer">
-    <div class="card">
-      <span class="card-label">Intro path</span>
-      <p>Stay on the core notebook tasks, complete each checkpoint, and finish with defendable outputs for triage, KPI logic, charts, and ML handoff.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Advanced path</span>
-      <p>Move through the core path quickly, then deepen QC, denominator testing, caveats, and executive framing through the stretch prompts.</p>
-    </div>
+<section class="slide cover active" id="s01" data-day="1">
+  <span class="cover-eyebrow">EMFT x Al Jazira Bank * Module 1</span>
+  <h1 class="cover-title">Python for Data.</h1>
+  <p class="cover-lede">Two days. Four labs. One handoff the next engineer should be able to pick up cold. Everything between now and then is practice for the moment somebody else has to trust your work without asking you a follow-up question.</p>
+  <div class="cover-meta">
+    <span><strong>Day 1</strong> Trustworthy data and defendable definitions</span>
+    <span><strong>Day 2</strong> Outputs and the handoff</span>
   </div>
 </section>
 
 <section class="slide" id="s02">
-  <span class="eyebrow">Day 1 | End state</span>
-  <h2>What success looks like by the end of this course</h2>
-  <div class="columns three spacer">
+  <span class="eyebrow">Day 1 | The vision</span>
+  <h2>Engineers who use AI well are the ones who get to the truth</h2>
+  <p class="lede">Code is not the bottleneck anymore. Judgement is. Every engineer in this bank now has AI; the gap is between those who let it answer for them and those who use it to ask sharper questions, then check what comes back. That is the work, and it is the only kind of work that survives a senior reading over your shoulder.</p>
+  <div class="columns two spacer">
     <div class="card">
-      <span class="card-label">Today</span>
-      <p>You can open the notebook, load the extract safely, and make a defensible judgement about whether the file is usable.</p>
+      <span class="card-label">What changes</span>
+      <ul>
+        <li>You brief the AI. You do not memorise pandas syntax.</li>
+        <li>You verify the output. You do not trust because it ran.</li>
+        <li>You write the defence. You do not hide behind the chart.</li>
+      </ul>
     </div>
     <div class="card">
-      <span class="card-label">By Day 2</span>
-      <p>You can join bank-shaped tables, build KPIs with clearer definitions, and attach quality evidence to your outputs.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">By Day 3</span>
-      <p>You can turn analysis into charts, exception views, and ML-ready handoff tables that leadership can challenge and still trust.</p>
+      <span class="card-label">What does not change</span>
+      <ul>
+        <li>Definitions still have to be explicit.</li>
+        <li>Cut-offs still have to be honest.</li>
+        <li>Denominators still have to stand up to a counter.</li>
+        <li>Caveats still have to be visible to the reader, not buried in the appendix.</li>
+      </ul>
     </div>
   </div>
 </section>
 
 <section class="slide" id="s03">
-  <span class="eyebrow">Day 1 | Learning journey</span>
-  <h2>How the course unfolds from here</h2>
-  <div class="columns three spacer">
-    <div class="card">
-      <span class="card-label">First</span>
-      <p>Get the environment working properly. Open the notebook, run the setup cell, and confirm you can see data and output paths.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Then</span>
-      <p>Build just enough Python and pandas fluency to inspect a banking file rather than guessing about it.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Then apply</span>
-      <p>Use the notebook to triage a transactions extract, surface risks, and justify whether first-pass analysis should proceed.</p>
-    </div>
-  </div>
+  <span class="eyebrow">Day 1 | Module thesis</span>
+  <h2>Three pillars, weighted for the work</h2>
+  <table class="spacer">
+    <thead>
+      <tr>
+        <th>Pillar</th>
+        <th>Weight</th>
+        <th>What it covers</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Banking data judgement</td>
+        <td>~40%</td>
+        <td>Denominators, cut-off dates, lineage, what counts as a customer, when null is missing vs zero, plausibility limits, the shape of a fit-for-purpose extract. The part AI cannot do without being briefed.</td>
+      </tr>
+      <tr>
+        <td>Working with AI</td>
+        <td>~40%</td>
+        <td>Briefing with banking context, decomposing a vague leadership question, reading code and output critically, asking the AI to pressure-test its own answer, knowing when to stop trusting a thread.</td>
+      </tr>
+      <tr>
+        <td>Just-enough Python literacy</td>
+        <td>~20%</td>
+        <td>Reading not writing. Recognising a groupby on the wrong column, a join that silently dropped 30% of rows, a filter that excluded the wrong period.</td>
+      </tr>
+    </tbody>
+  </table>
 </section>
 
-<section class="slide" id="s03b">
-  <span class="eyebrow">Day 1 | Outputs and validation</span>
-  <h2>What you will produce and how it will be checked</h2>
-  <div class="columns two spacer">
-    <div class="card">
-      <span class="card-label">Outputs</span>
-      <ul>
-        <li>Triage summaries and cleaned tables</li>
-        <li>KPI views with quality evidence</li>
-        <li>Charts, exception views, and handoff files</li>
-        <li>Written explanations that leadership can challenge</li>
-      </ul>
+<section class="slide hero" id="s04" data-day="1">
+  <span class="hero-eyebrow">Day 1 * The four-step loop</span>
+  <h2 class="hero-statement">Every lab runs the same four steps. The one almost everyone skips first is <em>Brief</em>.</h2>
+  <p class="hero-supp">Not pedagogy I invented. The order a senior engineer takes a real task in when AI is part of the workflow. Two days is enough to wire it as reflex; the rest of your career is spent defending the engineers who skip it.</p>
+  <div class="hero-loop">
+    <div class="hero-loop-step">
+      <span class="hero-loop-num">1</span>
+      <span class="hero-loop-name">Brief</span>
+      <span class="hero-loop-desc">Read the question. Write what defendable means here, in your own words, before any prompt is sent.</span>
     </div>
-    <div class="card">
-      <span class="card-label">Validation</span>
-      <ul>
-        <li>Notebook checkpoints completed through the module</li>
-        <li>Workbook artefacts finished and reviewable</li>
-        <li>Visible evidence in outputs, not only code cells</li>
-        <li>Reasoning that is specific, cautious, and defensible</li>
-      </ul>
+    <div class="hero-loop-step">
+      <span class="hero-loop-num">2</span>
+      <span class="hero-loop-name">Engage</span>
+      <span class="hero-loop-desc">Brief the AI with the banking context you just wrote down. Decompose. Get to runnable code without losing the judgement.</span>
     </div>
-  </div>
-</section>
-
-<section class="slide" id="s04">
-  <span class="eyebrow">Day 1 | Start here</span>
-  <h2>Before we write code, get these four things ready</h2>
-  <div class="columns two spacer">
-    <div class="card">
-      <span class="card-label">Open on your screen</span>
-      <ul>
-        <li>This participant deck</li>
-        <li>The Day 1 notebook</li>
-        <li>The file browser for the training folder</li>
-        <li>A clear view of notebook output cells</li>
-      </ul>
+    <div class="hero-loop-step">
+      <span class="hero-loop-num">3</span>
+      <span class="hero-loop-name">Verify</span>
+      <span class="hero-loop-desc">Read the code yourself. Run the checks you chose, not the ones the AI suggested. Name what is technically right but analytically suspect.</span>
     </div>
-    <div class="card">
-      <span class="card-label">What we will verify in the next five minutes</span>
-      <ul>
-        <li>You can run a cell successfully</li>
-        <li>The notebook can see the <code>data/</code> folder</li>
-        <li>The notebook can create the <code>outputs/day1/</code> folder</li>
-        <li>You know what to do if an import or path fails</li>
-      </ul>
+    <div class="hero-loop-step">
+      <span class="hero-loop-num">4</span>
+      <span class="hero-loop-name">Defend</span>
+      <span class="hero-loop-desc">Write the note in your own voice. Answer one challenge question from the coach. The defence is the artefact, not the chart.</span>
     </div>
   </div>
+  <span class="hero-callout">The dots in your chat track the same four steps. Not decoration.</span>
 </section>
 
 <section class="slide" id="s05">
-  <span class="eyebrow">Day 1 | Setup step 1</span>
-  <h2>Open the Day 1 notebook now</h2>
-  <p>Use the Day 1 notebook as your working file for this session. Do not wait until the lab starts. Open it now so your environment and the deck move together.</p>
-  <div class="columns code-text spacer">
-    <pre><code>python-training/
-  notebooks/
-    day1_python_foundations.ipynb
-  data/
-    transactions.csv
-  outputs/
-    day1/</code></pre>
+  <span class="eyebrow">Day 1 | Two-day map</span>
+  <h2>Where this is going</h2>
+  <div class="columns two spacer">
     <div class="card">
-      <span class="card-label">Checkpoint</span>
+      <span class="card-label">Day 1 - Trust and definitions</span>
       <ul>
-        <li>You should have <code>day1_python_foundations.ipynb</code> open</li>
-        <li>You should be able to see the notebook cells</li>
-        <li>You should know where the <code>data/</code> folder lives relative to the notebook</li>
-        <li>If you cannot open the notebook, stop and fix that first</li>
+        <li>Lab A: Triage an extract for first-pass analysis.</li>
+        <li>Lab B: Define and build a branch KPI you can defend.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Day 2 - Outputs and handoff</span>
+      <ul>
+        <li>Lab C: Build an executive performance pack.</li>
+        <li>Lab D: Build the ML-ready handoff table and its data dictionary.</li>
       </ul>
     </div>
   </div>
+  <p class="muted spacer">Four labs. Four written defences. The closing handoff is the assessment, not a separate capstone.</p>
 </section>
 
+<!-- Foundations (slides 6-9) -->
+
 <section class="slide" id="s06">
-  <span class="eyebrow">Day 1 | Setup step 2</span>
-  <h2>Understand the three notebook elements before you run anything</h2>
-  <div class="columns three spacer">
+  <span class="eyebrow">Day 1 * Foundations</span>
+  <h2>Most of the bank fits inside five tables. The trap is what one row means.</h2>
+  <p class="lede">Customers, accounts, transactions, branches, service tickets. You have all met them before; that is not the lesson. The lesson is that the same table name means a different thing in retail than it does in treasury, and the engineer who does not ask the grain question is the engineer who counts a settlement leg as a customer payment.</p>
+  <div class="columns two spacer">
     <div class="card">
-      <span class="card-label">Markdown cell</span>
-      <p>Used for headings, instructions, and written notes about assumptions and decisions.</p>
+      <span class="card-label">The five tables, in plain language</span>
+      <ul>
+        <li><strong>customers</strong> - the parties the bank holds a relationship with. Not the same as "people"; corporates and trusts live here too.</li>
+        <li><strong>accounts</strong> - the products those parties opened. One customer can have ten; one account belongs to one customer.</li>
+        <li><strong>transactions</strong> - what moved across those accounts. Not always customer-initiated. The ones that are not are where the trouble starts.</li>
+        <li><strong>branches</strong> - where the relationship is anchored. Anchored, not constrained; transactions happen elsewhere.</li>
+        <li><strong>service tickets</strong> - what the relationship asked for. Calls, complaints, requests; the only signal of how the customer feels.</li>
+      </ul>
     </div>
     <div class="card">
-      <span class="card-label">Code cell</span>
-      <p>Used to run Python. This is where you import libraries, load files, inspect data, and build outputs.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Output area</span>
-      <p>Shows printed results, tables, charts, and errors. Read this carefully. It is part of the analysis.</p>
+      <span class="card-label">The grain question, every time</span>
+      <p>Before you trust a number, answer the question out loud: <em>one row in this table represents what?</em> "One transaction" is not an answer. "One leg of one settlement, posted on a calendar date that may not be the value date" is.</p>
+      <p class="muted spacer">I have seen a Q1 retail performance number include the corporate treasury settlement leg because nobody asked the grain question. The number was off by a factor that cost two weeks to unwind.</p>
     </div>
   </div>
-  <p class="muted spacer">Important: run cells from top to bottom. If you jump around, variables and paths may not exist yet.</p>
 </section>
 
 <section class="slide" id="s07">
-  <span class="eyebrow">Day 1 | Setup step 3</span>
-  <h2>Run the setup cell first, before any data work</h2>
-  <p>This first code block prepares the notebook environment. It imports libraries, defines the data and output paths, and creates the output folder if it does not exist yet.</p>
-  <pre><code><span class="code-keyword">from</span> pathlib <span class="code-keyword">import</span> Path
-
-<span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np
-<span class="code-keyword">import</span> pandas <span class="code-keyword">as</span> pd
-
-DATA_DIR = Path(<span class="code-string">"../data"</span>)
-OUTPUT_DIR = Path(<span class="code-string">"../outputs/day1"</span>)
-OUTPUT_DIR.mkdir(parents=<span class="code-keyword">True</span>, exist_ok=<span class="code-keyword">True</span>)</code></pre>
-  <p class="muted spacer">If this cell fails, do not keep going. Fix the environment first.</p>
+  <span class="eyebrow">Day 1 | Foundations</span>
+  <h2>What each table means - and what it does not mean</h2>
+  <table class="spacer">
+    <thead>
+      <tr><th>Table</th><th>Means</th><th>Does NOT mean</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>customers</td>
+        <td>One legal party identified by an internal id.</td>
+        <td>One household. One device. One unique person across time.</td>
+      </tr>
+      <tr>
+        <td>accounts</td>
+        <td>One product opened by one or more parties at a point in time.</td>
+        <td>An active product. A funded product. A profitable product.</td>
+      </tr>
+      <tr>
+        <td>transactions</td>
+        <td>An event posted to an account on a value date.</td>
+        <td>A real-world economic event. A net movement. A confirmed settlement.</td>
+      </tr>
+      <tr>
+        <td>branches</td>
+        <td>The booking branch as recorded in the source system.</td>
+        <td>Where the customer banks day to day. Where the staff sit.</td>
+      </tr>
+      <tr>
+        <td>service tickets</td>
+        <td>A request that reached the support queue.</td>
+        <td>Total customer pain. Resolution quality. Repeat-contact rate.</td>
+      </tr>
+    </tbody>
+  </table>
 </section>
 
 <section class="slide" id="s08">
-  <span class="eyebrow">Day 1 | Setup step 4</span>
-  <h2>Check what the notebook should now be able to see</h2>
+  <span class="eyebrow">Day 1 | Foundations</span>
+  <h2>Common gotchas - the ones that quietly break analyses</h2>
   <div class="columns two spacer">
     <div class="card">
-      <span class="card-label">Inputs</span>
+      <span class="card-label">Time and currency</span>
       <ul>
-        <li><code>DATA_DIR</code> should point to <code>../data</code></li>
-        <li>You should have access to <code>transactions.csv</code></li>
-        <li>The notebook should be reading from the training pack, not an unrelated folder</li>
+        <li>Posting date vs value date vs effective date - they are not the same.</li>
+        <li>Reversals and back-dated entries can move yesterday&rsquo;s number tomorrow.</li>
+        <li>Currency mixed across rows without a conversion column. Treat as flagged until proven otherwise.</li>
       </ul>
     </div>
     <div class="card">
-      <span class="card-label">Outputs</span>
+      <span class="card-label">Identity and absence</span>
       <ul>
-        <li><code>OUTPUT_DIR</code> should point to <code>../outputs/day1</code></li>
-        <li>The folder should be created automatically if missing</li>
-        <li>This is where you save triage and cleaning outputs from today's work</li>
+        <li>Null is not zero. Absence has to be interpreted, not coerced.</li>
+        <li>Duplicate ids may be re-issued ids, not true duplicates. Confirm before deduping.</li>
+        <li>One customer can hold many accounts. One account can have many holders. Joins drift if you forget.</li>
       </ul>
     </div>
   </div>
-  <p class="muted spacer">Good analytical practice starts with knowing where your files come from and where your outputs will go.</p>
 </section>
 
 <section class="slide" id="s09">
-  <span class="eyebrow">Day 1 | Setup step 5</span>
-  <h2>If your notebook does not run cleanly, stop here first</h2>
+  <span class="eyebrow">Day 1 | Foundations</span>
+  <h2>Definitions before code</h2>
+  <p class="lede">Pin the definition first. The hour you spend pinning it down saves the day you spend defending it.</p>
   <div class="columns three spacer">
     <div class="card">
-      <span class="card-label">Import error</span>
-      <p>The Python environment may not have the required packages available. Do not skip past this. Resolve it first.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">File not found</span>
-      <p>The notebook path is wrong or the working folder is incorrect. Check where the notebook sits relative to <code>data/</code>.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Output looks stale</span>
-      <p>Restart the kernel, then run from the top again in order. This often fixes hidden state issues.</p>
-    </div>
-  </div>
-</section>
-
-<section class="slide" id="s10">
-  <span class="eyebrow">Day 1 | Transition</span>
-  <h2>The small set of Python ideas you need before the data work</h2>
-  <div class="columns two spacer">
-    <div class="card">
-      <span class="card-label">You do not need everything</span>
+      <span class="card-label">For every metric</span>
       <ul>
-        <li>Variables and types</li>
-        <li>Basic string cleaning</li>
-        <li>Simple lists and dictionaries</li>
-        <li>Reading and inspecting a table</li>
+        <li>What is the numerator?</li>
+        <li>What is the denominator?</li>
+        <li>What is excluded, and why?</li>
       </ul>
     </div>
     <div class="card">
-      <span class="card-label">Why this matters</span>
-      <p>These ideas are not the goal of the course. They are the minimum toolkit that lets you load a banking extract, inspect it, and start making evidence-based judgements.</p>
+      <span class="card-label">For every cut</span>
+      <ul>
+        <li>What is the cut-off date?</li>
+        <li>What time zone applies?</li>
+        <li>What gets re-stated under late-arriving data?</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">For every audience</span>
+      <ul>
+        <li>What decision will this number drive?</li>
+        <li>What rounding is acceptable?</li>
+        <li>What caveat must travel with it?</li>
+      </ul>
     </div>
   </div>
 </section>
 
-<section class="slide" id="s11">
-  <span class="eyebrow">Day 1 | Python basics</span>
-  <h2>Variables and data types you will see all day</h2>
-  <p>A variable stores a value. Python infers the type from the value you assign, so you need to stay aware of what kind of thing each variable actually holds.</p>
-  <pre><code>branch_name = <span class="code-string">"Riyadh Central"</span>       <span class="code-comment"># string</span>
-transaction_count = <span class="code-number">1420</span>               <span class="code-comment"># integer</span>
-average_ticket = <span class="code-number">387.50</span>                <span class="code-comment"># float</span>
-is_active = <span class="code-keyword">True</span>                        <span class="code-comment"># boolean</span>
+<!-- Lab A (slides 10-21) -->
 
-<span class="code-keyword">print</span>(branch_name, transaction_count)</code></pre>
-  <p class="muted spacer">Use names that another analyst could understand immediately. <code>avg_ticket_sar</code> is stronger than <code>x</code>.</p>
+<section class="slide lab-cover" id="s10" data-day="1">
+  <div class="lab-cover-mark">
+    <div>
+      <span class="lab-cover-tag">Lab</span>
+      <span class="lab-cover-letter">A</span>
+    </div>
+    <div class="lab-cover-meta">
+      <span><strong>75 min</strong></span>
+      <span>Day 1 of 2</span>
+      <span>First time the loop runs for real</span>
+    </div>
+  </div>
+  <div class="lab-cover-body">
+    <h1 class="lab-cover-title">Triage an extract.</h1>
+    <p class="lab-cover-lede">Leadership wants to know if a transactions extract is usable for a first performance cut. You have 75 minutes. The four-step loop is the entire workflow.</p>
+    <dl class="lab-cover-grid">
+      <div class="lab-cover-row">
+        <dt>Goal</dt>
+        <dd>Decide fit, partly fit, or not yet fit. Defend the call.</dd>
+      </div>
+      <div class="lab-cover-row">
+        <dt>Surface</dt>
+        <dd>Lab chat with the transactions extract attached. Coach is on.</dd>
+      </div>
+      <div class="lab-cover-row">
+        <dt>Artefact</dt>
+        <dd>One short paragraph in your voice: the fitness call plus the one piece of evidence that supports it.</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<section class="slide quote" id="s11" data-day="1">
+  <span class="quote-eyebrow">Lab A * The leadership question</span>
+  <span class="quote-mark" aria-hidden="true">&ldquo;</span>
+  <p class="quote-body">We need a first cut on transaction performance for last month. Before we cut, can you tell me whether this extract is good enough to use? Yes, partly, or not yet. One reason behind it. I have ten minutes.</p>
+  <p class="quote-attr"><strong>From the COO desk.</strong> One round of pushback away from your desk.</p>
+  <p class="quote-after">There is no second-best answer here. "Looks fine" is a fail. "Fit, with caveats: 3.2% null amount on the morning batch" is the standard.</p>
 </section>
 
 <section class="slide" id="s12">
-  <span class="eyebrow">Day 1 | Python basics</span>
-  <h2>Strings, lists, and dictionaries for real banking data</h2>
-  <div class="columns three spacer">
+  <span class="eyebrow">Day 1 | Lab A | Data card</span>
+  <h2>What is in the extract</h2>
+  <div class="columns two spacer">
     <div class="card">
-      <span class="card-label">Strings</span>
-      <p>Useful when channel labels, branch names, and free-text fields arrive padded, inconsistent, or badly formatted.</p>
-      <p class="muted"><code>"  mob  ".strip().upper()</code></p>
+      <span class="card-label">transactions.csv</span>
+      <ul>
+        <li>One row per posted transaction for last month.</li>
+        <li>Columns: txn_id, account_id, branch_id, channel, txn_type, posting_date, value_date, amount, currency.</li>
+        <li>Volume: ~10k rows. Mixed channels and types.</li>
+      </ul>
     </div>
     <div class="card">
-      <span class="card-label">Lists</span>
-      <p>Useful when you need an ordered set of values, such as expected regions, statuses, or fields to keep.</p>
-      <p class="muted"><code>["Riyadh", "Makkah", "Eastern"]</code></p>
-    </div>
-    <div class="card">
-      <span class="card-label">Dictionaries</span>
-      <p>Useful when you need a lookup table to translate system codes into analytical labels.</p>
-      <p class="muted"><code>{"MOB": "Mobile", "BRANCH": "Branch"}</code></p>
+      <span class="card-label">Posture: declared issues</span>
+      <p>This extract has at least one known data quality issue. Find it, decide whether it changes the analytical conclusion, and document what you would do.</p>
+      <p class="muted">This is normal for upstream feeds. Treat verification as a habit, not a gotcha.</p>
     </div>
   </div>
 </section>
 
-<section class="slide" id="s13">
-  <span class="eyebrow">Day 1 | Pandas</span>
-  <h2>Your first safe file load with pandas</h2>
-  <p>Use the helper already provided in the notebook. It reads the file and checks that the required columns are present before you continue.</p>
-  <pre><code>txns = read_csv_safe(
-    DATA_DIR / <span class="code-string">"transactions.csv"</span>,
-    required_cols=[<span class="code-string">"txn_id"</span>, <span class="code-string">"account_id"</span>, <span class="code-string">"txn_ts"</span>, <span class="code-string">"amount_sar"</span>, <span class="code-string">"channel"</span>, <span class="code-string">"status"</span>],
-    dtype={<span class="code-string">"account_id"</span>: <span class="code-string">"string"</span>},
-)</code></pre>
-  <p class="muted spacer">This is stronger than loading blindly because it makes the expected structure visible from the start.</p>
+<section class="slide hero" id="s13" data-day="1">
+  <span class="hero-eyebrow">Lab A * Step 1 * Brief</span>
+  <h2 class="hero-statement">The prompt is downstream of the question. <em>Pin the question first</em> or the lab silently bends.</h2>
+  <p class="hero-supp">Three sentences in chat, in your own words, before any prompt. The five minutes you spend here is what lets the next forty be useful. Almost nobody does this; that is exactly why it is the highest-leverage habit in the course.</p>
+  <div class="hero-loop">
+    <div class="hero-loop-step">
+      <span class="hero-loop-num">1</span>
+      <span class="hero-loop-name">What is the question?</span>
+      <span class="hero-loop-desc">State leadership's ask in your words, not theirs. Cut the meeting voice.</span>
+    </div>
+    <div class="hero-loop-step">
+      <span class="hero-loop-num">2</span>
+      <span class="hero-loop-name">What would defendable look like?</span>
+      <span class="hero-loop-desc">What evidence would let you commit to fit / partly / not yet without hedging? Be specific.</span>
+    </div>
+    <div class="hero-loop-step">
+      <span class="hero-loop-num">3</span>
+      <span class="hero-loop-name">What pins the call?</span>
+      <span class="hero-loop-desc">One definition or threshold that has to land before any prompt is worth sending.</span>
+    </div>
+    <div class="hero-loop-step">
+      <span class="hero-loop-num">&rarr;</span>
+      <span class="hero-loop-name">Mark brief done</span>
+      <span class="hero-loop-desc">The coach reads your brief and from this point on coaches against your own brief, not a generic right answer.</span>
+    </div>
+  </div>
+  <span class="hero-callout">Skip this step and the rest of the lab silently breaks.</span>
 </section>
 
 <section class="slide" id="s14">
-  <span class="eyebrow">Day 1 | Pandas</span>
-  <h2>What a DataFrame gives you immediately</h2>
-  <p>A DataFrame is the main working object for this course. Once the file is loaded, your first task is not analysis. It is orientation.</p>
-  <div class="columns code-text spacer">
-    <pre><code>txns.shape        <span class="code-comment"># rows and columns</span>
-txns.columns      <span class="code-comment"># field names</span>
-txns.dtypes       <span class="code-comment"># column types</span>
-txns.head()       <span class="code-comment"># first few rows</span></code></pre>
+  <span class="eyebrow">Day 1 | Lab A | Step 2 - Engage</span>
+  <h2>Brief the AI the way you would brief a junior engineer</h2>
+  <div class="columns two spacer">
     <div class="card">
-      <span class="card-label">Read this like an analyst</span>
+      <span class="card-label">Set the context first</span>
       <ul>
-        <li>How large is the file?</li>
-        <li>What fields are available?</li>
-        <li>What types did pandas assign?</li>
-        <li>Do the first rows look plausible?</li>
+        <li>What table you are looking at, in business terms.</li>
+        <li>What "fit for first-pass" means here, from your brief.</li>
+        <li>What the chat output will be used for downstream.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Ask for one thing at a time</span>
+      <ul>
+        <li>"Show me the column types and the row count."</li>
+        <li>"Show me the null rate per column."</li>
+        <li>"Show me posting_date range and any rows outside last month."</li>
       </ul>
     </div>
   </div>
+  <p class="muted spacer">A vague prompt gets you a vague answer that looks confident. A specific prompt gets you something you can verify.</p>
 </section>
 
 <section class="slide" id="s15">
-  <span class="eyebrow">Day 1 | Inspection</span>
-  <h2>The first five checks are your opening ritual</h2>
-  <p>Every time a new file lands, run these checks before you build a summary, filter a table, or tell anyone a number.</p>
-  <pre><code>txns.head()               <span class="code-comment"># 1. look at the rows</span>
-txns.shape                <span class="code-comment"># 2. check the size</span>
-txns.dtypes               <span class="code-comment"># 3. inspect the types</span>
-txns.isna().sum()         <span class="code-comment"># 4. profile missingness</span>
-txns[<span class="code-string">"txn_id"</span>].nunique()  <span class="code-comment"># 5. compare unique IDs to row count</span></code></pre>
-  <p class="muted spacer">If the unique ID count does not line up with the row count, you may already have duplication risk before any KPI work begins.</p>
+  <span class="eyebrow">Day 1 | Lab A | Step 3 - Verify</span>
+  <h2>Choose your checks - do not let the coach pick them for you</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Structural checks (always run)</span>
+      <ul>
+        <li>Row count vs expected. Column types vs expected.</li>
+        <li>Primary key uniqueness on txn_id.</li>
+        <li>Null rate per column, with a threshold you decide.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Banking checks (judgement)</span>
+      <ul>
+        <li>posting_date inside the requested period.</li>
+        <li>amount sign convention consistent with txn_type.</li>
+        <li>currency uniform OR a conversion path documented.</li>
+        <li>account_id present in accounts table - or flagged.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="muted spacer">Use the <strong>Pressure-test this</strong> and <strong>What might be wrong here?</strong> quick actions when something looks too clean.</p>
 </section>
 
 <section class="slide" id="s16">
-  <span class="eyebrow">Day 1 | Inspection</span>
-  <h2>What you are looking for before any analysis</h2>
-  <div class="columns two spacer">
+  <span class="eyebrow">Day 1 | Lab A | Step 4 - Defend</span>
+  <h2>Write the fitness call</h2>
+  <div class="columns spacer">
     <div class="card">
-      <span class="card-label">Data quality checks</span>
+      <span class="card-label">Defendable structure</span>
       <ul>
-        <li>Missing values that may signal extract weakness</li>
-        <li>Duplicate IDs that could inflate counts</li>
-        <li>Unexpected categories or malformed text</li>
-        <li>Date fields that fail to parse cleanly</li>
-      </ul>
-    </div>
-    <div class="card">
-      <span class="card-label">Business questions to ask</span>
-      <ul>
-        <li>Is this issue merely inconvenient, or analysis-damaging?</li>
-        <li>Would leadership make a different decision if we ignored it?</li>
-        <li>Can we continue with caveats, or should we stop?</li>
-        <li>What needs escalation before further use?</li>
+        <li>One sentence: fit / partly fit / not yet fit.</li>
+        <li>One sentence: the single piece of evidence that decided it.</li>
+        <li>One sentence: the caveat or follow-up leadership needs to know.</li>
       </ul>
     </div>
   </div>
+  <p class="muted spacer">When the coach surfaces your challenge question, answer it in writing. Then click <strong>Submit my Defend answer</strong>. That submission is the artefact.</p>
 </section>
 
 <section class="slide" id="s17">
-  <span class="eyebrow">Day 1 | Before Lab A</span>
-  <h2>Your triage workflow for the first lab</h2>
-  <div class="columns three spacer">
+  <span class="eyebrow">Day 1 | Lab A | Pitfalls</span>
+  <h2>Common ways triage goes wrong</h2>
+  <div class="columns two spacer">
     <div class="card">
-      <span class="card-label">1. Load safely</span>
-      <p>Run the notebook setup and load <code>transactions.csv</code> through the provided helper.</p>
+      <span class="card-label">Confidence without evidence</span>
+      <p>"Looks clean" with no checks behind it. Always tie a verdict to a number you ran.</p>
     </div>
     <div class="card">
-      <span class="card-label">2. Inspect carefully</span>
-      <p>Check rows, columns, types, nulls, unique IDs, and anything else that could weaken trust.</p>
+      <span class="card-label">Sampling without saying so</span>
+      <p>Eyeballing the first 50 rows and deciding for the whole file. State your sample, or run the check on the whole file.</p>
     </div>
     <div class="card">
-      <span class="card-label">3. Judge honestly</span>
-      <p>State whether the file is fit, partly fit, or not yet fit for first-pass analysis, and support that judgement with evidence.</p>
+      <span class="card-label">Missing the one issue that matters</span>
+      <p>You can have a clean structure and an analytically broken file. Always ask: would this change the call leadership has to make?</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Hedging the verdict</span>
+      <p>"It depends" is not a triage. Pick a position and put the caveats in the next sentence.</p>
     </div>
   </div>
-  <p class="muted spacer">The lab is not about writing lots of code. It is about making a disciplined evidence-based call.</p>
 </section>
 
 <section class="slide" id="s18">
-  <span class="eyebrow">Day 1 | Lab A</span>
-  <h2>Lab A: Transaction extract triage</h2>
-  <div class="exercise-card">
-    <h3>Your task</h3>
-    <p>A daily transactions extract has arrived. Leadership wants to know: is this file usable for a first performance cut?</p>
-    <div class="columns three spacer">
-      <div class="card">
-        <span class="card-label">Steps</span>
-        <ol>
-          <li>Load <code>transactions.csv</code></li>
-          <li>Check row count and unique IDs</li>
-          <li>Profile null rates</li>
-          <li>Check the date range</li>
-          <li>State whether the file is fit for analysis</li>
-        </ol>
-      </div>
-      <div class="card">
-        <span class="card-label">Output</span>
-        <p>A triage summary plus one written risk statement about the biggest data quality concern.</p>
-      </div>
-      <div class="card">
-        <span class="card-label">Stretch</span>
-        <p>Export a <code>rejects.csv</code> with duplicate rows and a reason code column.</p>
-      </div>
+  <span class="eyebrow">Day 1 | Lab A | Coach posture</span>
+  <h2>When to ask the coach, when to push back on it</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Ask the coach when</span>
+      <ul>
+        <li>You need a check expressed as code and do not want to type it.</li>
+        <li>You hit a traceback and the message is not obvious.</li>
+        <li>You want a second opinion on whether your verdict is well-supported.</li>
+      </ul>
     </div>
-    <button type="button" class="timer-btn" data-minutes="12">Start 12-min timer</button>
+    <div class="card">
+      <span class="card-label">Push back when</span>
+      <ul>
+        <li>The coach gave you an answer with no numbers behind it.</li>
+        <li>The check ran but the conclusion does not follow from the output.</li>
+        <li>The coach used a definition you did not give it. Restate yours.</li>
+      </ul>
+    </div>
   </div>
 </section>
 
 <section class="slide" id="s19">
-  <span class="eyebrow">Day 1 | Functions</span>
-  <h2>Why write functions?</h2>
-  <p>A function packages logic so you can reuse it and so other people can understand what it does.</p>
-  <pre><code><span class="code-keyword">def</span> clean_amount(text):
-    <span class="code-string">"""Convert a text amount like '1,250.00' to a float."""</span>
-    <span class="code-keyword">if</span> pd.isna(text):
-        <span class="code-keyword">return</span> <span class="code-keyword">None</span>
-    cleaned = <span class="code-keyword">str</span>(text).replace(<span class="code-string">","</span>, <span class="code-string">""</span>).strip()
-    <span class="code-keyword">if</span> cleaned == <span class="code-string">""</span>:
-        <span class="code-keyword">return</span> <span class="code-keyword">None</span>
-    <span class="code-keyword">return</span> <span class="code-keyword">float</span>(cleaned)</code></pre>
-  <p class="spacer">A good function name tells you what it does. A good docstring tells you how to use it.</p>
+  <span class="eyebrow">Day 1 | Lab A | Stretch</span>
+  <h2>Stretch checks if you finish early</h2>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Plausibility</span>
+      <p>Top-1% amount values - are they real, or system-generated test rows? Compare against last month.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Hour of day</span>
+      <p>Distribution of posting_date timestamps by hour. A flat or zero pattern is a feed problem.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Channel mix</span>
+      <p>Channel codes that did not exist last month. Confirm with the source system before trusting.</p>
+    </div>
+  </div>
 </section>
 
-<section class="slide" id="s20">
-  <span class="eyebrow">Day 1 | Functions</span>
-  <h2>Applying functions to a column</h2>
-  <p>Use <code>.apply()</code> to run your function on every value in a column.</p>
-  <pre><code><span class="code-comment"># Apply the cleaning function to create a new column</span>
-txns[<span class="code-string">"amount_clean"</span>] = txns[<span class="code-string">"amount_sar"</span>].apply(clean_amount)
-
-<span class="code-comment"># Check the result</span>
-txns[[<span class="code-string">"amount_sar"</span>, <span class="code-string">"amount_clean"</span>]].head()</code></pre>
-  <div class="card spacer">
-    <span class="card-label">Before and after</span>
-    <table>
-      <tr><th>amount_sar</th><th>amount_clean</th></tr>
-      <tr><td>1,250.00</td><td>1250.0</td></tr>
-      <tr><td></td><td>None</td></tr>
-      <tr><td>500</td><td>500.0</td></tr>
-    </table>
+<section class="slide run" id="s20" data-day="1">
+  <div class="run-left">
+    <span class="run-tag">Lab A * Run the lab</span>
+    <h2 class="run-headline">Brief in chat. No prompt before that.</h2>
+    <span class="run-rule"></span>
+    <p class="run-rule-text">Open the lab chat. Type your brief in your own words. Mark brief done. The coach reads it and starts coaching against your brief, not against a generic answer.</p>
+    <a class="run-cta" href="/academy/ajb-enterprise-banking/python-for-data#lab=lab-a-triage">Open Lab A in the chat</a>
+  </div>
+  <div class="run-right">
+    <span class="run-clock-label">Timebox</span>
+    <span class="run-clock-value">75</span>
+    <span class="run-clock-unit">minutes</span>
+    <div class="run-shape">
+      <div class="run-shape-row"><strong>0-10</strong><span>Brief. Type and mark done.</span></div>
+      <div class="run-shape-row"><strong>10-40</strong><span>Engage and Verify. Drive the loop.</span></div>
+      <div class="run-shape-row"><strong>40-55</strong><span>Defend. Answer the challenge question.</span></div>
+      <div class="run-shape-row"><strong>55-75</strong><span>Peer pressure-test. Debrief.</span></div>
+    </div>
   </div>
 </section>
 
 <section class="slide" id="s21">
-  <span class="eyebrow">Day 1 | Functions</span>
-  <h2>Mapping values with a dictionary</h2>
-  <p>When you need to convert codes to labels, use <code>.map()</code> with a dictionary.</p>
-  <pre><code>channel_map = {
-    <span class="code-string">"ATM"</span>: <span class="code-string">"ATM"</span>,
-    <span class="code-string">"MOB"</span>: <span class="code-string">"Mobile"</span>,
-    <span class="code-string">"BRANCH"</span>: <span class="code-string">"Branch"</span>,
-}
-
-txns[<span class="code-string">"channel_clean"</span>] = txns[<span class="code-string">"channel"</span>].str.strip().str.upper().map(channel_map)
-
-<span class="code-comment"># Values not in the dictionary become NaN.</span>
-<span class="code-comment"># Check for unmapped values:</span>
-txns[txns[<span class="code-string">"channel_clean"</span>].isna()][<span class="code-string">"channel"</span>].value_counts()</code></pre>
-</section>
-
-<section class="slide" id="s22">
-  <span class="eyebrow">Day 1 | Functions</span>
-  <h2>Handling errors clearly</h2>
-  <p>Good code fails clearly. Compare these two approaches:</p>
-  <div class="columns two spacer">
+  <span class="eyebrow">Day 1 | Lab A | Close</span>
+  <h2>Lab A debrief</h2>
+  <div class="columns three spacer">
     <div class="card">
-      <span class="card-label" style="color:var(--danger)">Weak</span>
-      <pre><code><span class="code-keyword">try</span>:
-    df = pd.read_csv(path)
-<span class="code-keyword">except</span>:
-    <span class="code-keyword">print</span>(<span class="code-string">"Error"</span>)</code></pre>
+      <span class="card-label">Read out</span>
+      <p>Two participants read their fitness call. The room votes: defendable, or hedged?</p>
     </div>
     <div class="card">
-      <span class="card-label" style="color:var(--success)">Strong</span>
-      <pre><code>df = pd.read_csv(path)
-missing = [c <span class="code-keyword">for</span> c <span class="code-keyword">in</span> required
-           <span class="code-keyword">if</span> c <span class="code-keyword">not in</span> df.columns]
-<span class="code-keyword">if</span> missing:
-    <span class="code-keyword">raise</span> ValueError(
-        <span class="code-keyword">f</span><span class="code-string">"Missing columns: {missing}"</span>
-    )</code></pre>
+      <span class="card-label">Highlight</span>
+      <p>One verification check the coach would not have suggested unprompted.</p>
     </div>
-  </div>
-  <p>The strong version tells the next person exactly what went wrong and how to fix it.</p>
-</section>
-
-<section class="slide" id="s23">
-  <span class="eyebrow">Day 1 | Lab B</span>
-  <h2>Lab B: Build cleaning functions</h2>
-  <div class="exercise-card">
-    <h3>Your task</h3>
-    <p>Create two reusable functions: one for cleaning amounts and one for cleaning channel codes.</p>
-    <div class="columns three spacer">
-      <div class="card">
-        <span class="card-label">Steps</span>
-        <ol>
-          <li>Write <code>clean_amount()</code></li>
-          <li>Write <code>clean_channel()</code></li>
-          <li>Apply both to the transactions data</li>
-          <li>Write a note describing your assumptions</li>
-        </ol>
-      </div>
-      <div class="card">
-        <span class="card-label">Output</span>
-        <p>Cleaned columns in your DataFrame, plus a markdown cell describing what your functions assume about the input.</p>
-      </div>
-      <div class="card">
-        <span class="card-label">Stretch</span>
-        <p>Count how many values did not map to a known channel. Explain what you would do about them.</p>
-      </div>
+    <div class="card">
+      <span class="card-label">Carry forward</span>
+      <p>The brief habit. Lab B will ask for the same Brief step on a harder question; this is the rep.</p>
     </div>
-    <button type="button" class="timer-btn" data-minutes="10">Start 10-min timer</button>
   </div>
 </section>
 
-<section class="slide" id="s24">
-  <span class="eyebrow">Day 1 | Saving work</span>
-  <h2>Exporting your results</h2>
-  <p>Save your cleaned data and summaries so they can be reviewed or used in the next step.</p>
-  <pre><code><span class="code-comment"># Save a DataFrame to CSV</span>
-branch_kpi.to_csv(<span class="code-string">"outputs/day1/triage_summary.csv"</span>, index=<span class="code-keyword">False</span>)
+<!-- Break (slide 22) -->
 
-<span class="code-comment"># Save just the rejected rows</span>
-rejects.to_csv(<span class="code-string">"outputs/day1/rejects.csv"</span>, index=<span class="code-keyword">False</span>)</code></pre>
-  <p class="spacer"><code>index=False</code> avoids writing the row numbers into the file. Most of the time you do not want them.</p>
+<section class="slide break" id="s22" data-day="1">
+  <span class="break-eyebrow">Day 1 * Break</span>
+  <span class="break-number">15</span>
+  <span class="break-unit">Minute break</span>
+  <p class="break-tease">When we come back, the question gets harder. Not "is the data fit?" but "what does the metric actually mean?".</p>
+</section>
+
+<!-- Lab B (slides 23-33) -->
+
+<section class="slide lab-cover" id="s23" data-day="1">
+  <div class="lab-cover-mark">
+    <div>
+      <span class="lab-cover-tag">Lab</span>
+      <span class="lab-cover-letter">B</span>
+    </div>
+    <div class="lab-cover-meta">
+      <span><strong>90 min</strong></span>
+      <span>Day 1 of 2</span>
+      <span>Definitions discipline on a real KPI</span>
+    </div>
+  </div>
+  <div class="lab-cover-body">
+    <h1 class="lab-cover-title">Define and build a branch KPI.</h1>
+    <p class="lab-cover-lede">Leadership wants branch performance for last quarter. The 90 minutes is generous on purpose. Pin the definition before you touch the chat.</p>
+    <dl class="lab-cover-grid">
+      <div class="lab-cover-row">
+        <dt>Goal</dt>
+        <dd>One branch KPI table. One alternative denominator. One defendable choice between them.</dd>
+      </div>
+      <div class="lab-cover-row">
+        <dt>Surface</dt>
+        <dd>Lab chat with branches, accounts, and transactions attached.</dd>
+      </div>
+      <div class="lab-cover-row">
+        <dt>Artefact</dt>
+        <dd>The version of the KPI you would ship, plus the one-paragraph reason in your voice.</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<section class="slide quote" id="s24" data-day="1">
+  <span class="quote-eyebrow">Lab B * The leadership question</span>
+  <span class="quote-mark" aria-hidden="true">&ldquo;</span>
+  <p class="quote-body">Give me branch performance for Q1. Ranked, headline number per branch. We are reviewing rotations and people will get moved on the back of this. It has to be defendable when branch managers ask.</p>
+  <p class="quote-attr"><strong>From the regional lead.</strong> The number that moves people.</p>
+  <p class="quote-after">When a number drives staffing decisions, every definition behind it gets challenged. Hold that audience in your head as you write the brief.</p>
 </section>
 
 <section class="slide" id="s25">
-  <span class="eyebrow">Day 1 | Recap</span>
-  <h2>Day 1 recap</h2>
-  <div class="columns three spacer">
+  <span class="eyebrow">Day 1 | Lab B | Data card</span>
+  <h2>What is in the lab</h2>
+  <div class="columns two spacer">
     <div class="card">
-      <span class="card-label">You can now</span>
-      <p>Load CSV files into pandas and inspect them with <code>.head()</code>, <code>.shape</code>, <code>.dtypes</code>, and <code>.isna()</code>.</p>
+      <span class="card-label">Tables attached</span>
+      <ul>
+        <li><strong>branches.csv</strong> - branch_id, branch_name, region, opened_date.</li>
+        <li><strong>accounts.csv</strong> - account_id, customer_id, branch_id, opened_date, status.</li>
+        <li><strong>transactions.csv</strong> - txn_id, account_id, txn_type, posting_date, amount, currency.</li>
+      </ul>
     </div>
     <div class="card">
-      <span class="card-label">You can now</span>
-      <p>Filter rows, select columns, find duplicates, and profile null rates.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">You can now</span>
-      <p>Write reusable cleaning functions and apply them to columns.</p>
+      <span class="card-label">Posture: mixed</span>
+      <p>This extract has been used before. We know about some of its issues. There may be others we do not. Treat it the way you would treat a real upstream feed.</p>
     </div>
   </div>
 </section>
 
 <section class="slide" id="s26">
-  <span class="eyebrow">Day 1 | Key concepts</span>
-  <h2>Day 1 key takeaways</h2>
-  <ol>
-    <li><strong>Always inspect before you analyse.</strong> Run the five checks on every new file.</li>
-    <li><strong>Set dtypes deliberately.</strong> IDs should be strings, dates should be datetime.</li>
-    <li><strong>Write functions, not one-off fixes.</strong> Functions are reusable, testable, and explainable.</li>
-    <li><strong>Surface problems, do not hide them.</strong> Unmapped values and nulls should be visible.</li>
-    <li><strong>Export your work.</strong> Save outputs so someone else can review and reuse them.</li>
-  </ol>
-</section>
-
-<!-- ======================================================= -->
-<!--  DAY 2: JOINS, GROUPBY, AND KPIs                       -->
-<!-- ======================================================= -->
-
-<section class="slide" id="s27">
-  <span class="eyebrow">Day 2 | Welcome</span>
-  <h1>Day 2: Joins, GroupBy, and KPIs</h1>
-  <p class="lede">Today you will connect tables, build performance metrics, and learn to defend the numbers you produce.</p>
-</section>
-
-<section class="slide" id="s28">
-  <span class="eyebrow">Day 2 | Agenda</span>
-  <h2>Day 2 agenda</h2>
-  <ol>
-    <li>Loading multiple files with deliberate dtypes</li>
-    <li>Joins: connecting customers, accounts, and transactions</li>
-    <li>Data quality checks across joined tables</li>
-    <li><strong>Lab C:</strong> Customer quality checks</li>
-    <li>GroupBy: split-apply-combine</li>
-    <li>Building KPI tables</li>
-    <li><strong>Lab D:</strong> Branch performance summary</li>
-    <li>Shares and denominators</li>
-    <li><strong>Lab E:</strong> Regional product uptake</li>
-    <li>Time-based analysis</li>
-    <li>Day 2 recap</li>
-  </ol>
-</section>
-
-<section class="slide" id="s29">
-  <span class="eyebrow">Day 2 | Loading data</span>
-  <h2>Loading multiple files</h2>
-  <p>Most real analysis uses more than one table. Load each file separately with explicit types.</p>
-  <pre><code>customers = pd.read_csv(<span class="code-string">"data/customers.csv"</span>,    dtype={<span class="code-string">"customer_id"</span>: <span class="code-string">"string"</span>})
-accounts  = pd.read_csv(<span class="code-string">"data/accounts.csv"</span>,     dtype={<span class="code-string">"account_id"</span>: <span class="code-string">"string"</span>,
-                                                       <span class="code-string">"customer_id"</span>: <span class="code-string">"string"</span>})
-txns      = pd.read_csv(<span class="code-string">"data/transactions.csv"</span>, dtype={<span class="code-string">"account_id"</span>: <span class="code-string">"string"</span>,
-                                                       <span class="code-string">"branch_id"</span>: <span class="code-string">"string"</span>})
-branches  = pd.read_csv(<span class="code-string">"data/branches.csv"</span>,     dtype={<span class="code-string">"branch_id"</span>: <span class="code-string">"string"</span>})</code></pre>
-</section>
-
-<section class="slide" id="s30">
-  <span class="eyebrow">Day 2 | Joins</span>
-  <h2>What is a join?</h2>
-  <p>A join combines two tables using a shared key column. It is how you connect customers to their accounts, or transactions to their branches.</p>
-  <div class="columns three spacer">
-    <div class="card">
-      <span class="card-label">Customers</span>
-      <p>customer_id, name, region, segment</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Accounts</span>
-      <p>account_id, customer_id, product_family</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Transactions</span>
-      <p>txn_id, account_id, amount, channel, branch_id</p>
-    </div>
-  </div>
-  <p class="spacer">The key columns (<code>customer_id</code>, <code>account_id</code>) are what connect these tables together.</p>
-</section>
-
-<section class="slide" id="s31">
-  <span class="eyebrow">Day 2 | Joins</span>
-  <h2>Join types in pandas</h2>
-  <pre><code><span class="code-comment"># Left join: keep all rows from the left table</span>
-result = txns.merge(accounts, on=<span class="code-string">"account_id"</span>, how=<span class="code-string">"left"</span>)</code></pre>
-  <div class="columns four spacer">
-    <div class="card">
-      <span class="card-label">Left</span>
-      <p>Keep all left rows. Fill with NaN if no match on the right.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Inner</span>
-      <p>Keep only rows that match in both tables.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Outer</span>
-      <p>Keep all rows from both tables. Fill gaps with NaN.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Which to use?</span>
-      <p><strong>Left join</strong> is safest. You keep all your analysis rows and can see where matches are missing.</p>
-    </div>
-  </div>
-</section>
-
-<section class="slide" id="s32">
-  <span class="eyebrow">Day 2 | Joins</span>
-  <h2>Protecting the grain</h2>
-  <p>The grain of a table is what one row represents. If you join a customer table (one row per customer) to a transactions table (many rows per customer), the result has one row per transaction. That is correct.</p>
-  <p>But if customers has duplicate IDs, the join will create extra rows. Always check:</p>
-  <pre><code><span class="code-comment"># Before joining, verify the key is unique</span>
-customers[<span class="code-string">"customer_id"</span>].duplicated().sum()
-<span class="code-comment"># If this is not 0, investigate before proceeding.</span></code></pre>
-</section>
-
-<section class="slide" id="s33">
-  <span class="eyebrow">Day 2 | Joins</span>
-  <h2>Building a lean analysis table</h2>
-  <p>Join only the columns you need. Lean tables are easier to work with and harder to misinterpret.</p>
-  <pre><code>analysis = (
-    txns
-    .merge(accounts[[<span class="code-string">"account_id"</span>, <span class="code-string">"customer_id"</span>, <span class="code-string">"product_family"</span>]],
-           on=<span class="code-string">"account_id"</span>, how=<span class="code-string">"left"</span>)
-    .merge(customers[[<span class="code-string">"customer_id"</span>, <span class="code-string">"region"</span>, <span class="code-string">"segment"</span>]],
-           on=<span class="code-string">"customer_id"</span>, how=<span class="code-string">"left"</span>)
-    .merge(branches[[<span class="code-string">"branch_id"</span>, <span class="code-string">"city"</span>]],
-           on=<span class="code-string">"branch_id"</span>, how=<span class="code-string">"left"</span>)
-)
-analysis.shape</code></pre>
-</section>
-
-<section class="slide" id="s34">
-  <span class="eyebrow">Day 2 | Lab C</span>
-  <h2>Lab C: Customer quality checks</h2>
-  <div class="exercise-card">
-    <h3>Your task</h3>
-    <p>Before joining, test whether the customer table is safe. Find duplicates, null columns, and invalid region values.</p>
-    <div class="columns three spacer">
-      <div class="card">
-        <span class="card-label">Steps</span>
-        <ol>
-          <li>Check for duplicate <code>customer_id</code></li>
-          <li>Profile nulls in key columns</li>
-          <li>List invalid region values</li>
-          <li>State the biggest risk for a regional analysis</li>
-        </ol>
-      </div>
-      <div class="card">
-        <span class="card-label">Output</span>
-        <p>A quality summary with the number of issues found per check.</p>
-      </div>
-      <div class="card">
-        <span class="card-label">Stretch</span>
-        <p>Export a <code>dq_report.csv</code> with pass/fail for each check.</p>
-      </div>
-    </div>
-    <button type="button" class="timer-btn" data-minutes="12">Start 12-min timer</button>
-  </div>
-</section>
-
-<section class="slide" id="s35">
-  <span class="eyebrow">Day 2 | GroupBy</span>
-  <h2>Introduction to groupby</h2>
-  <p><code>groupby</code> is how you summarise data. It follows a three-step pattern: split the data into groups, apply a calculation, and combine the results.</p>
-  <pre><code><span class="code-comment"># Count transactions per branch</span>
-txns.groupby(<span class="code-string">"branch_id"</span>)[<span class="code-string">"txn_id"</span>].count()</code></pre>
-  <div class="columns three spacer">
-    <div class="card">
-      <span class="card-label">1. Split</span>
-      <p>Divide the data by the grouping column (e.g. branch_id).</p>
-    </div>
-    <div class="card">
-      <span class="card-label">2. Apply</span>
-      <p>Run a calculation on each group (e.g. count, sum, mean).</p>
-    </div>
-    <div class="card">
-      <span class="card-label">3. Combine</span>
-      <p>Bring the results back into a single table.</p>
-    </div>
-  </div>
-</section>
-
-<section class="slide" id="s36">
-  <span class="eyebrow">Day 2 | GroupBy</span>
-  <h2>Multiple aggregations with <code>.agg()</code></h2>
-  <p>Use <code>.agg()</code> to compute several metrics at once. Name each output clearly.</p>
-  <pre><code>branch_kpi = (
-    posted
-    .groupby([<span class="code-string">"region"</span>, <span class="code-string">"branch_id"</span>])
-    .agg(
-        txn_count     = (<span class="code-string">"txn_id"</span>,     <span class="code-string">"count"</span>),
-        total_fee_sar = (<span class="code-string">"fee_sar"</span>,    <span class="code-string">"sum"</span>),
-        avg_ticket    = (<span class="code-string">"amount_sar"</span>, <span class="code-string">"mean"</span>),
-    )
-    .reset_index()
-)
-
-branch_kpi.head()</code></pre>
-  <p class="muted spacer"><code>.reset_index()</code> turns the group keys back into regular columns.</p>
-</section>
-
-<section class="slide" id="s37">
-  <span class="eyebrow">Day 2 | KPIs</span>
-  <h2>Defining metrics clearly</h2>
-  <p>Every KPI has three parts. If you cannot state all three, the metric is not ready for leadership.</p>
-  <div class="columns three spacer">
+  <span class="eyebrow">Day 1 * Lab B * Definitions</span>
+  <h2>Two engineers, the same KPI, different numbers. The gap is always one of these four.</h2>
+  <p class="lede">N, D, E, cut-off. Numerator, denominator, exclusions, cut-off. Pick a metric you have ever shipped at this bank and I can show you the version of it that disagrees with the version next to it. The disagreement is never about pandas. It is always about one of these four.</p>
+  <div class="columns two spacer">
     <div class="card">
       <span class="card-label">Numerator</span>
-      <p>What are you counting or summing?</p>
-      <p class="muted">Example: sum of fee_sar</p>
+      <p>What event counts? "Transactions" silently includes reversals at most banks. "Net inflow" is a different number from "gross posted". Pick the one the room agrees with before you write it down.</p>
     </div>
     <div class="card">
       <span class="card-label">Denominator</span>
-      <p>What is the base or population?</p>
-      <p class="muted">Example: per branch, for posted transactions only</p>
+      <p>Active accounts at start of quarter, end of quarter, or average across? Same KPI, three rankings, three different branch managers calling you on Monday.</p>
     </div>
     <div class="card">
-      <span class="card-label">Filter</span>
-      <p>What rows are included or excluded?</p>
-      <p class="muted">Example: status == "POSTED", exclude test accounts</p>
+      <span class="card-label">Exclusions</span>
+      <p>Internal transfers, dormant accounts, test accounts, staff accounts. Each one is a five-second decision now or a forty-minute defence later.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Cut-off</span>
+      <p>Posting date or value date? Time zone? Late-arriving rows: include or freeze the snapshot? Late on Sunday is in the next week if you used posting date and in the right week if you used value date.</p>
     </div>
   </div>
+  <p class="muted spacer">Loose definitions are not a writing problem. They are an engineering risk. The hour you spend pinning these is the day you do not spend defending the number.</p>
 </section>
 
-<section class="slide" id="s38">
-  <span class="eyebrow">Day 2 | Lab D</span>
-  <h2>Lab D: Branch performance summary</h2>
-  <div class="exercise-card">
-    <h3>Your task</h3>
-    <p>Create a branch KPI table that leadership can scan in under 30 seconds.</p>
-    <div class="columns three spacer">
-      <div class="card">
-        <span class="card-label">Required columns</span>
-        <ul>
-          <li><code>txn_count</code></li>
-          <li><code>total_fee_sar</code></li>
-          <li><code>avg_ticket_sar</code></li>
-        </ul>
-      </div>
-      <div class="card">
-        <span class="card-label">Output</span>
-        <p>Export <code>branch_kpi.csv</code></p>
-      </div>
-      <div class="card">
-        <span class="card-label">Stretch</span>
-        <p>Add <code>active_customers</code> and rank branches within each region.</p>
-      </div>
-    </div>
-    <button type="button" class="timer-btn" data-minutes="14">Start 14-min timer</button>
-  </div>
-</section>
-
-<section class="slide" id="s39">
-  <span class="eyebrow">Day 2 | Shares</span>
-  <h2>Computing shares and percentages</h2>
-  <p>Shares show proportions. The denominator you choose changes the story.</p>
-  <pre><code><span class="code-comment"># Count accounts by region and product family</span>
-uptake = (
-    accounts
-    .merge(customers[[<span class="code-string">"customer_id"</span>, <span class="code-string">"region"</span>]], on=<span class="code-string">"customer_id"</span>)
-    .groupby([<span class="code-string">"region"</span>, <span class="code-string">"product_family"</span>])
-    .size()
-    .reset_index(name=<span class="code-string">"count"</span>)
-)
-
-<span class="code-comment"># Compute share within each region</span>
-uptake[<span class="code-string">"share"</span>] = (
-    uptake[<span class="code-string">"count"</span>] / uptake.groupby(<span class="code-string">"region"</span>)[<span class="code-string">"count"</span>].transform(<span class="code-string">"sum"</span>)
-)</code></pre>
-</section>
-
-<section class="slide" id="s40">
-  <span class="eyebrow">Day 2 | Shares</span>
-  <h2>Choosing the right denominator</h2>
-  <p>The same numerator with different denominators tells different stories.</p>
+<section class="slide" id="s27">
+  <span class="eyebrow">Day 1 | Lab B | Step 1 - Brief</span>
+  <h2>Write the definition before you prompt</h2>
+  <p class="lede">In the chat, write your N / D / E / cut-off in plain language. Five lines. No code yet.</p>
   <div class="columns two spacer">
     <div class="card">
-      <span class="card-label">Denominator: all accounts in the region</span>
-      <p>"What share of accounts in the Eastern region are savings accounts?"</p>
-      <p class="muted">Answers: product mix</p>
+      <span class="card-label">Bad brief</span>
+      <p><em>"Branch performance for Q1, ranked."</em> No definition. The coach will guess - and the guess will look right.</p>
     </div>
     <div class="card">
-      <span class="card-label">Denominator: all savings accounts nationally</span>
-      <p>"What share of all savings accounts are in the Eastern region?"</p>
-      <p class="muted">Answers: regional concentration</p>
+      <span class="card-label">Defendable brief</span>
+      <p><em>"Performance = sum of credit txn amount, posting_date in Q1, excluding internal transfers (txn_type starts with INT_), per booking branch. Ranked descending. SAR only."</em></p>
     </div>
   </div>
-  <p class="spacer">Both are valid. Which one you choose depends on the question leadership is asking.</p>
+  <p class="muted spacer">Click <strong>Mark brief done</strong> only when the brief is specific enough that two engineers in this room would compute the same number from it.</p>
 </section>
 
-<section class="slide" id="s41">
-  <span class="eyebrow">Day 2 | Lab E</span>
-  <h2>Lab E: Regional product uptake</h2>
-  <div class="exercise-card">
-    <h3>Your task</h3>
-    <p>Show product-family uptake by region. Choose and justify your denominator.</p>
-    <div class="columns three spacer">
-      <div class="card">
-        <span class="card-label">Steps</span>
-        <ol>
-          <li>Count accounts by region and product</li>
-          <li>Compute within-region share</li>
-          <li>Write one sentence defending your denominator</li>
-        </ol>
-      </div>
-      <div class="card">
-        <span class="card-label">Output</span>
-        <p>Export <code>uptake_summary.csv</code></p>
-      </div>
-      <div class="card">
-        <span class="card-label">Stretch</span>
-        <p>Add an opening-month cohort view.</p>
-      </div>
-    </div>
-    <button type="button" class="timer-btn" data-minutes="12">Start 12-min timer</button>
-  </div>
-</section>
-
-<section class="slide" id="s42">
-  <span class="eyebrow">Day 2 | Time</span>
-  <h2>Time-based analysis</h2>
-  <p>Once your date column is a proper datetime, pandas gives you powerful time tools.</p>
-  <pre><code><span class="code-comment"># Extract parts of a date</span>
-txns[<span class="code-string">"month"</span>]   = txns[<span class="code-string">"txn_ts"</span>].dt.to_period(<span class="code-string">"M"</span>).astype(<span class="code-keyword">str</span>)
-txns[<span class="code-string">"weekday"</span>] = txns[<span class="code-string">"txn_ts"</span>].dt.day_name()
-
-<span class="code-comment"># Monthly summary</span>
-monthly = (
-    posted
-    .groupby(<span class="code-string">"month"</span>)
-    .agg(txn_count=(<span class="code-string">"txn_id"</span>, <span class="code-string">"count"</span>), total_fee=(<span class="code-string">"fee_sar"</span>, <span class="code-string">"sum"</span>))
-    .reset_index()
-)</code></pre>
-</section>
-
-<section class="slide" id="s43">
-  <span class="eyebrow">Day 2 | Time</span>
-  <h2>Month-on-month change</h2>
-  <p>Use <code>.diff()</code> or <code>.pct_change()</code> to show movement over time.</p>
-  <pre><code>monthly[<span class="code-string">"fee_change"</span>]   = monthly[<span class="code-string">"total_fee"</span>].diff()
-monthly[<span class="code-string">"fee_pct_chg"</span>] = monthly[<span class="code-string">"total_fee"</span>].pct_change() * <span class="code-number">100</span>
-
-monthly</code></pre>
-  <div class="card spacer">
-    <span class="card-label">Reading the output</span>
-    <p>A <code>fee_pct_chg</code> of 12.5 means fee revenue grew 12.5% compared to the previous month. The first row will be NaN because there is no prior month to compare against.</p>
-  </div>
-</section>
-
-<section class="slide" id="s44">
-  <span class="eyebrow">Day 2 | Quality</span>
-  <h2>Building a data quality report</h2>
-  <p>A DQ report is a simple table where each row is a check, with a pass/fail result and a count.</p>
-  <pre><code>checks = pd.DataFrame([
-    {<span class="code-string">"check"</span>: <span class="code-string">"duplicate customer_id"</span>,
-     <span class="code-string">"status"</span>: <span class="code-string">"fail"</span> <span class="code-keyword">if</span> n_dupes > <span class="code-number">0</span> <span class="code-keyword">else</span> <span class="code-string">"pass"</span>,
-     <span class="code-string">"count"</span>: n_dupes},
-    {<span class="code-string">"check"</span>: <span class="code-string">"missing amount"</span>,
-     <span class="code-string">"status"</span>: <span class="code-string">"fail"</span> <span class="code-keyword">if</span> n_null_amt > <span class="code-number">0</span> <span class="code-keyword">else</span> <span class="code-string">"pass"</span>,
-     <span class="code-string">"count"</span>: n_null_amt},
-])
-checks.to_csv(<span class="code-string">"outputs/day2/dq_report.csv"</span>, index=<span class="code-keyword">False</span>)</code></pre>
-</section>
-
-<section class="slide" id="s45">
-  <span class="eyebrow">Day 2 | Communication</span>
-  <h2>Communicating findings to leadership</h2>
-  <p>When leadership asks "what happened?", use this structure:</p>
-  <div class="columns three spacer">
+<section class="slide" id="s28">
+  <span class="eyebrow">Day 1 | Lab B | Step 2 - Engage</span>
+  <h2>Brief the AI on the metric, not just the table</h2>
+  <div class="columns two spacer">
     <div class="card">
-      <span class="card-label">1. What moved</span>
-      <p>"Fee revenue increased 8% month on month."</p>
+      <span class="card-label">Give the coach the brief, in full</span>
+      <p>Paste the N / D / E / cut-off you just wrote. The coach is a partner, not a mind-reader. If you do not give it the definition, it will pick one for you.</p>
     </div>
     <div class="card">
-      <span class="card-label">2. What likely drove it</span>
-      <p>"Digital channel volume grew while branch volume was flat."</p>
-    </div>
-    <div class="card">
-      <span class="card-label">3. What could still change</span>
-      <p>"Two branches have data quality issues that may affect the total."</p>
+      <span class="card-label">Ask for the table, then the joins</span>
+      <ul>
+        <li>"Build the branch KPI table per my brief above."</li>
+        <li>"Show me the join. I want to see what got dropped."</li>
+        <li>"Show me row counts at each step so I can trust the result."</li>
+      </ul>
     </div>
   </div>
 </section>
 
-<section class="slide" id="s46">
-  <span class="eyebrow">Day 2 | Recap</span>
-  <h2>Day 2 recap</h2>
-  <div class="columns three spacer">
+<section class="slide" id="s29">
+  <span class="eyebrow">Day 1 | Lab B | Step 3 - Verify</span>
+  <h2>Recompute under one alternative denominator</h2>
+  <div class="columns two spacer">
     <div class="card">
-      <span class="card-label">You can now</span>
-      <p>Join multiple tables using <code>.merge()</code> and protect the grain of your analysis.</p>
+      <span class="card-label">The verify move</span>
+      <p>Take the same numerator. Swap in one alternative denominator (for example: active accounts at quarter-end vs accounts open at quarter-start). Compute both. Compare the rankings.</p>
     </div>
     <div class="card">
-      <span class="card-label">You can now</span>
-      <p>Build KPI tables with <code>.groupby().agg()</code> and define metrics clearly.</p>
+      <span class="card-label">What to look at</span>
+      <ul>
+        <li>Which branches move ranks under the swap?</li>
+        <li>By how much - one place, or top-three to mid-pack?</li>
+        <li>Which version is more honest about what last quarter actually was?</li>
+      </ul>
+    </div>
+  </div>
+  <p class="muted spacer">If both rankings are stable, the metric is robust. If they are not, you have a definition problem and the choice is yours to defend.</p>
+</section>
+
+<section class="slide" id="s30">
+  <span class="eyebrow">Day 1 | Lab B | Trap</span>
+  <h2>The two-trustworthy-versions trap</h2>
+  <div class="columns spacer">
+    <div class="card">
+      <span class="card-label">Both versions are technically correct</span>
+      <p>The numerator is the same. The denominator changed. Both queries ran. Both produced a ranked table. Both can be defended in isolation.</p>
+      <p class="spacer">The trap is treating the choice as arbitrary. It is not. The choice is the thing that gets challenged. The choice is what you defend in front of the regional lead.</p>
+    </div>
+  </div>
+  <p class="muted spacer">Pick the one that survives the question "what does this metric mean for a branch that opened mid-quarter?"</p>
+</section>
+
+<section class="slide" id="s31">
+  <span class="eyebrow">Day 1 | Lab B | Step 4 - Defend</span>
+  <h2>Defend the version you would ship</h2>
+  <div class="columns spacer">
+    <div class="card">
+      <span class="card-label">Defendable structure</span>
+      <ul>
+        <li>One sentence: which version you would ship.</li>
+        <li>One sentence: what changes about staffing decisions if you ship the other.</li>
+        <li>One sentence: the caveat the regional lead has to know before reading the table.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="muted spacer">The coach will surface your challenge question. Hold the line. The rubric is on definitions, not on code.</p>
+</section>
+
+<section class="slide" id="s32">
+  <span class="eyebrow">Day 1 | Lab B | Coach posture</span>
+  <h2>How the coach behaves on definitions</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">In Engage</span>
+      <p>Helpful. Will write the join, narrate row counts, suggest a sensible default - but only one default. If you let it default, you have just delegated the definition.</p>
     </div>
     <div class="card">
-      <span class="card-label">You can now</span>
-      <p>Compute shares, time-based summaries, and structured quality reports.</p>
+      <span class="card-label">In Defend</span>
+      <p>Skeptical. Will press where your definition is thin. Will not write the answer for you. Will hold you to the rubric of the challenge question it picked.</p>
     </div>
   </div>
 </section>
 
-<section class="slide" id="s47">
-  <span class="eyebrow">Day 2 | Key concepts</span>
-  <h2>Day 2 key takeaways</h2>
-  <ol>
-    <li><strong>Check keys before joining.</strong> Duplicate keys create phantom rows.</li>
-    <li><strong>Join only the columns you need.</strong> Lean tables are easier to trust.</li>
-    <li><strong>Define every KPI with numerator, denominator, and filter.</strong></li>
-    <li><strong>Your denominator is your argument.</strong> Different denominators tell different stories.</li>
-    <li><strong>Communicate movement, driver, and caveat.</strong> Not just the number.</li>
-  </ol>
+<section class="slide run" id="s33" data-day="1">
+  <div class="run-left">
+    <span class="run-tag">Lab B * Run the lab</span>
+    <h2 class="run-headline">No code until the definition is on the page.</h2>
+    <span class="run-rule"></span>
+    <p class="run-rule-text">Branches, accounts, transactions are attached. N / D / E / cut-off goes in chat first. If your trainer walks past your screen and sees pandas before they see the definition, they are sending you back.</p>
+    <a class="run-cta" href="/academy/ajb-enterprise-banking/python-for-data#lab=lab-b-kpi">Open Lab B in the chat</a>
+  </div>
+  <div class="run-right">
+    <span class="run-clock-label">Timebox</span>
+    <span class="run-clock-value">90</span>
+    <span class="run-clock-unit">minutes</span>
+    <div class="run-shape">
+      <div class="run-shape-row"><strong>0-15</strong><span>Brief. Pin the definition.</span></div>
+      <div class="run-shape-row"><strong>15-50</strong><span>Engage. Build the KPI with the coach.</span></div>
+      <div class="run-shape-row"><strong>50-70</strong><span>Verify. Swap one definition. Watch the ranking move.</span></div>
+      <div class="run-shape-row"><strong>70-90</strong><span>Defend. Answer the challenge question.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Day 1 close (slide 34) -->
+
+<section class="slide section" id="s34" data-day="1">
+  <span class="section-marker">Day 1 of 2 * Closes here</span>
+  <h1 class="section-title">You earned the trust. Tomorrow you defend it.</h1>
+  <p class="section-lede">Two sentences in chat before you leave the room. One thing you learned about briefing the AI. One thing you learned about defending a definition. Specific. In your voice. The kind of sentence you would actually say to the engineer next to you. Tomorrow we turn this work into outputs leadership reads in three minutes and a handoff the next engineer can pick up cold.</p>
+  <span class="section-rule"></span>
 </section>
 
 <!-- ======================================================= -->
-<!--  DAY 3: VISUALIZATION, REPORTING, AND ML HANDOFF       -->
+<!--  DAY 2: LEADERSHIP OUTPUTS AND THE ML HANDOFF           -->
 <!-- ======================================================= -->
 
-<section class="slide" id="s48">
-  <span class="eyebrow">Day 3 | Welcome</span>
-  <h1>Day 3: Reporting, Visualisation, and ML Handoff</h1>
-  <p class="lede">Today you move from analysis tables to leadership-ready outputs: charts, exceptions tables, narrative summaries, and a feature set for the next module.</p>
+<section class="slide section" id="s35" data-day="2">
+  <span class="section-marker">Day 2 of 2</span>
+  <h1 class="section-title">Outputs and the handoff.</h1>
+  <p class="section-lede">Yesterday you found the truth in the data. Today you convince the people who were not in the room with you. A regional manager who only ever sees your chart. An ML engineer who only ever sees your dictionary. Different surfaces, same standard.</p>
+  <span class="section-rule"></span>
 </section>
 
-<section class="slide" id="s49">
-  <span class="eyebrow">Day 3 | Agenda</span>
-  <h2>Day 3 agenda</h2>
-  <ol>
-    <li>Introduction to matplotlib</li>
-    <li>Line charts, bar charts, and chart anatomy</li>
-    <li>Making charts leadership-ready</li>
-    <li><strong>Lab F:</strong> Pack charts</li>
-    <li>Exception logic and flagging</li>
-    <li><strong>Lab G:</strong> Exceptions table</li>
-    <li>Feature engineering for ML handoff</li>
-    <li><strong>Lab H:</strong> ML-ready feature table</li>
-    <li>Writing executive summaries</li>
-    <li>Capstone: team executive brief</li>
-    <li>Programme close</li>
-  </ol>
-</section>
-
-<section class="slide" id="s50">
-  <span class="eyebrow">Day 3 | Matplotlib</span>
-  <h2>Introduction to matplotlib</h2>
-  <p>Matplotlib is Python's most widely used charting library. You create a figure, add data, and customise labels.</p>
-  <pre><code><span class="code-keyword">import</span> matplotlib.pyplot <span class="code-keyword">as</span> plt
-
-fig, ax = plt.subplots(figsize=(<span class="code-number">10</span>, <span class="code-number">5</span>))
-ax.plot(monthly[<span class="code-string">"month"</span>], monthly[<span class="code-string">"txn_count"</span>], marker=<span class="code-string">"o"</span>)
-ax.set_title(<span class="code-string">"Monthly transaction count"</span>)
-ax.set_xlabel(<span class="code-string">"Month"</span>)
-ax.set_ylabel(<span class="code-string">"Transactions"</span>)
-plt.tight_layout()
-plt.show()</code></pre>
-</section>
-
-<section class="slide" id="s51">
-  <span class="eyebrow">Day 3 | Charts</span>
-  <h2>Line charts: showing trends</h2>
-  <p>Use a line chart when you want to show how something changes over time.</p>
-  <pre><code>fig, ax = plt.subplots(figsize=(<span class="code-number">10</span>, <span class="code-number">5</span>))
-ax.plot(monthly[<span class="code-string">"month"</span>], monthly[<span class="code-string">"total_fee"</span>], marker=<span class="code-string">"o"</span>, color=<span class="code-string">"#5f89df"</span>)
-ax.set_title(<span class="code-string">"Fee revenue increased 8% in the latest month"</span>)
-ax.set_ylabel(<span class="code-string">"Total fees (SAR)"</span>)
-plt.xticks(rotation=<span class="code-number">45</span>)
-plt.tight_layout()</code></pre>
-  <p class="spacer"><strong>Key rule:</strong> the chart title should state the finding, not just the topic. "Fee revenue increased 8%" is better than "Fee revenue over time".</p>
-</section>
-
-<section class="slide" id="s52">
-  <span class="eyebrow">Day 3 | Charts</span>
-  <h2>Bar charts: showing comparisons</h2>
-  <p>Use a bar chart when you want to compare values across categories.</p>
-  <pre><code>top_branches = branch_kpi.nlargest(<span class="code-number">5</span>, <span class="code-string">"total_fee_sar"</span>)
-
-fig, ax = plt.subplots(figsize=(<span class="code-number">10</span>, <span class="code-number">5</span>))
-ax.bar(top_branches[<span class="code-string">"branch_id"</span>], top_branches[<span class="code-string">"total_fee_sar"</span>], color=<span class="code-string">"#5f89df"</span>)
-ax.set_title(<span class="code-string">"Top 5 branches by fee revenue"</span>)
-ax.set_ylabel(<span class="code-string">"Total fees (SAR)"</span>)
-plt.tight_layout()</code></pre>
-</section>
-
-<section class="slide" id="s53">
-  <span class="eyebrow">Day 3 | Charts</span>
-  <h2>Making charts leadership-ready</h2>
+<section class="slide" id="s36" data-day="2">
+  <span class="eyebrow">Day 2 | Opening</span>
+  <h2>Two audiences for the same evidence</h2>
   <div class="columns two spacer">
     <div class="card">
-      <span class="card-label" style="color:var(--danger)">Before</span>
+      <span class="card-label">Leadership wants a story</span>
       <ul>
-        <li>Title: "Total fees over time"</li>
-        <li>No units on axis</li>
-        <li>Default colours</li>
-        <li>Gridlines everywhere</li>
+        <li>One headline, two charts, one exception view.</li>
+        <li>Caveat travels with the chart, not in a footnote.</li>
+        <li>The decision the number drives is named, not implied.</li>
       </ul>
     </div>
     <div class="card">
-      <span class="card-label" style="color:var(--success)">After</span>
+      <span class="card-label">ML wants a contract</span>
       <ul>
-        <li>Title: "Fee revenue increased 8% in the latest month"</li>
-        <li>Axis labelled with "(SAR)"</li>
-        <li>Single accent colour</li>
-        <li>Clean, minimal layout</li>
+        <li>Cut-off date is explicit. Leakage rules are written down.</li>
+        <li>One row = one defined unit. Every column has a dictionary entry.</li>
+        <li>A future model can be trained on this, end-to-end, with no ambiguity.</li>
       </ul>
     </div>
   </div>
-  <pre><code class="spacer"><span class="code-comment"># Save the chart for the leadership pack</span>
-fig.savefig(<span class="code-string">"outputs/day3_pack/trend_chart.png"</span>, dpi=<span class="code-number">150</span>, bbox_inches=<span class="code-string">"tight"</span>)</code></pre>
 </section>
 
-<section class="slide" id="s54">
-  <span class="eyebrow">Day 3 | Lab F</span>
-  <h2>Lab F: Pack charts</h2>
-  <div class="exercise-card">
-    <h3>Your task</h3>
-    <p>Create two charts that deserve a place in a leadership performance pack.</p>
-    <div class="columns three spacer">
-      <div class="card">
-        <span class="card-label">Chart 1</span>
-        <p>A trend chart showing movement over time. Title states the finding.</p>
-      </div>
-      <div class="card">
-        <span class="card-label">Chart 2</span>
-        <p>A ranking chart showing top or bottom performers.</p>
-      </div>
-      <div class="card">
-        <span class="card-label">Stretch</span>
-        <p>Add one annotation that highlights the most important data point.</p>
-      </div>
-    </div>
-    <button type="button" class="timer-btn" data-minutes="14">Start 14-min timer</button>
-  </div>
-</section>
-
-<section class="slide" id="s55">
-  <span class="eyebrow">Day 3 | Exceptions</span>
-  <h2>What is an exceptions table?</h2>
-  <p>An exceptions table is a shortlist of items that deserve investigation. Instead of showing management a table of 200 branches, you show them the 5 to 10 that need attention.</p>
-  <div class="columns two spacer">
-    <div class="card">
-      <span class="card-label" style="color:var(--danger)">Weak</span>
-      <p>"Here is all the data."</p>
-    </div>
-    <div class="card">
-      <span class="card-label" style="color:var(--success)">Strong</span>
-      <p>"These 7 branches had unusual fee changes. Here is why each one was flagged."</p>
-    </div>
-  </div>
-</section>
-
-<section class="slide" id="s56">
-  <span class="eyebrow">Day 3 | Exceptions</span>
-  <h2>Building exception flags</h2>
-  <p>Create transparent, rule-based flags. Every flagged row needs a reason code.</p>
-  <pre><code><span class="code-comment"># Flag branches with large fee changes</span>
-branch_monthly[<span class="code-string">"fee_change"</span>] = branch_monthly.groupby(<span class="code-string">"branch_id"</span>)[<span class="code-string">"total_fee"</span>].diff()
-
-threshold = branch_monthly[<span class="code-string">"fee_change"</span>].abs().quantile(<span class="code-number">0.9</span>)
-
-exceptions = branch_monthly[branch_monthly[<span class="code-string">"fee_change"</span>].abs() > threshold].copy()
-exceptions[<span class="code-string">"reason_code"</span>] = <span class="code-string">"fee_change_above_p90"</span>
-
-exceptions.to_csv(<span class="code-string">"outputs/day3_pack/exceptions.csv"</span>, index=<span class="code-keyword">False</span>)</code></pre>
-</section>
-
-<section class="slide" id="s57">
-  <span class="eyebrow">Day 3 | Lab G</span>
-  <h2>Lab G: Exceptions table</h2>
-  <div class="exercise-card">
-    <h3>Your task</h3>
-    <p>Produce a shortlist of branches that deserve investigation.</p>
-    <div class="columns three spacer">
-      <div class="card">
-        <span class="card-label">Steps</span>
-        <ol>
-          <li>Define your flagging rule</li>
-          <li>Add a <code>reason_code</code> column</li>
-          <li>Export <code>exceptions.csv</code></li>
-        </ol>
-      </div>
-      <div class="card">
-        <span class="card-label">Output</span>
-        <p>A short, actionable list with reason codes.</p>
-      </div>
-      <div class="card">
-        <span class="card-label">Stretch</span>
-        <p>Use a percentile threshold and rank the flagged branches by severity.</p>
-      </div>
-    </div>
-    <button type="button" class="timer-btn" data-minutes="12">Start 12-min timer</button>
-  </div>
-</section>
-
-<section class="slide" id="s58">
-  <span class="eyebrow">Day 3 | ML handoff</span>
-  <h2>Feature engineering: what and why</h2>
-  <p>The Machine Learning module that follows this programme needs a customer-level table of features. Your job is to prepare data that a model can learn from.</p>
+<section class="slide" id="s37" data-day="2">
+  <span class="eyebrow">Day 2 | Opening</span>
+  <h2>Both audiences want the same thing: defendability</h2>
+  <p class="lede">A chart that survives a senior question. A feature table that survives a leakage audit. Different surfaces, same standard.</p>
   <div class="columns three spacer">
     <div class="card">
-      <span class="card-label">Feature</span>
-      <p>A column that describes past customer behaviour. Examples: transaction count, average ticket size, digital channel share.</p>
+      <span class="card-label">Lab C</span>
+      <p>Two charts. One exception view. One explicit caveat. Defended in a one-paragraph note.</p>
     </div>
     <div class="card">
-      <span class="card-label">Cut-off date</span>
-      <p>The date that divides "what happened" from "what you are trying to predict". Features must only use data before the cut-off.</p>
+      <span class="card-label">Lab D</span>
+      <p>One ML-ready customer feature table. One data dictionary, written in your own words.</p>
     </div>
     <div class="card">
-      <span class="card-label">Leakage</span>
-      <p>When future information accidentally appears in your features. This makes the model look good in testing but fail in production.</p>
+      <span class="card-label">Close</span>
+      <p>You read your dictionary back. You name one truth the data supports and one it does not. That is the assessment.</p>
     </div>
   </div>
 </section>
 
-<section class="slide" id="s59">
-  <span class="eyebrow">Day 3 | ML handoff</span>
-  <h2>Building a feature table</h2>
-  <pre><code>cut_off = pd.Timestamp(<span class="code-string">"2026-06-30"</span>)
-window = posted[posted[<span class="code-string">"txn_ts"</span>] <= cut_off].copy()
-window[<span class="code-string">"is_digital"</span>] = window[<span class="code-string">"channel"</span>].isin([<span class="code-string">"MOB"</span>, <span class="code-string">"ONLINE"</span>])
+<!-- Lab C (slides 38-48) -->
 
-features = (
-    window.groupby(<span class="code-string">"customer_id"</span>)
-    .agg(
-        txn_count    = (<span class="code-string">"txn_id"</span>,        <span class="code-string">"count"</span>),
-        avg_ticket   = (<span class="code-string">"amount_sar"</span>,    <span class="code-string">"mean"</span>),
-        digital_pct  = (<span class="code-string">"is_digital"</span>,    <span class="code-string">"mean"</span>),
-        total_fee    = (<span class="code-string">"fee_sar"</span>,       <span class="code-string">"sum"</span>),
-        product_cnt  = (<span class="code-string">"product_family"</span>, <span class="code-string">"nunique"</span>),
-    )
-    .reset_index()
-)
-features[<span class="code-string">"cut_off_date"</span>] = <span class="code-string">"2026-06-30"</span>
-features.to_csv(<span class="code-string">"outputs/day3_pack/features.csv"</span>, index=<span class="code-keyword">False</span>)</code></pre>
-</section>
-
-<section class="slide" id="s60">
-  <span class="eyebrow">Day 3 | ML handoff</span>
-  <h2>Avoiding data leakage</h2>
-  <p>Leakage is the most common mistake in feature engineering. Here are two ways it happens:</p>
-  <div class="columns two spacer">
-    <div class="card">
-      <span class="card-label" style="color:var(--danger)">Time leakage</span>
-      <p>Using transaction data from July to predict what happens in June. The model sees the future.</p>
-      <p class="muted">Fix: enforce a hard cut-off date.</p>
+<section class="slide lab-cover" id="s38" data-day="2">
+  <div class="lab-cover-mark">
+    <div>
+      <span class="lab-cover-tag">Lab</span>
+      <span class="lab-cover-letter">C</span>
     </div>
-    <div class="card">
-      <span class="card-label" style="color:var(--danger)">Target leakage</span>
-      <p>Including a column that is only available after the outcome is known (e.g. "churned" flag in a churn prediction model).</p>
-      <p class="muted">Fix: only include features available at prediction time.</p>
+    <div class="lab-cover-meta">
+      <span><strong>100 min</strong></span>
+      <span>Day 2 of 2</span>
+      <span>Coach as critic, pack as evidence</span>
     </div>
   </div>
-</section>
-
-<section class="slide" id="s61">
-  <span class="eyebrow">Day 3 | Lab H</span>
-  <h2>Lab H: ML-ready feature table</h2>
-  <div class="exercise-card">
-    <h3>Your task</h3>
-    <p>Prepare a customer-level feature table that is safe for the ML module.</p>
-    <div class="columns three spacer">
-      <div class="card">
-        <span class="card-label">Steps</span>
-        <ol>
-          <li>Set a cut-off date</li>
-          <li>Build customer-level features</li>
-          <li>Export <code>features.csv</code></li>
-          <li>Export an <code>assumptions.csv</code></li>
-        </ol>
+  <div class="lab-cover-body">
+    <h1 class="lab-cover-title">Executive performance pack.</h1>
+    <p class="lab-cover-lede">Take the KPI from Lab B and build a pack leadership reads in three minutes. The new behaviour: ask the coach to argue against your interpretation before you ship.</p>
+    <dl class="lab-cover-grid">
+      <div class="lab-cover-row">
+        <dt>Goal</dt>
+        <dd>Two charts. One exception view. One caveat that lives on the chart, not in the appendix.</dd>
       </div>
-      <div class="card">
-        <span class="card-label">Output</span>
-        <p>Feature table with one row per customer.</p>
+      <div class="lab-cover-row">
+        <dt>Surface</dt>
+        <dd>Lab chat with the Day 1 KPI table attached. Coach posture: critic.</dd>
       </div>
-      <div class="card">
-        <span class="card-label">Stretch</span>
-        <p>Name one leakage risk you avoided and one that still needs monitoring.</p>
+      <div class="lab-cover-row">
+        <dt>Artefact</dt>
+        <dd>The pack plus the explicit caveat written by you, not by the coach.</dd>
       </div>
-    </div>
-    <button type="button" class="timer-btn" data-minutes="14">Start 14-min timer</button>
+    </dl>
   </div>
 </section>
 
-<section class="slide" id="s62">
-  <span class="eyebrow">Day 3 | Governance</span>
-  <h2>Data governance: what to export and what not to</h2>
-  <p>Under Saudi Arabia's Personal Data Protection Law (PDPL), you must be intentional about what data leaves your environment.</p>
+<section class="slide quote" id="s39" data-day="2">
+  <span class="quote-eyebrow">Lab C * The leadership question</span>
+  <span class="quote-mark" aria-hidden="true">&ldquo;</span>
+  <p class="quote-body">I have ten minutes with the CFO on Friday. I want a one-pager. Headline, two charts, the exceptions to watch. I need to know what to say if she pushes on any of it. Make me look prepared.</p>
+  <p class="quote-attr"><strong>From the head of retail.</strong> Friday morning, ten minutes, no second chances.</p>
+  <p class="quote-after">"Make me look prepared" is not a styling request. It is a defendability request. The pack is not done until the caveat is on the chart.</p>
+</section>
+
+<section class="slide" id="s40" data-day="2">
+  <span class="eyebrow">Day 2 | Lab C | Data card</span>
+  <h2>What is in the lab</h2>
   <div class="columns two spacer">
     <div class="card">
-      <span class="card-label" style="color:var(--success)">Good practice</span>
+      <span class="card-label">Inputs</span>
       <ul>
-        <li>Export only the fields needed for the agreed output</li>
-        <li>Document what is included and why</li>
-        <li>Use pseudonymised identifiers</li>
+        <li><strong>branch_kpi.csv</strong> - the table you shipped from Lab B.</li>
+        <li><strong>branches.csv</strong> - region and opened_date for context.</li>
       </ul>
     </div>
     <div class="card">
-      <span class="card-label" style="color:var(--danger)">Risky practice</span>
-      <ul>
-        <li>Export everything "just in case"</li>
-        <li>Include personal names or national IDs in feature tables</li>
-        <li>No documentation of assumptions</li>
-      </ul>
+      <span class="card-label">Posture: mixed</span>
+      <p>The KPI table is yours. You know how it was built. You also know which branches were borderline. Bring that knowledge into the pack.</p>
     </div>
   </div>
 </section>
 
-<section class="slide" id="s63">
-  <span class="eyebrow">Day 3 | Narrative</span>
-  <h2>Writing executive summaries</h2>
-  <p>A good executive summary uses three sentences:</p>
+<section class="slide" id="s41" data-day="2">
+  <span class="eyebrow">Day 2 * Lab C * What a pack actually is</span>
+  <h2>If it needs a verbal walkthrough, it is not a pack. It is a script.</h2>
+  <p class="lede">An executive pack is what survives the meeting you are not in. The CFO opens it on Friday morning, reads it once, makes a decision. You will not be in the room to explain the chart, defend the choice, or tell her where the caveat lives. So the pack has to do all three by itself.</p>
   <div class="columns three spacer">
     <div class="card">
-      <span class="card-label">Sentence 1</span>
-      <p><strong>What moved?</strong></p>
-      <p class="muted">"Fee revenue increased 8% month on month."</p>
+      <span class="card-label">A headline that names the trend</span>
+      <p>"Top-quartile branches grew 12%; bottom-quartile flat" beats "Q1 KPI ranked". The headline says what changed; the table only says what is. A title is not a headline.</p>
     </div>
     <div class="card">
-      <span class="card-label">Sentence 2</span>
-      <p><strong>What likely drove it?</strong></p>
-      <p class="muted">"Digital channel volume grew 15% while branch volume was flat."</p>
+      <span class="card-label">Two charts that prove it</span>
+      <p>One chart shows the headline. One chart shows the spread that makes the headline resilient to "yes, but is it everywhere?". Two charts; not three. Three is hedging.</p>
     </div>
     <div class="card">
-      <span class="card-label">Sentence 3</span>
-      <p><strong>What caveat matters?</strong></p>
-      <p class="muted">"Two branches have incomplete data that may affect the regional total."</p>
+      <span class="card-label">An exception view that pre-empts</span>
+      <p>Three to five branches the headline does not describe. Named, reasoned, on the same page. The CFO will ask. Have the answer in front of her before she does.</p>
     </div>
   </div>
+  <p class="muted spacer">The caveat travels with the headline. A caveat in the appendix is liability management, not engineering.</p>
 </section>
 
-<section class="slide" id="s64">
-  <span class="eyebrow">Day 3 | Narrative lab</span>
-  <h2>Narrative lab: write your three-sentence summary</h2>
-  <div class="exercise-card">
-    <h3>Your task</h3>
-    <p>Using your analysis outputs from Days 1 to 3, write a three-sentence executive summary.</p>
-    <ol>
-      <li>What is the most important finding?</li>
-      <li>What is the most likely explanation?</li>
-      <li>What should leadership be cautious about?</li>
-    </ol>
-    <button type="button" class="timer-btn" data-minutes="8">Start 8-min timer</button>
-  </div>
-</section>
-
-<section class="slide" id="s65">
-  <span class="eyebrow">Day 3 | Pack assembly</span>
-  <h2>Assembling a leadership pack</h2>
-  <p>A leadership pack is a concise bundle of outputs that tells one clear story. Less is more.</p>
+<section class="slide" id="s42" data-day="2">
+  <span class="eyebrow">Day 2 | Lab C | Step 1 - Brief</span>
+  <h2>Brief the audience, the headline, and the caveat</h2>
   <div class="columns three spacer">
     <div class="card">
-      <span class="card-label">1. Summary table</span>
-      <p>Branch KPIs or regional uptake. One clean table.</p>
+      <span class="card-label">Audience</span>
+      <p>Who reads this and what decision will it inform? Be specific. Different decisions need different framings.</p>
     </div>
     <div class="card">
-      <span class="card-label">2. Two charts</span>
-      <p>One trend, one comparison. Titles state findings.</p>
+      <span class="card-label">Headline</span>
+      <p>What is the one sentence that has to land? Write it before you build the chart.</p>
     </div>
     <div class="card">
-      <span class="card-label">3. Appendix</span>
-      <p>Exceptions table, DQ report, and assumptions. Available if leadership asks questions.</p>
+      <span class="card-label">Caveat</span>
+      <p>What can this pack NOT support? Name one thing the audience might over-interpret.</p>
     </div>
   </div>
 </section>
 
-<section class="slide" id="s66">
-  <span class="eyebrow">Day 3 | Capstone</span>
-  <h2>Capstone: team executive brief</h2>
-  <div class="exercise-card">
-    <h3>Your task</h3>
-    <p>In teams, assemble your strongest outputs into a compact pack and present a 90-second executive brief.</p>
-    <div class="columns two spacer">
-      <div class="card">
-        <span class="card-label">What to prepare</span>
-        <ul>
-          <li>Choose your strongest evidence</li>
-          <li>Assemble a compact pack</li>
-          <li>Write a three-sentence summary</li>
-          <li>Prepare to present live</li>
-        </ul>
-      </div>
-      <div class="card">
-        <span class="card-label">Presentation frame</span>
-        <ol>
-          <li>Open with the most important finding</li>
-          <li>Show the one chart or table that proves it</li>
-          <li>State the likely driver</li>
-          <li>Name the key caveat</li>
-          <li>Finish with the recommended action</li>
-        </ol>
-      </div>
-    </div>
-    <button type="button" class="timer-btn" data-minutes="16">Start 16-min timer</button>
-  </div>
-</section>
-
-<section class="slide" id="s67">
-  <span class="eyebrow">Day 3 | Capstone</span>
-  <h2>Capstone scoring criteria</h2>
-  <div class="columns four spacer">
+<section class="slide" id="s43" data-day="2">
+  <span class="eyebrow">Day 2 | Lab C | Step 2 - Engage</span>
+  <h2>Brief the AI on the audience, not just the data</h2>
+  <div class="columns two spacer">
     <div class="card">
-      <span class="card-label">Insight /5</span>
-      <p>Did the team identify the most important finding?</p>
+      <span class="card-label">Set the stakes</span>
+      <p>Tell the coach who reads it, what they will do with it, and what would embarrass you in the meeting. The chart it builds will reflect that brief.</p>
     </div>
     <div class="card">
-      <span class="card-label">Evidence /5</span>
-      <p>Were the chosen outputs strong and relevant?</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Caveat /5</span>
-      <p>Did the team state a real limitation?</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Clarity /5</span>
-      <p>Would leadership understand and trust the recommendation?</p>
+      <span class="card-label">Ask for one chart at a time</span>
+      <ul>
+        <li>"Build the headline chart that supports my one sentence above."</li>
+        <li>"Build a chart that shows the spread under my Lab B definition."</li>
+        <li>"Build the exception view: three to five branches I should flag."</li>
+      </ul>
     </div>
   </div>
 </section>
 
-<section class="slide" id="s68">
-  <span class="eyebrow">Day 3 | Recap</span>
-  <h2>Day 3 recap</h2>
+<section class="slide" id="s44" data-day="2">
+  <span class="eyebrow">Day 2 | Lab C | Step 3 - Verify</span>
+  <h2>Pressure-test the interpretation, not just the chart</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Use the coach as critic</span>
+      <p>Click <strong>Pressure-test this</strong>. Tell the coach to argue against your headline. Force it to name the strongest objection a senior would raise.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Then look at the data</span>
+      <ul>
+        <li>Does the chart actually show what the headline claims?</li>
+        <li>Does the spread chart change the headline if a viewer reads it first?</li>
+        <li>Does the exception view name branches your headline already covered? If yes, drop them.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s45" data-day="2">
+  <span class="eyebrow">Day 2 | Lab C | Step 4 - Defend</span>
+  <h2>The explicit caveat is the artefact</h2>
+  <div class="columns spacer">
+    <div class="card">
+      <span class="card-label">Defendable caveat</span>
+      <ul>
+        <li>One sentence: what this pack supports.</li>
+        <li>One sentence: what it does not support, and why.</li>
+        <li>One sentence: what would have to be true upstream for this to still hold next quarter.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="muted spacer">Write the caveat in your words, not the coach&rsquo;s. Then click <strong>Submit my Defend answer</strong>.</p>
+</section>
+
+<section class="slide" id="s46" data-day="2">
+  <span class="eyebrow">Day 2 | Lab C | Coach posture</span>
+  <h2>The coach as critic - using the pressure-test moves</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Pressure-test this</span>
+      <p>Asks the coach to argue against your last interpretation. The strongest counter from the same evidence. Use this before you finalise the headline.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">What might be wrong here?</span>
+      <p>Asks the coach to look at the chart with skepticism. Names one thing that is technically working but analytically suspect. Use this before you ship the exception view.</p>
+    </div>
+  </div>
+  <p class="muted spacer">If the coach struggles to find a counter, that is a signal. Either the work is genuinely solid, or the coach is going easy. Decide which.</p>
+</section>
+
+<section class="slide run" id="s47" data-day="2">
+  <div class="run-left">
+    <span class="run-tag">Lab C * Run the lab</span>
+    <h2 class="run-headline">No charts until the headline is on the page.</h2>
+    <span class="run-rule"></span>
+    <p class="run-rule-text">Day 1 KPI is attached. Brief the audience: who reads it, in what room, with how long. Use "pressure-test this" against your own headline before you ship. The caveat travels with the chart, not the appendix.</p>
+    <a class="run-cta" href="/academy/ajb-enterprise-banking/python-for-data#lab=lab-c-pack">Open Lab C in the chat</a>
+  </div>
+  <div class="run-right">
+    <span class="run-clock-label">Timebox</span>
+    <span class="run-clock-value">100</span>
+    <span class="run-clock-unit">minutes</span>
+    <div class="run-shape">
+      <div class="run-shape-row"><strong>0-15</strong><span>Brief. Audience, headline, caveat.</span></div>
+      <div class="run-shape-row"><strong>15-50</strong><span>Engage. Two charts, one exception view.</span></div>
+      <div class="run-shape-row"><strong>50-75</strong><span>Verify. Pressure-test with the coach.</span></div>
+      <div class="run-shape-row"><strong>75-100</strong><span>Defend. Write the caveat. Submit.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s48" data-day="2">
+  <span class="eyebrow">Day 2 | Lab C | Close</span>
+  <h2>Lab C debrief</h2>
   <div class="columns three spacer">
     <div class="card">
-      <span class="card-label">You can now</span>
-      <p>Create trend and comparison charts using matplotlib, with titles that state findings.</p>
+      <span class="card-label">Read out</span>
+      <p>Two participants read their headline and caveat. The room votes: defendable in front of the CFO, or not yet?</p>
     </div>
     <div class="card">
-      <span class="card-label">You can now</span>
-      <p>Build exceptions tables with transparent rules and reason codes.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">You can now</span>
-      <p>Prepare ML-ready feature tables with cut-off dates and assumptions.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ======================================================= -->
-<!--  PROGRAMME CLOSE                                        -->
-<!-- ======================================================= -->
-
-<section class="slide" id="s69">
-  <span class="eyebrow">Programme | Recap</span>
-  <h2>Programme recap: what you can now do</h2>
-  <div class="columns two spacer">
-    <div class="card">
-      <span class="card-label">Day 1</span>
-      <ul>
-        <li>Load and inspect CSV files with pandas</li>
-        <li>Profile missing values and duplicates</li>
-        <li>Write reusable cleaning functions</li>
-        <li>Set data types deliberately</li>
-      </ul>
-    </div>
-    <div class="card">
-      <span class="card-label">Day 2</span>
-      <ul>
-        <li>Join tables and protect the grain</li>
-        <li>Build KPI tables with groupby</li>
-        <li>Compute shares and time-based summaries</li>
-        <li>Produce data quality reports</li>
-      </ul>
-    </div>
-  </div>
-  <div class="columns two spacer">
-    <div class="card">
-      <span class="card-label">Day 3</span>
-      <ul>
-        <li>Create leadership-ready charts</li>
-        <li>Build exceptions tables with reason codes</li>
-        <li>Prepare ML-ready feature tables</li>
-        <li>Write executive summaries</li>
-      </ul>
-    </div>
-    <div class="card">
-      <span class="card-label">Across all days</span>
-      <ul>
-        <li>Communicate findings to non-technical audiences</li>
-        <li>Document assumptions and caveats</li>
-        <li>Export reproducible, reusable outputs</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section class="slide" id="s70">
-  <span class="eyebrow">Programme | What comes next</span>
-  <h2>What comes next: Machine Learning</h2>
-  <p>The feature table you built today is the input for the Machine Learning module (17 to 19 May 2026). You will learn how to train models, evaluate performance, and deploy predictions using the same banking data.</p>
-  <div class="columns two spacer">
-    <div class="card">
-      <span class="card-label">You are prepared because</span>
-      <ul>
-        <li>You can clean and join data reliably</li>
-        <li>You understand cut-off dates and leakage</li>
-        <li>You can define features in business terms</li>
-      </ul>
-    </div>
-    <div class="card">
-      <span class="card-label">Upcoming modules</span>
-      <table>
-        <tr><td>Machine Learning</td><td>17-19 May</td></tr>
-        <tr><td>Neural Networks</td><td>20-21 May</td></tr>
-        <tr><td>Business Applications in AI</td><td>7-8 June</td></tr>
-        <tr><td>Advanced Data Visualisation</td><td>28-30 June</td></tr>
-      </table>
-    </div>
-  </div>
-</section>
-
-<section class="slide" id="s71">
-  <span class="eyebrow">Programme | Close</span>
-  <h1>Thank you</h1>
-  <p class="lede">You started with raw bank extracts and finished with a leadership-ready pack and an ML-ready feature table. That is real analyst output.</p>
-  <div class="card spacer">
-    <span class="card-label">Before you leave, complete these prompts</span>
-    <ul>
-      <li>One Python habit I will use immediately: ___</li>
-      <li>One way I will improve how I define metrics: ___</li>
-      <li>One way I will communicate uncertainty more clearly: ___</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide" id="s72">
-  <span class="eyebrow">Day 3 | Synthesis</span>
-  <h2>Three days, one trajectory</h2>
-  <p>You started with a raw CSV and finished with a leadership pack and an ML-ready feature table. Here is the arc.</p>
-  <div class="columns three spacer">
-    <div class="card">
-      <span class="card-label">Day 1: Trust the data</span>
-      <p>Profile, triage, clean. Decide whether the extract is fit for analysis and document the risks.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Day 2: Build the metrics</span>
-      <p>Join tables, define KPIs with explicit logic, and attach quality evidence to every output.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">Day 3: Deliver the story</span>
-      <p>Create charts, exceptions, and feature tables. Present findings under challenge.</p>
-    </div>
-  </div>
-</section>
-
-<section class="slide" id="s73">
-  <span class="eyebrow">Day 3 | Production readiness</span>
-  <h2>From notebook to production readiness</h2>
-  <p>A notebook that only you can run is not a deliverable. Reusable code meets these standards.</p>
-  <ul>
-    <li><strong>Restart and run all</strong> passes without manual intervention</li>
-    <li>Paths use variables, not hard-coded strings</li>
-    <li>Functions have clear input contracts and documented failure behaviour</li>
-    <li>Outputs are exported to files, not left in cell output</li>
-    <li>Assumptions are written in markdown cells, not just in your memory</li>
-    <li>Another analyst can reproduce your results without asking you a single question</li>
-  </ul>
-  <blockquote>If your notebook cannot survive a fresh kernel restart, it is not finished.</blockquote>
-</section>
-
-<section class="slide" id="s74">
-  <span class="eyebrow">Day 3 | Quality gates</span>
-  <h2>Quality gates before handoff</h2>
-  <p>Before handing any data deliverable to a colleague or stakeholder, walk through this checklist.</p>
-  <table class="spacer">
-    <tr><td><strong>Gate</strong></td><td><strong>Check</strong></td></tr>
-    <tr><td>Grain</td><td>Is each row one transaction, one customer, or one branch? State it explicitly.</td></tr>
-    <tr><td>Completeness</td><td>Are null rates documented and acceptable for the use case?</td></tr>
-    <tr><td>Definitions</td><td>Can the recipient read the numerator, denominator, and exclusion logic for every KPI?</td></tr>
-    <tr><td>Reproducibility</td><td>Does the notebook run cleanly from a fresh kernel restart?</td></tr>
-    <tr><td>Assumptions</td><td>Are assumptions written down, not implied?</td></tr>
-    <tr><td>Caveats</td><td>Is at least one limitation stated alongside every conclusion?</td></tr>
-  </table>
-</section>
-
-<section class="slide" id="s75">
-  <span class="eyebrow">Day 3 | Self-assessment</span>
-  <h2>Performance band self-assessment</h2>
-  <p>Use these descriptions to evaluate your own work honestly before the final debrief.</p>
-  <div class="columns three spacer">
-    <div class="card">
-      <span class="card-label">Competent</span>
-      <ul>
-        <li>Core tasks are complete and technically correct</li>
-        <li>Outputs are clear and usable</li>
-        <li>Assumptions are stated</li>
-      </ul>
-    </div>
-    <div class="card">
-      <span class="card-label">Strong</span>
-      <ul>
-        <li>Outputs are well-justified with caveats</li>
-        <li>Logic is documented and reproducible</li>
-        <li>Quality evidence accompanies deliverables</li>
-      </ul>
-    </div>
-    <div class="card">
-      <span class="card-label">Exceptional</span>
-      <ul>
-        <li>Work is defensible under direct challenge</li>
-        <li>Alternative explanations are considered</li>
-        <li>Limitations are specific, not generic</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section class="slide" id="s76">
-  <span class="eyebrow">Day 3 | Portfolio review</span>
-  <h2>Portfolio of artefacts</h2>
-  <p>By this point you should have produced the following outputs. Review your <code>outputs/</code> folder.</p>
-  <div class="columns two spacer">
-    <div class="card">
-      <span class="card-label">Day 1</span>
-      <ul>
-        <li><code>triage_summary</code> with risk statement</li>
-        <li>Cleaned amount and channel fields</li>
-        <li>Executive fitness-for-use statement</li>
-      </ul>
-    </div>
-    <div class="card">
-      <span class="card-label">Day 2</span>
-      <ul>
-        <li><code>dq_report.csv</code> with pass/fail checks</li>
-        <li><code>branch_kpi.csv</code> with filter logic</li>
-        <li><code>uptake_summary.csv</code> with denominator defence</li>
-      </ul>
-    </div>
-  </div>
-  <div class="columns two spacer">
-    <div class="card">
-      <span class="card-label">Day 3</span>
-      <ul>
-        <li>Two leadership-ready charts</li>
-        <li><code>exceptions.csv</code> with reason codes</li>
-        <li>ML-ready feature table</li>
-      </ul>
-    </div>
-    <div class="card">
-      <span class="card-label">Capstone</span>
-      <ul>
-        <li>Team executive brief (slides or summary)</li>
-        <li>90-second presentation delivered</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section class="slide" id="s77">
-  <span class="eyebrow">Programme | Bridge to Module 2</span>
-  <h2>Connecting to Module 2: Machine Learning</h2>
-  <p>Everything you built this week feeds directly into the ML module. Here is how the two connect.</p>
-  <div class="columns two spacer">
-    <div class="card">
-      <span class="card-label">What you take forward</span>
-      <ul>
-        <li>Your ML-ready feature table becomes the training dataset</li>
-        <li>Your cut-off date discipline prevents data leakage in models</li>
-        <li>Your data quality checks ensure the model trains on trustworthy inputs</li>
-        <li>Your KPI definitions become target variables and evaluation benchmarks</li>
-      </ul>
-    </div>
-    <div class="card">
-      <span class="card-label">What Module 2 adds</span>
-      <ul>
-        <li>Train/test splits and cross-validation</li>
-        <li>Classification and regression models</li>
-        <li>Feature importance and model interpretability</li>
-        <li>Performance metrics: precision, recall, AUC</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section class="slide" id="s78">
-  <span class="eyebrow">Programme | Resources</span>
-  <h2>Resources and continued learning</h2>
-  <p>Keep practising between modules. These resources match the level and context of this programme.</p>
-  <table class="spacer">
-    <tr><td><strong>Topic</strong></td><td><strong>Resource</strong></td></tr>
-    <tr><td>pandas fundamentals</td><td>pandas.pydata.org/docs/getting_started</td></tr>
-    <tr><td>Data cleaning patterns</td><td>pyjanitor documentation and examples</td></tr>
-    <tr><td>Visualisation</td><td>matplotlib.org/stable/gallery and seaborn gallery</td></tr>
-    <tr><td>Jupyter best practices</td><td>"Ten Simple Rules for Reproducible Research" (PLOS)</td></tr>
-    <tr><td>Banking analytics context</td><td>Internal AJB data standards and glossary (shared drive)</td></tr>
-  </table>
-  <blockquote>The best way to retain what you learned is to apply it to a real task within the next two weeks.</blockquote>
-</section>
-
-<section class="slide" id="s79">
-  <span class="eyebrow">Programme | Module close</span>
-  <h2>What you learned, produced, and proved</h2>
-  <div class="columns three spacer">
-    <div class="card">
-      <span class="card-label">What you learned</span>
-      <p>How to inspect banking data safely, clean it carefully, build defensible outputs, and explain your reasoning under challenge.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">What you produced</span>
-      <p>Triage summaries, cleaned tables, KPI outputs, charts, exception views, and ML-ready handoff files.</p>
-    </div>
-    <div class="card">
-      <span class="card-label">What proved success</span>
-      <p>Checkpoint completion, visible notebook outputs, workbook artefacts, and analysis that stayed specific, cautious, and reviewable.</p>
-    </div>
-  </div>
-</section>
-
-<section class="slide" id="s80">
-  <span class="eyebrow">Programme | Next move</span>
-  <h1>Module 1 complete</h1>
-  <p class="lede">You now have the data discipline needed for the next stage. Module 2 uses these clean inputs, definitions, and handoff habits to move into machine learning judgement.</p>
-  <div class="columns two spacer">
-    <div class="card">
-      <span class="card-label">Before Module 2</span>
-      <p>Revisit one notebook output, tighten one written explanation, and make sure you can explain why data quality affects model trust.</p>
+      <span class="card-label">Highlight</span>
+      <p>One coach pressure-test that genuinely changed someone&rsquo;s headline.</p>
     </div>
     <div class="card">
       <span class="card-label">Carry forward</span>
-      <p>Good models start with trustworthy data, disciplined cut-off logic, and outputs that can survive scrutiny.</p>
+      <p>Caveat-with-the-headline. Lab D will need the same discipline, written into a data dictionary.</p>
     </div>
   </div>
 </section>
 
-</div><!-- /deck -->
+<!-- Break (slide 49) -->
 
-<!-- Bottom bar -->
-<div class="deck-bar">
-  <span id="deck-counter">1 / 80</span>
-  <span id="deck-timer" class="deck-timer"></span>
+<section class="slide break" id="s49" data-day="2">
+  <span class="break-eyebrow">Day 2 * Break</span>
+  <span class="break-number">15</span>
+  <span class="break-unit">Minute break</span>
+  <p class="break-tease">After the break: the artefact your career gets measured on. An ML-ready handoff table the next engineer can pick up without asking you a single follow-up question.</p>
+</section>
+
+<!-- Lab D (slides 50-60) -->
+
+<section class="slide lab-cover" id="s50" data-day="2">
+  <div class="lab-cover-mark">
+    <div>
+      <span class="lab-cover-tag">Lab</span>
+      <span class="lab-cover-letter">D</span>
+    </div>
+    <div class="lab-cover-meta">
+      <span><strong>120 min</strong></span>
+      <span>Day 2 of 2</span>
+      <span>Closing artefact * Module assessment</span>
+    </div>
+  </div>
+  <div class="lab-cover-body">
+    <h1 class="lab-cover-title">ML-ready handoff table.</h1>
+    <p class="lab-cover-lede">Build a customer-level feature table the next engineer, or the next model, can trust. The dictionary you write alongside it is the closing artefact of the entire module.</p>
+    <dl class="lab-cover-grid">
+      <div class="lab-cover-row">
+        <dt>Goal</dt>
+        <dd>One customer feature table with an explicit cut-off, no leakage, and a dictionary entry per feature in your voice.</dd>
+      </div>
+      <div class="lab-cover-row">
+        <dt>Surface</dt>
+        <dd>Lab chat with customers, accounts, and transactions attached.</dd>
+      </div>
+      <div class="lab-cover-row">
+        <dt>Artefact</dt>
+        <dd>The handoff table plus the dictionary. The module is assessed on this.</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<section class="slide quote" id="s51" data-day="2">
+  <span class="quote-eyebrow">Lab D * The mission</span>
+  <span class="quote-mark" aria-hidden="true">&ldquo;</span>
+  <p class="quote-body">An ML engineer in another team needs to pick up your work next month, without your help, without your context. They have to know what every column means, when it was true, and what they cannot trust it for.</p>
+  <p class="quote-attr"><strong>From the analytics lead.</strong> The engineer you have not met yet.</p>
+  <p class="quote-after">The dictionary is in your voice. Not the coach's. Not a textbook's. The next engineer needs to hear an engineer who handled this data, not a tutor.</p>
+</section>
+
+<section class="slide" id="s52" data-day="2">
+  <span class="eyebrow">Day 2 | Lab D | Data card</span>
+  <h2>What is in the lab</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Tables attached</span>
+      <ul>
+        <li><strong>customers.csv</strong> - customer_id, opened_date, segment, region.</li>
+        <li><strong>accounts.csv</strong> - account_id, customer_id, product_type, status, opened_date.</li>
+        <li><strong>transactions.csv</strong> - txn_id, account_id, txn_type, posting_date, amount.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Posture: unspecified</span>
+      <p>This is a fresh extract. We have not pre-screened it. Apply the same checks you would apply to anything that landed in your inbox this morning.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s53" data-day="2">
+  <span class="eyebrow">Day 2 * Lab D * What ML-ready means</span>
+  <h2>ML-ready means the next engineer never has to come and find you to ask a question.</h2>
+  <p class="lede">"ML-ready" is a phrase analysts use loosely and ML engineers use precisely. Today we use it the way the ML engineer uses it. Three things have to be true. None of them are about pandas. All of them are about contract.</p>
+  <div class="columns three spacer">
+    <div class="card">
+      <span class="card-label">Cut-off is explicit</span>
+      <p>A single date written at the top of the brief. Nothing in the table is computed using anything that happened after that date. Not "roughly". Not "as of around". A date. Non-negotiable.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Leakage is impossible</span>
+      <p>No column uses a fact that did not exist at the cut-off. The classic leak is a "churn flag" computed today and joined to a feature table from six months ago. The model will look brilliant. It will fail in production.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Contract is written</span>
+      <p>One row = one customer at the cut-off. Every column has a dictionary entry: name, definition, source, cut-off-aware logic, caveat. The dictionary is the contract. Without it, the table is folklore.</p>
+    </div>
+  </div>
+  <p class="muted spacer">The model the next team builds on top of this either works because of the contract or fails because of its absence. There is no middle outcome.</p>
+</section>
+
+<section class="slide" id="s54" data-day="2">
+  <span class="eyebrow">Day 2 | Lab D | Step 1 - Brief</span>
+  <h2>Write the contract before you write the table</h2>
+  <p class="lede">In the chat, write the four lines that define the handoff. No code yet.</p>
+  <div class="columns spacer">
+    <div class="card">
+      <span class="card-label">The contract</span>
+      <ul>
+        <li><strong>Cut-off date.</strong> A single date. State it explicitly.</li>
+        <li><strong>Row grain.</strong> One row = ? Customer? Customer-as-of-date? Pin it.</li>
+        <li><strong>Feature shape.</strong> Three to six features. Named, with a one-line definition each.</li>
+        <li><strong>Leakage rule.</strong> One sentence: nothing in this table uses data posted after [cut-off].</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s55" data-day="2">
+  <span class="eyebrow">Day 2 | Lab D | Step 2 - Engage</span>
+  <h2>Brief the AI on cut-off and leakage, every prompt</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Anchor the prompt</span>
+      <p>Every prompt opens with the cut-off date and the leakage rule. The coach will silently ignore them if you stop repeating them.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Build feature by feature</span>
+      <ul>
+        <li>"Build feature 1 - active_accounts_at_cutoff."</li>
+        <li>"Build feature 2 - txn_count_last_90_days_pre_cutoff."</li>
+        <li>"Build feature 3 - days_since_last_txn_at_cutoff."</li>
+        <li>Combine only after each feature is verified standalone.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s56" data-day="2">
+  <span class="eyebrow">Day 2 | Lab D | Step 3 - Verify</span>
+  <h2>Run the leakage check explicitly</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Ask the coach</span>
+      <p>"Look at every feature in this table. Name one that could leak future information. Be specific - which column, which join, which date logic."</p>
+    </div>
+    <div class="card">
+      <span class="card-label">Then verify yourself</span>
+      <ul>
+        <li>For each feature, walk back the lineage to source.</li>
+        <li>Find any date column. Confirm it is &le; cut-off.</li>
+        <li>If a feature uses an aggregate, confirm the aggregate window ends at cut-off.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="muted spacer">A leakage bug is invisible until the model trains beautifully and fails in production. Catch it here.</p>
+</section>
+
+<section class="slide" id="s57" data-day="2">
+  <span class="eyebrow">Day 2 * Lab D * Dictionary</span>
+  <h2>The dictionary is the only artefact that outlives the engineer who built the table.</h2>
+  <p class="lede">You will leave this team. The model team will pick up your work without you. The dictionary is the contract that survives that handoff. Coach-voice dictionaries read like definitions in a textbook; engineer-voice dictionaries read like something the next engineer can actually act on. We want the second.</p>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">Per-feature, in your voice</span>
+      <ul>
+        <li><strong>Name.</strong> snake_case. No abbreviations a new joiner would not recognise on day one.</li>
+        <li><strong>Definition.</strong> One sentence. What the value represents in the world, not how it was computed.</li>
+        <li><strong>Source.</strong> Raw column(s) and the join that produced it. The next engineer should be able to retrace it without you in the room.</li>
+        <li><strong>Cut-off behaviour.</strong> What time window is included. What is excluded. Be specific about edge cases.</li>
+        <li><strong>Caveat.</strong> One thing the modeller should know before using this as a feature. The thing they would otherwise discover painfully.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-label">Coach voice vs engineer voice</span>
+      <p class="muted"><strong>Coach voice</strong> (do not ship this):</p>
+      <p><em>"avg_monthly_balance: the average monthly balance for the customer."</em></p>
+      <p class="muted spacer"><strong>Engineer voice</strong> (ship this):</p>
+      <p><em>"avg_monthly_balance: mean of end-of-day current and savings balances per calendar month, averaged over the trailing six months. Excludes loan and credit card balances. Treasury sweep accounts produce noisy values; flag for treatment if the customer has more than one current account."</em></p>
+    </div>
+  </div>
+  <p class="muted spacer">Do not ask the coach to write this. The coach can sharpen language. The substance is yours; that is the whole point of the exercise.</p>
+</section>
+
+<section class="slide" id="s58" data-day="2">
+  <span class="eyebrow">Day 2 | Lab D | Step 4 - Defend</span>
+  <h2>The dictionary is the artefact</h2>
+  <div class="columns spacer">
+    <div class="card">
+      <span class="card-label">Defendable handoff</span>
+      <ul>
+        <li>One paragraph: what this table is and what it is not.</li>
+        <li>The dictionary, one entry per feature, in your own words.</li>
+        <li>One named risk: the leakage path you considered and ruled out, or the one you flagged for follow-up.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="muted spacer">When the coach surfaces your challenge question, hold the line. Submit when the dictionary reads like a contract, not like notes.</p>
+</section>
+
+<section class="slide" id="s59" data-day="2">
+  <span class="eyebrow">Day 2 | Lab D | Coach posture</span>
+  <h2>How the coach behaves on leakage</h2>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">In Engage</span>
+      <p>Will write the joins. Will produce a feature table that runs. Will not, on its own, surface leakage. You have to ask.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">In Verify</span>
+      <p>If you ask "find one leakage risk", it will name one. If you ask "is this safe?", it will say yes. Ask the right question.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide run" id="s60" data-day="2">
+  <div class="run-left">
+    <span class="run-tag">Lab D * Run the lab</span>
+    <h2 class="run-headline">Contract before code. Dictionary in your voice.</h2>
+    <span class="run-rule"></span>
+    <p class="run-rule-text">Customers, accounts, transactions attached. The contract (cut-off, label of "leakage", what one feature means) goes in chat before any pandas. The dictionary you write is the artefact your career gets measured on. Eighty-five minutes, then submit.</p>
+    <a class="run-cta" href="/academy/ajb-enterprise-banking/python-for-data#lab=lab-d-handoff">Open Lab D in the chat</a>
+  </div>
+  <div class="run-right">
+    <span class="run-clock-label">Timebox</span>
+    <span class="run-clock-value">85</span>
+    <span class="run-clock-unit">minutes</span>
+    <div class="run-shape">
+      <div class="run-shape-row"><strong>0-15</strong><span>Brief. Write the contract.</span></div>
+      <div class="run-shape-row"><strong>15-50</strong><span>Engage. Features one at a time.</span></div>
+      <div class="run-shape-row"><strong>50-65</strong><span>Verify. Leakage check.</span></div>
+      <div class="run-shape-row"><strong>65-85</strong><span>Defend. Dictionary. Submit.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Module close (slides 61-62) -->
+
+<section class="slide" id="s61" data-day="2">
+  <span class="eyebrow">Day 2 | Module close</span>
+  <h2>Read back: one truth supported, one truth not</h2>
+  <p class="lede">Each participant reads two sentences in chat.</p>
+  <div class="columns two spacer">
+    <div class="card">
+      <span class="card-label">One truth this data supports</span>
+      <p>Pull from your Lab D handoff. Specific. Named. Defendable in front of the analytics lead.</p>
+    </div>
+    <div class="card">
+      <span class="card-label">One truth it does not support</span>
+      <p>Pull from your dictionary caveats. Specific. Honest. The thing a careless modeller would over-interpret.</p>
+    </div>
+  </div>
+  <p class="muted spacer">The four defences across the two days are your assessment. There is no separate capstone.</p>
+</section>
+
+<section class="slide close" id="s62" data-day="2">
+  <span class="close-eyebrow">Module 1 * Closing line</span>
+  <h2 class="close-line">The bank needs engineers who can use AI <em>and still defend the answer</em> when somebody senior asks them to walk it back.</h2>
+  <p class="close-supp">That is the standard. Not the chart. Not the code. The defence. Take the four-step loop into the next real task on your desk this week. The reps make the reflex, the reflex makes the engineer.</p>
+  <div class="close-actions">
+    <span class="close-action">Exit ticket: one habit, in chat, specific</span>
+    <span class="close-action">Module 2 picks up your handoff next</span>
+    <span class="close-action">The loop is not module-specific</span>
+  </div>
+</section>
+
+<footer class="deck-footer">
+  <div class="deck-footer-brand">
+    <img class="emft-logo" src="/emft-logo.png" alt="Emerging Market Financial Training" />
+    <span class="deck-footer-brand-divider"></span>
+    <img src="/ajb-logo.png" alt="Al Jazira Bank" />
+  </div>
+  <div class="deck-footer-segment">Python for Data * Module 1</div>
+  <div class="deck-footer-meta">
+    <span id="deck-timer" class="deck-footer-timer"></span>
+    <span id="deck-counter" class="deck-footer-counter">1 / 62</span>
+  </div>
+</footer>
+<div class="deck-footer-progress"><span id="deck-progress-fill"></span></div>
 </div>
-<div class="deck-progress"><span id="deck-progress-fill"></span></div>
-
-<script src="/python-training/assets/deck.js"></script>
+<script type="module" src="/python-training/assets/deck.js"></script>
 </body>
 </html>

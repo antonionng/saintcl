@@ -25,6 +25,7 @@ export const env = {
   emailTokenSecret: process.env.EMAIL_TOKEN_SECRET,
   emailCronSecret: process.env.EMAIL_CRON_SECRET,
   appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  trainingUxUnifiedMode: (process.env.TRAINING_UX_UNIFIED || "on").toLowerCase(),
 };
 
 export function isSupabaseConfigured() {

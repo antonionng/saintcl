@@ -9,6 +9,8 @@
     "lint": "eslint",
     "test": "vitest run src/lib/control-plane.test.ts",
     "typecheck": "tsc --noEmit",
+    "build:facilitator-guide": "tsx scripts/build-facilitator-guide.ts",
+    "lint:script-openers": "tsx scripts/lint-script-openers.ts",
     "openclaw:install": "cd openclaw-vendored && pnpm install",
     "openclaw:build": "cd openclaw-vendored && pnpm ui:build && pnpm build",
     "openclaw:gateway:watch": "cd openclaw-vendored && pnpm gateway:watch"

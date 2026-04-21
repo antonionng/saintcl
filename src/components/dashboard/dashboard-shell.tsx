@@ -60,8 +60,8 @@ export function DashboardShell({
   return (
     <div
       className={cn(
-        "min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent_22%),linear-gradient(180deg,#111316_0%,#090a0d_40%,#08090b_100%)] lg:grid",
-        sidebarCollapsed ? "lg:grid-cols-[88px_minmax(0,1fr)]" : "lg:grid-cols-[264px_minmax(0,1fr)]",
+        "min-h-screen bg-surface-0 lg:grid",
+        sidebarCollapsed ? "lg:grid-cols-[88px_minmax(0,1fr)]" : "lg:grid-cols-[280px_minmax(0,1fr)]",
       )}
     >
       <DashboardSidebar
@@ -73,8 +73,10 @@ export function DashboardShell({
         <div
           className={cn(
             "flex min-h-screen w-full flex-col",
-            isConsoleRoute ? "max-w-none px-0 py-0" : "max-w-[1240px] px-4 py-6 sm:px-6 lg:px-10 lg:py-8",
-            isSettingsRoute && "ml-0 mr-auto max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8",
+            isConsoleRoute
+              ? "max-w-none px-0 py-0"
+              : "max-w-[1240px] px-phi-5 py-phi-8 sm:px-phi-8 lg:px-phi-13 lg:py-phi-13",
+            isSettingsRoute && "ml-0 mr-auto max-w-[1440px] px-phi-5 py-phi-8 sm:px-phi-8 lg:px-phi-8 lg:py-phi-13",
             !isConsoleRoute && !isSettingsRoute && "mx-auto",
           )}
         >

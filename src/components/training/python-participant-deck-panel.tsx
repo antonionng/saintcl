@@ -2,6 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { createClient } from "@/lib/supabase/client";
+import {
+  subscribeToLiveDelivery,
+  type LiveSession,
+} from "@/lib/training-realtime";
+
 export type ParticipantDeckState = {
   slideId: string;
   slideIndex: number;
@@ -14,6 +20,7 @@ export type ParticipantDeckState = {
 
 type LiveStateResponse = {
   data?: {
+    live?: LiveSession | null;
     liveSession?: {
       currentSlideId?: string | null;
       currentSlideIndex?: number;
@@ -27,12 +34,32 @@ type LiveStateResponse = {
   };
 };
 
+const FALLBACK_POLL_MS = 30_000;
+
 function sendDeckCommand(
   iframe: HTMLIFrameElement | null,
   payload: { command: "goToSlide"; slideId?: string; slideIndex?: number },
 ) {
   if (!iframe?.contentWindow) return;
   iframe.contentWindow.postMessage({ type: "python-training:command", ...payload }, "*");
+}
+
+function deriveLiveSession(payload: LiveStateResponse): LiveSession | null {
+  if (payload.data?.live) return payload.data.live;
+  const legacy = payload.data?.liveSession;
+  if (!legacy) return null;
+  const lockToFacilitator = Boolean(legacy.metadata?.lockToFacilitator);
+  const broadcastEnabled = Boolean(legacy.broadcastEnabled);
+  return {
+    cohortId: "",
+    moduleId: "",
+    facilitatorSlideId: legacy.currentSlideId ?? null,
+    facilitatorSlideIndex: typeof legacy.currentSlideIndex === "number" ? legacy.currentSlideIndex : 0,
+    liveMode: lockToFacilitator ? "locked" : broadcastEnabled ? "on" : "off",
+    prompt: legacy.metadata?.facilitatorPrompt ?? null,
+    promptAt: null,
+    updatedAt: legacy.updatedAt ?? new Date().toISOString(),
+  };
 }
 
 export function PythonParticipantDeckPanel({
@@ -42,7 +69,6 @@ export function PythonParticipantDeckPanel({
   deckTitle = "participant deck",
   onDeckStateChange,
   onFacilitatorPromptChange,
-  enableProgressTracking = true,
 }: {
   inviteCode: string;
   moduleSlug: string;
@@ -50,15 +76,17 @@ export function PythonParticipantDeckPanel({
   deckTitle?: string;
   onDeckStateChange?: (deckState: ParticipantDeckState | null) => void;
   onFacilitatorPromptChange?: (prompt: string | null) => void;
-  enableProgressTracking?: boolean;
 }) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [followFacilitator, setFollowFacilitator] = useState(true);
   const [deckState, setDeckState] = useState<ParticipantDeckState | null>(null);
-  const [facilitatorSlideIndex, setFacilitatorSlideIndex] = useState<number | null>(null);
-  const [broadcastEnabled, setBroadcastEnabled] = useState(false);
-  const [lockToFacilitator, setLockToFacilitator] = useState(false);
-  const [facilitatorPrompt, setFacilitatorPrompt] = useState<string | null>(null);
+  const [liveSession, setLiveSession] = useState<LiveSession | null>(null);
+
+  const facilitatorSlideIndex = liveSession?.facilitatorSlideIndex ?? null;
+  const liveMode = liveSession?.liveMode ?? "off";
+  const broadcastEnabled = liveMode !== "off";
+  const lockToFacilitator = liveMode === "locked";
+  const facilitatorPrompt = liveSession?.prompt ?? null;
 
   useEffect(() => {
     function handleMessage(event: MessageEvent) {
@@ -80,72 +108,165 @@ export function PythonParticipantDeckPanel({
     onFacilitatorPromptChange?.(facilitatorPrompt);
   }, [facilitatorPrompt, onFacilitatorPromptChange]);
 
+  // Coalesce slide_viewed events: debounce by 1500ms keyed on slideId, skip
+  // when nothing changed since the last send, and use sendBeacon on pagehide
+  // so the final position still lands when the participant closes the tab.
+  const lastSentSlideIdRef = useRef<string | null>(null);
+  const pendingSlidePayloadRef = useRef<{
+    slideId: string;
+    slideIndex: number;
+    totalSlides: number;
+    title: string;
+  } | null>(null);
+
   useEffect(() => {
-    if (!enableProgressTracking) return;
     if (typeof deckState?.slideIndex !== "number") return;
+    if (typeof deckState?.slideId !== "string" || !deckState.slideId) return;
+
+    const slidePayload = {
+      slideId: deckState.slideId,
+      slideIndex: deckState.slideIndex,
+      totalSlides: Math.max(deckState.totalSlides, 1),
+      title: deckState.title,
+    };
+
+    if (lastSentSlideIdRef.current === slidePayload.slideId) {
+      pendingSlidePayloadRef.current = null;
+      return;
+    }
+    pendingSlidePayloadRef.current = slidePayload;
 
     const controller = new AbortController();
-    void fetch("/api/training/participant/progress", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        inviteCode,
-        moduleSlug,
-        eventType: "slide_viewed",
-        progressPercent: Math.max(1, Math.round(((deckState.slideIndex + 1) / Math.max(deckState.totalSlides, 1)) * 100)),
-        metadata: {
-          slideId: deckState.slideId,
-          slideIndex: deckState.slideIndex,
-          title: deckState.title,
-        },
-      }),
-      signal: controller.signal,
-    }).catch(() => undefined);
+    const timer = window.setTimeout(() => {
+      const payload = pendingSlidePayloadRef.current;
+      if (!payload) return;
+      pendingSlidePayloadRef.current = null;
+      lastSentSlideIdRef.current = payload.slideId;
+      void fetch("/api/training/participant/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          inviteCode,
+          moduleSlug,
+          eventType: "slide_viewed",
+          progressPercent: Math.max(
+            1,
+            Math.round(((payload.slideIndex + 1) / payload.totalSlides) * 100),
+          ),
+          metadata: {
+            slideId: payload.slideId,
+            slideIndex: payload.slideIndex,
+            title: payload.title,
+          },
+        }),
+        signal: controller.signal,
+        keepalive: true,
+      }).catch(() => undefined);
+    }, 1500);
 
-    return () => controller.abort();
-  }, [deckState?.slideId, deckState?.slideIndex, deckState?.title, deckState?.totalSlides, enableProgressTracking, inviteCode, moduleSlug]);
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [deckState?.slideId, deckState?.slideIndex, deckState?.title, deckState?.totalSlides, inviteCode, moduleSlug]);
+
+  useEffect(() => {
+    function flushOnHide() {
+      const payload = pendingSlidePayloadRef.current;
+      if (!payload) return;
+      pendingSlidePayloadRef.current = null;
+      lastSentSlideIdRef.current = payload.slideId;
+      try {
+        const body = JSON.stringify({
+          inviteCode,
+          moduleSlug,
+          eventType: "slide_viewed",
+          progressPercent: Math.max(
+            1,
+            Math.round(((payload.slideIndex + 1) / payload.totalSlides) * 100),
+          ),
+          metadata: {
+            slideId: payload.slideId,
+            slideIndex: payload.slideIndex,
+            title: payload.title,
+          },
+        });
+        if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+          const blob = new Blob([body], { type: "application/json" });
+          navigator.sendBeacon("/api/training/participant/progress", blob);
+        }
+      } catch {
+        // Best-effort; ignore.
+      }
+    }
+
+    window.addEventListener("pagehide", flushOnHide);
+    return () => window.removeEventListener("pagehide", flushOnHide);
+  }, [inviteCode, moduleSlug]);
 
   useEffect(() => {
     let cancelled = false;
+    let unsubscribe: (() => void) | null = null;
+    let fallbackTimer: number | null = null;
 
-    async function pollLiveState() {
+    async function hydrate(): Promise<LiveSession | null> {
       const response = await fetch(
         `/api/training/live-state?inviteCode=${encodeURIComponent(inviteCode)}&moduleSlug=${encodeURIComponent(moduleSlug)}`,
         { cache: "no-store" },
       );
-      if (!response.ok || cancelled) return;
+      if (!response.ok || cancelled) return null;
       const payload = (await response.json()) as LiveStateResponse;
-      if (cancelled) return;
-
-      const liveSession = payload.data?.liveSession ?? null;
-      setBroadcastEnabled(Boolean(liveSession?.broadcastEnabled));
-      setLockToFacilitator(Boolean(liveSession?.metadata?.lockToFacilitator));
-      setFacilitatorPrompt(liveSession?.metadata?.facilitatorPrompt ?? null);
-      setFacilitatorSlideIndex(typeof liveSession?.currentSlideIndex === "number" ? liveSession.currentSlideIndex : null);
-
-      if (
-        (followFacilitator || Boolean(liveSession?.metadata?.lockToFacilitator)) &&
-        liveSession?.broadcastEnabled &&
-        typeof liveSession.currentSlideIndex === "number" &&
-        liveSession.currentSlideIndex !== deckState?.slideIndex
-      ) {
-        sendDeckCommand(iframeRef.current, {
-          command: "goToSlide",
-          slideId: liveSession.currentSlideId ?? undefined,
-          slideIndex: liveSession.currentSlideIndex,
-        });
-      }
+      if (cancelled) return null;
+      const next = deriveLiveSession(payload);
+      if (next) setLiveSession(next);
+      return next;
     }
 
-    pollLiveState();
-    const interval = window.setInterval(pollLiveState, 2500);
+    void hydrate().then((initial) => {
+      if (cancelled) return;
+      const supabase = createClient();
+      const cohortId = initial?.cohortId ?? "";
+      const moduleId = initial?.moduleId ?? "";
+
+      if (supabase && cohortId && moduleId) {
+        const subscription = subscribeToLiveDelivery({
+          supabase,
+          cohortId,
+          moduleId,
+          onLiveSession: (next) => {
+            if (cancelled) return;
+            setLiveSession(next);
+          },
+        });
+        unsubscribe = subscription.unsubscribe;
+      }
+
+      // Slow fallback poll covers dropped broadcasts and unauthenticated viewers.
+      fallbackTimer = window.setInterval(() => {
+        void hydrate();
+      }, FALLBACK_POLL_MS);
+    });
+
     return () => {
       cancelled = true;
-      window.clearInterval(interval);
+      if (unsubscribe) unsubscribe();
+      if (fallbackTimer !== null) window.clearInterval(fallbackTimer);
     };
-  }, [deckState?.slideIndex, followFacilitator, inviteCode, moduleSlug]);
+  }, [inviteCode, moduleSlug]);
+
+  useEffect(() => {
+    if (!liveSession) return;
+    const shouldFollow = followFacilitator || liveSession.liveMode === "locked";
+    if (!shouldFollow) return;
+    if (liveSession.liveMode === "off") return;
+    if (liveSession.facilitatorSlideIndex === deckState?.slideIndex) return;
+
+    sendDeckCommand(iframeRef.current, {
+      command: "goToSlide",
+      slideId: liveSession.facilitatorSlideId ?? undefined,
+      slideIndex: liveSession.facilitatorSlideIndex,
+    });
+  }, [liveSession, followFacilitator, deckState?.slideIndex]);
 
   return (
     <div className="space-y-4">

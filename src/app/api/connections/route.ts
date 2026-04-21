@@ -8,6 +8,7 @@ import { appendRuntimeAuditEvent } from "@/lib/openclaw/log-sync";
 import { getOrgModelCatalogState } from "@/lib/openclaw/model-governance";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { insertChannelMetadata } from "@/lib/openclaw/runtime-store";
+import { recordSetupAuditEvent, recordFunnelStep } from "@/lib/setup-audit";
 import { getChannels } from "@/lib/dal";
 
 const connectChannelSchema = z.discriminatedUnion("type", [
@@ -126,6 +127,21 @@ export async function POST(request: Request) {
       type: payload.type,
     });
   }
+
+  recordSetupAuditEvent({
+    orgId: payload.orgId,
+    agentId: payload.agentId,
+    userId: session.userId,
+    eventType: "channel.connected",
+    category: "channel",
+    metadata: { type: payload.type },
+  }).catch(() => null);
+
+  recordFunnelStep({
+    orgId: payload.orgId,
+    step: "channel_connected",
+    metadata: { type: payload.type, agentId: payload.agentId },
+  }).catch(() => null);
 
   return NextResponse.json({
     data: {

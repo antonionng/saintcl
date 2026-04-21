@@ -52,22 +52,22 @@ export function SidebarAccount({
 
   if (collapsed) {
     return (
-      <div className="hidden lg:flex lg:w-full lg:flex-col lg:items-center lg:gap-3 lg:rounded-[1.75rem] lg:border lg:border-white/8 lg:bg-white/[0.025] lg:px-2 lg:py-3 lg:shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+      <div className="hidden lg:flex lg:w-full lg:flex-col lg:items-center lg:gap-phi-2 lg:py-phi-2">
         <UserAvatar
           avatarUrl={avatarUrl}
           displayName={displayName}
           email={email}
-          className="size-12 rounded-2xl bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.025))]"
+          className="size-10 rounded-lg"
         />
-        <Button variant="secondary" asChild className="size-11 rounded-2xl px-0">
+        <Button variant="ghost" asChild className="size-10 rounded-md px-0">
           <Link href="/account" aria-label="Account" title="Account">
             <UserCircle2 className="size-4" />
           </Link>
         </Button>
         {hasSupabase && email ? (
           <Button
-            variant="secondary"
-            className="size-11 rounded-2xl px-0"
+            variant="ghost"
+            className="size-10 rounded-md px-0"
             onClick={handleLogout}
             disabled={loading}
             aria-label={loading ? "Signing out" : "Log out"}
@@ -76,7 +76,7 @@ export function SidebarAccount({
             <LogOut className="size-4" />
           </Button>
         ) : (
-          <Button variant="secondary" asChild className="size-11 rounded-2xl px-0">
+          <Button variant="ghost" asChild className="size-10 rounded-md px-0">
             <Link href="/login" aria-label="Log in" title="Log in">
               <LogIn className="size-4" />
             </Link>
@@ -87,27 +87,16 @@ export function SidebarAccount({
   }
 
   return (
-    <div
-      className={cn(
-        "rounded-2xl border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.025))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]",
-      )}
-    >
-      <div className="mb-2.5 flex items-center justify-between gap-3">
-        <p className="text-[0.68rem] uppercase tracking-[0.16em] text-zinc-500">Account</p>
-        {role ? (
-          <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[0.62rem] uppercase tracking-[0.14em] text-zinc-400">
-            {role}
-          </span>
-        ) : null}
-      </div>
-      <div className="flex items-center gap-2.5">
-        <UserAvatar avatarUrl={avatarUrl} displayName={displayName} email={email} className="size-10" />
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-white/95">
+    <div className="border-t border-border-subtle pt-phi-5">
+      <div className="flex items-center gap-phi-3">
+        <UserAvatar avatarUrl={avatarUrl} displayName={displayName} email={email} className="size-9 rounded-lg" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[length:var(--text-sm)] font-medium text-white/95">
             {accountLabel}
           </p>
-          <p className="truncate text-xs text-zinc-500">
+          <p className="truncate text-[length:var(--text-xs)] text-zinc-500">
             {hasSupabase ? orgName ?? "Workspace" : "Demo mode"}
+            {role ? ` · ${role}` : ""}
           </p>
         </div>
       </div>
@@ -115,34 +104,35 @@ export function SidebarAccount({
       <WorkspaceSwitcher
         workspaces={workspaces}
         currentOrgId={currentOrgId}
-        className="mt-3"
-        labelClassName="text-[0.62rem]"
-        selectClassName="rounded-lg py-2"
+        className="mt-phi-3"
+        labelClassName="text-[length:var(--text-xs)]"
+        selectClassName="rounded-md py-2"
       />
 
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <Button variant="secondary" asChild className="h-10 w-full justify-center rounded-lg px-3">
+      <div className="mt-phi-3 flex items-center gap-phi-2">
+        <Button variant="ghost" asChild size="sm" className="rounded-md">
           <Link href="/account" aria-label="Account" title="Account">
-            <UserCircle2 className="size-4" />
+            <UserCircle2 className="size-3.5" />
             <span>Account</span>
           </Link>
         </Button>
         {hasSupabase && email ? (
           <Button
-            variant="secondary"
-            className="h-10 w-full justify-center rounded-lg px-3"
+            variant="ghost"
+            size="sm"
+            className="rounded-md"
             onClick={handleLogout}
             disabled={loading}
             aria-label={loading ? "Signing out" : "Log out"}
             title={loading ? "Signing out" : "Log out"}
           >
-            <LogOut className="size-4" />
+            <LogOut className="size-3.5" />
             <span>{loading ? "Signing out..." : "Log out"}</span>
           </Button>
         ) : (
-          <Button variant="secondary" asChild className="h-10 w-full justify-center rounded-lg px-3">
+          <Button variant="ghost" asChild size="sm" className="rounded-md">
             <Link href="/login" aria-label="Log in" title="Log in">
-              <LogIn className="size-4" />
+              <LogIn className="size-3.5" />
               <span>Log in</span>
             </Link>
           </Button>

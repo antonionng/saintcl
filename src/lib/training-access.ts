@@ -28,10 +28,29 @@ export function buildParticipantModuleAccessState(input: {
     const previousModuleId = previousModule ? moduleIdBySlug.get(previousModule.slug) : undefined;
     const previousEnrollment = previousModuleId ? enrollmentByModuleId.get(previousModuleId) : undefined;
 
-    const unlockedByCompletion = index === 0 || previousEnrollment?.status === "completed";
-    const unlockedByFacilitator = input.facilitatorUnlocks[module.slug] === true;
+    const sequentialUnlock = index === 0 || previousEnrollment?.status === "completed";
+    const rawUnlockedByFacilitator = input.facilitatorUnlocks[module.slug] === true;
     const hasExistingAccess = Boolean(currentEnrollment);
-    const canOpen = index === 0 || unlockedByCompletion || unlockedByFacilitator || hasExistingAccess;
+    const hasStarted =
+      currentEnrollment?.status === "in_progress" || currentEnrollment?.status === "completed";
+
+    // Module-level participant access policy. "open" forces the module open
+    // for every checked-in participant. "locked" is a hard global lock: it
+    // overrides sequential unlocks AND any per-cohort facilitator unlocks so
+    // participants cannot open it even if a facilitator previously toggled
+    // it on. To release a locked module, change its blueprint policy.
+    const policy = module.participantAccess;
+    const unlockedByCompletion = policy === "locked" ? false : sequentialUnlock;
+    const unlockedByFacilitator = policy === "locked" ? false : rawUnlockedByFacilitator;
+
+    let canOpen: boolean;
+    if (policy === "open") {
+      canOpen = true;
+    } else if (policy === "locked") {
+      canOpen = false;
+    } else {
+      canOpen = sequentialUnlock || unlockedByFacilitator || hasStarted;
+    }
 
     return {
       moduleSlug: module.slug,

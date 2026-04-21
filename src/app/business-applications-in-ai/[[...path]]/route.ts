@@ -1,7 +1,10 @@
 import { readFile, stat } from "node:fs/promises";
 import { extname, resolve, sep } from "node:path";
 
+import { requireParticipantForModule } from "@/lib/training-content-access";
+
 const trainingRoot = resolve(process.cwd(), "business-applications-in-ai");
+const moduleSlug = "business-applications-in-ai";
 
 const contentTypes: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
@@ -37,6 +40,11 @@ function buildFilePath(pathParts: string[] | undefined) {
 }
 
 export async function GET(_request: Request, context: RouteContext) {
+  const access = await requireParticipantForModule(moduleSlug);
+  if (!access.ok) {
+    return access.response;
+  }
+
   const { path } = await context.params;
   const filePath = buildFilePath(path);
 

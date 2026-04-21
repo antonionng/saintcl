@@ -89,6 +89,7 @@ export default async function WorkspacePage() {
       error={error}
       requiresOnboarding={requiresOnboarding}
       hasProvisionedAgent={hasProvisionedAgent}
+      canProvisionAgent={session.capabilities.canManageAgents}
       initialProfile={initialProfile}
     />
   );

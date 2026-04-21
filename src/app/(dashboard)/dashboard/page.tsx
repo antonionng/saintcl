@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { Activity, ArrowRight, Bot, Cable, Database, TerminalSquare } from "lucide-react";
+import { Activity, ArrowRight, Bot, Cable, Database, Puzzle, TerminalSquare } from "lucide-react";
 
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { StatsGrid } from "@/components/dashboard/stats-grid";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   getCurrentOrg,
   getDashboardStats,
@@ -36,7 +37,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-phi-13">
       <PageHeader
         eyebrow="Overview"
         title="Command center"
@@ -50,27 +51,27 @@ export default async function DashboardPage() {
 
       <StatsGrid stats={dashboardStats} />
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <section className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
-          <div className="mb-4">
-            <h2 className="text-lg font-medium tracking-[-0.03em] text-white">Runtime health</h2>
-          </div>
-          <div>
+      <div className="grid gap-phi-5 xl:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Runtime health</CardTitle>
+          </CardHeader>
+          <CardContent>
             {runtimes.length === 0 ? (
               <EmptyState
                 icon={Activity}
                 title="No runtimes"
                 description="Provision your first agent to spin up an OpenClaw runtime."
-                className="py-10"
+                className="py-phi-8"
               />
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-phi-3">
                 {runtimes.map((runtime) => (
-                  <div key={runtime.id} className="rounded-xl border border-white/8 bg-white/[0.02] p-4">
-                    <div className="flex items-center justify-between gap-3">
+                  <Card key={runtime.id} variant="inset" className="p-phi-5">
+                    <div className="flex items-center justify-between gap-phi-3">
                       <div>
-                        <p className="font-medium text-white">{runtime.org_id.slice(0, 8)}</p>
-                        <p className="mt-2 text-sm text-zinc-400">
+                        <p className="text-[length:var(--text-sm)] font-medium text-white">{runtime.org_id.slice(0, 8)}</p>
+                        <p className="mt-phi-2 text-[length:var(--text-sm)] text-zinc-400">
                           Port {runtime.gateway_port}
                           {runtime.pid ? ` · PID ${runtime.pid}` : ""}
                         </p>
@@ -80,65 +81,62 @@ export default async function DashboardPage() {
                       </Badge>
                     </div>
                     {runtime.last_heartbeat_at ? (
-                      <p className="mt-3 text-sm leading-7 text-zinc-400">
+                      <p className="mt-phi-3 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
                         Last heartbeat {new Date(runtime.last_heartbeat_at).toLocaleString()}
                       </p>
                     ) : null}
-                  </div>
+                  </Card>
                 ))}
               </div>
             )}
-          </div>
-        </section>
+          </CardContent>
+        </Card>
 
-        <section className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
-          <div className="mb-4">
-            <h2 className="text-lg font-medium tracking-[-0.03em] text-white">Approval queue</h2>
-          </div>
-          <div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Approval queue</CardTitle>
+          </CardHeader>
+          <CardContent>
             {approvals.length === 0 ? (
               <EmptyState
                 icon={TerminalSquare}
                 title="No pending approvals"
                 description="Terminal commands requiring approval will appear here."
-                className="py-10"
+                className="py-phi-8"
               />
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-phi-3">
                 {approvals.map((approval) => (
-                  <div
-                    key={approval.id}
-                    className="flex items-center justify-between rounded-xl border border-white/8 bg-white/[0.02] px-4 py-4"
-                  >
+                  <Card key={approval.id} variant="inset" className="flex items-center justify-between px-phi-5 py-phi-5">
                     <div>
-                      <p className="font-medium text-white">{approval.command}</p>
-                      <p className="text-sm text-zinc-400">{approval.requested_by ?? "system"}</p>
+                      <p className="text-[length:var(--text-sm)] font-medium text-white">{approval.command}</p>
+                      <p className="text-[length:var(--text-sm)] text-zinc-400">{approval.requested_by ?? "system"}</p>
                     </div>
-                    <div className="flex items-center gap-3 text-sm text-zinc-400">
+                    <div className="flex items-center gap-phi-3 text-[length:var(--text-sm)] text-zinc-400">
                       <Activity className="size-4 text-emerald-400" />
                       {approval.status}
                       <ArrowRight className="size-4" />
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
             )}
-          </div>
-        </section>
+          </CardContent>
+        </Card>
       </div>
 
-      <section className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
-        <div className="mb-4">
-          <h2 className="text-lg font-medium tracking-[-0.03em] text-white">Recent logs</h2>
-        </div>
-        <div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent logs</CardTitle>
+        </CardHeader>
+        <CardContent>
           {logs.length === 0 ? (
             <EmptyState
               icon={Bot}
               title="No activity yet"
               description="Agent logs will stream here once you provision an agent and connect a channel."
               action={
-                <div className="flex flex-wrap justify-center gap-3">
+                <div className="flex flex-wrap justify-center gap-phi-3">
                   <Button asChild size="sm">
                     <Link href="/agents/new">Provision agent</Link>
                   </Button>
@@ -149,51 +147,61 @@ export default async function DashboardPage() {
               }
             />
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-phi-3">
               {logs.map((log) => (
-                <div key={log.id} className="rounded-xl border border-white/8 bg-white/[0.02] p-4">
-                  <div className="flex items-center justify-between text-sm text-zinc-400">
-                    <span className="uppercase tracking-[0.2em]">
+                <Card key={log.id} variant="inset" className="p-phi-5">
+                  <div className="flex items-center justify-between text-[length:var(--text-sm)] text-zinc-400">
+                    <span className="text-[length:var(--text-xs)] uppercase tracking-[0.08em]">
                       {log.role ?? "system"} · {log.session_key ?? "-"}
                     </span>
-                    <span>{new Date(log.occurred_at ?? log.created_at).toLocaleTimeString()}</span>
+                    <span className="text-[length:var(--text-xs)]">{new Date(log.occurred_at ?? log.created_at).toLocaleTimeString()}</span>
                   </div>
-                  <p className="mt-3 text-sm leading-7 text-zinc-400">{log.message}</p>
-                </div>
+                  <p className="mt-phi-3 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">{log.message}</p>
+                </Card>
               ))}
             </div>
           )}
-        </div>
-      </section>
+        </CardContent>
+      </Card>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-phi-5 md:grid-cols-2 lg:grid-cols-4">
         <Link
           href="/agents/new"
-          className="group rounded-2xl border border-white/8 bg-white/[0.02] p-5 transition-colors hover:border-white/14 hover:bg-white/[0.04]"
+          className="group rounded-lg border border-border-subtle bg-surface-2 p-phi-8 transition-colors hover:border-border hover:bg-surface-3"
         >
           <Bot className="size-5 text-white" />
-          <h3 className="mt-4 text-lg font-medium tracking-[-0.03em] text-white">Provision an agent</h3>
-          <p className="mt-2 text-sm leading-7 text-zinc-400">
+          <h3 className="mt-phi-5 text-[length:var(--text-lg)] font-medium tracking-[-0.02em] text-white">Provision an agent</h3>
+          <p className="mt-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
             Create a dedicated OpenClaw identity mapped to a model, persona, and workspace.
           </p>
         </Link>
         <Link
-          href="/connections"
-          className="group rounded-2xl border border-white/8 bg-white/[0.02] p-5 transition-colors hover:border-white/14 hover:bg-white/[0.04]"
+          href="/channels"
+          className="group rounded-lg border border-border-subtle bg-surface-2 p-phi-8 transition-colors hover:border-border hover:bg-surface-3"
         >
           <Cable className="size-5 text-white" />
-          <h3 className="mt-4 text-lg font-medium tracking-[-0.03em] text-white">Connect a channel</h3>
-          <p className="mt-2 text-sm leading-7 text-zinc-400">
-            Bind Telegram or Slack to an agent so inbound messages route to the right session.
+          <h3 className="mt-phi-5 text-[length:var(--text-lg)] font-medium tracking-[-0.02em] text-white">Connect a channel</h3>
+          <p className="mt-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
+            Bind Telegram, Slack, or WhatsApp to an agent for inbound message routing.
+          </p>
+        </Link>
+        <Link
+          href="/skills"
+          className="group rounded-lg border border-border-subtle bg-surface-2 p-phi-8 transition-colors hover:border-border hover:bg-surface-3"
+        >
+          <Puzzle className="size-5 text-white" />
+          <h3 className="mt-phi-5 text-[length:var(--text-lg)] font-medium tracking-[-0.02em] text-white">Install skills</h3>
+          <p className="mt-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
+            Browse and install skills per agent from the ClawHub and curated library.
           </p>
         </Link>
         <Link
           href="/knowledge"
-          className="group rounded-2xl border border-white/8 bg-white/[0.02] p-5 transition-colors hover:border-white/14 hover:bg-white/[0.04]"
+          className="group rounded-lg border border-border-subtle bg-surface-2 p-phi-8 transition-colors hover:border-border hover:bg-surface-3"
         >
           <Database className="size-5 text-white" />
-          <h3 className="mt-4 text-lg font-medium tracking-[-0.03em] text-white">Upload knowledge</h3>
-          <p className="mt-2 text-sm leading-7 text-zinc-400">
+          <h3 className="mt-phi-5 text-[length:var(--text-lg)] font-medium tracking-[-0.02em] text-white">Upload knowledge</h3>
+          <p className="mt-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
             Add documents to Supabase Storage for chunking and retrieval via pgvector.
           </p>
         </Link>

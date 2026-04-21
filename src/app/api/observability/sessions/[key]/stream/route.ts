@@ -50,11 +50,15 @@ export async function GET(
 
   const policy = await getOrgPolicy(session.org.id);
 
+  const POLL_INTERVAL_MS = 8_000;
+  const STREAM_LIFETIME_MS = 90_000;
+
   const stream = new ReadableStream({
     start(controller) {
       let closed = false;
       let interval: ReturnType<typeof setInterval> | null = null;
       let timeout: ReturnType<typeof setTimeout> | null = null;
+      let tickCount = 0;
 
       const cleanup = () => {
         if (closed) {
@@ -68,10 +72,16 @@ export async function GET(
 
       const emitSnapshot = async () => {
         try {
-          const liveTelemetry = await syncOpenClawSessionTelemetry(session.org.id, sessionKey, {
-            defaultModel: policy?.default_model ?? undefined,
-            logsLimit: 200,
-          }).catch(() => null);
+          tickCount += 1;
+          const syncTelemetry = tickCount <= 2;
+
+          const liveTelemetry = syncTelemetry
+            ? await syncOpenClawSessionTelemetry(session.org.id, sessionKey, {
+                defaultModel: policy?.default_model ?? undefined,
+                logsLimit: 200,
+              }).catch(() => null)
+            : null;
+
           const [requestEvents, activityEvents] = await Promise.all([
             getRequestEventsForSession(session, { sessionKey, limit: 100 }),
             getSessionActivityEventsForSession(session, sessionKey, 200),
@@ -123,8 +133,8 @@ export async function GET(
       void emitSnapshot();
       interval = setInterval(() => {
         void emitSnapshot();
-      }, 3000);
-      timeout = setTimeout(cleanup, 25000);
+      }, POLL_INTERVAL_MS);
+      timeout = setTimeout(cleanup, STREAM_LIFETIME_MS);
       request.signal.addEventListener("abort", cleanup);
     },
   });

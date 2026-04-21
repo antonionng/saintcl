@@ -67,10 +67,10 @@ function MetricCard({
   hint: string;
 }) {
   return (
-    <div className="rounded-[1.15rem] border border-white/8 bg-white/[0.03] p-4">
-      <p className="text-[0.72rem] uppercase tracking-[0.16em] text-zinc-500">{label}</p>
-      <p className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">{value}</p>
-      <p className="mt-1 text-sm text-zinc-400">{hint}</p>
+    <div className="rounded-lg border border-border-subtle bg-surface-2 px-phi-5 py-phi-5">
+      <p className="text-[length:var(--text-xs)] font-medium uppercase tracking-[0.08em] text-zinc-500">{label}</p>
+      <p className="mt-phi-3 text-[length:var(--text-2xl)] font-semibold tracking-[-0.03em] text-white">{value}</p>
+      <p className="mt-phi-2 text-[length:var(--text-sm)] text-zinc-400">{hint}</p>
     </div>
   );
 }
@@ -96,19 +96,19 @@ function ScopeSelectorCard({
       disabled={disabled}
       onClick={() => onSelect(scope)}
       className={[
-        "rounded-[1.15rem] border p-4 text-left transition-colors",
-        active ? "border-white/18 bg-white/[0.08]" : "border-white/8 bg-white/[0.03]",
-        disabled ? "cursor-not-allowed opacity-50" : "hover:border-white/14",
+        "rounded-lg border p-phi-5 text-left transition-colors",
+        active ? "border-border-strong bg-surface-3" : "border-border-subtle bg-surface-2",
+        disabled ? "cursor-not-allowed opacity-50" : "hover:border-border",
       ].join(" ")}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-2">
+      <div className="flex items-start justify-between gap-phi-3">
+        <div className="rounded-md border border-border bg-surface-2 p-phi-2">
           <Icon className="size-4 text-white" />
         </div>
         <Badge variant="default">{count}</Badge>
       </div>
-      <p className="mt-4 text-sm font-medium text-white">{scopeLabel(scope)}</p>
-      <p className="mt-1 text-xs leading-5 text-zinc-500">{scopeDescription(scope)}</p>
+      <p className="mt-phi-5 text-[length:var(--text-sm)] font-medium text-white">{scopeLabel(scope)}</p>
+      <p className="mt-phi-1 text-[length:var(--text-xs)] leading-relaxed text-zinc-500">{scopeDescription(scope)}</p>
     </button>
   );
 }
@@ -127,10 +127,10 @@ function DashboardTabButton({
       type="button"
       onClick={onClick}
       className={[
-        "rounded-full border px-3 py-1.5 text-sm transition-colors",
+        "rounded-sm border px-phi-3 py-phi-2 text-[length:var(--text-sm)] transition-colors",
         active
-          ? "border-white/18 bg-white/[0.1] text-white"
-          : "border-white/8 bg-white/[0.03] text-zinc-400 hover:border-white/14 hover:text-white",
+          ? "border-border-strong bg-surface-3 text-white"
+          : "border-border-subtle bg-surface-1 text-zinc-400 hover:border-border hover:text-white",
       ].join(" ")}
     >
       {children}
@@ -146,12 +146,12 @@ function EmptyLibraryState({
   description: string;
 }) {
   return (
-    <div className="rounded-[1.2rem] border border-dashed border-white/10 bg-white/[0.02] px-6 py-10 text-center">
-      <div className="mx-auto flex size-12 items-center justify-center rounded-2xl border border-white/8 bg-white/[0.03]">
+    <div className="rounded-lg border border-dashed border-border px-phi-8 py-phi-13 text-center">
+      <div className="mx-auto flex size-11 items-center justify-center rounded-md border border-border-subtle bg-surface-2">
         <FileText className="size-5 text-zinc-300" />
       </div>
-      <p className="mt-4 text-base font-medium text-white">{title}</p>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-500">{description}</p>
+      <p className="mt-phi-5 text-[length:var(--text-base)] font-medium text-white">{title}</p>
+      <p className="mx-auto mt-phi-2 max-w-md text-[length:var(--text-sm)] leading-relaxed text-zinc-500">{description}</p>
     </div>
   );
 }
@@ -167,25 +167,25 @@ function DocumentRow({
   const extension = getFileExtension(doc.filename);
 
   return (
-    <div className="rounded-[1.1rem] border border-white/8 bg-white/[0.02] p-4 transition-colors hover:border-white/12 hover:bg-white/[0.03]">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+    <div className="rounded-lg border border-border-subtle bg-surface-1 p-phi-5 transition-colors hover:border-border hover:bg-surface-2">
+      <div className="flex flex-col gap-phi-5 lg:flex-row lg:items-center">
         <div className="min-w-0 flex-1">
-          <div className="flex items-start gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-white/8 bg-white/[0.04] text-[0.68rem] font-semibold tracking-[0.16em] text-zinc-300">
+          <div className="flex items-start gap-phi-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border-subtle bg-surface-2 text-[length:var(--text-xs)] font-semibold tracking-[0.08em] text-zinc-300">
               {extension}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-white sm:text-base">{doc.filename}</p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
+              <p className="truncate text-[length:var(--text-sm)] font-medium text-white sm:text-[length:var(--text-base)]">{doc.filename}</p>
+              <div className="mt-phi-2 flex flex-wrap items-center gap-phi-2">
                 <Badge variant="default">{scope}</Badge>
                 {teamName ? <Badge variant="default">{teamName}</Badge> : null}
-                <span className="text-xs text-zinc-500">{doc.chunkCount} chunks</span>
+                <span className="text-[length:var(--text-xs)] text-zinc-500">{doc.chunkCount} chunks</span>
               </div>
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-          <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">{formatDate(doc.updatedAt)}</p>
+        <div className="flex flex-wrap items-center gap-phi-3 lg:justify-end">
+          <p className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-zinc-500">{formatDate(doc.updatedAt)}</p>
           <Badge variant={doc.status === "indexed" ? "success" : "warning"}>{doc.status}</Badge>
         </div>
       </div>
@@ -351,22 +351,22 @@ export function KnowledgeDashboard({
   }
 
   return (
-    <div className="space-y-6">
-      <section className="grid gap-4 xl:grid-cols-[1.45fr_repeat(3,minmax(0,1fr))]">
-        <Card className="settings-panel overflow-hidden">
-          <CardContent className="p-6 sm:p-7">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+    <div className="space-y-phi-8">
+      <section className="grid gap-phi-5 xl:grid-cols-[1.618fr_repeat(3,minmax(0,1fr))]">
+        <Card className="overflow-hidden">
+          <CardContent className="p-phi-8">
+            <div className="flex flex-col gap-phi-5 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-2xl">
-                <p className="text-[0.72rem] uppercase tracking-[0.16em] text-zinc-500">Knowledge library</p>
-                <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white sm:text-[2rem]">
+                <p className="text-[length:var(--text-xs)] font-medium uppercase tracking-[0.08em] text-zinc-500">Knowledge library</p>
+                <h2 className="mt-phi-3 text-[length:var(--text-xl)] font-semibold tracking-[-0.03em] text-white sm:text-[length:var(--text-2xl)]">
                   Organize reference material like a shared document system
                 </h2>
-                <p className="mt-3 max-w-xl text-sm leading-7 text-zinc-400">
+                <p className="mt-phi-3 max-w-xl text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
                   Upload documents by scope, keep team collections separated, and browse the full library with searchable
                   metadata your agents can use at retrieval time.
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-phi-2">
                 <Badge variant="default">{companyDocs.length} company</Badge>
                 <Badge variant="default">{teamDocsByTeam.reduce((total, entry) => total + entry.docs.length, 0)} team</Badge>
                 <Badge variant="default">{personalDocs.length} personal</Badge>
@@ -379,9 +379,9 @@ export function KnowledgeDashboard({
         <MetricCard label="Collections" value={String(teamRecords.length + 2)} hint="Company, teams, and personal" />
       </section>
 
-      <Card className="settings-panel">
-        <CardHeader className="gap-4">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <Card>
+        <CardHeader className="gap-phi-5">
+          <div className="flex flex-col gap-phi-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <CardTitle>Knowledge workspace</CardTitle>
               <CardDescription>Use tabs to upload documents, browse your library, and review collection coverage.</CardDescription>
@@ -398,7 +398,7 @@ export function KnowledgeDashboard({
               </div>
             ) : null}
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-phi-2">
             <DashboardTabButton active={activeTab === "documents"} onClick={() => setActiveTab("documents")}>
               Documents
             </DashboardTabButton>
@@ -412,18 +412,18 @@ export function KnowledgeDashboard({
         </CardHeader>
 
         {activeTab === "documents" ? (
-          <CardContent className="space-y-4">
-            <div className="flex flex-wrap gap-2">
+          <CardContent className="space-y-phi-5">
+            <div className="flex flex-wrap gap-phi-2">
               {(["all", "org", "team", "user"] as LibraryFilter[]).map((filter) => (
                 <button
                   key={filter}
                   type="button"
                   onClick={() => setLibraryFilter(filter)}
                   className={[
-                    "rounded-full border px-3 py-1.5 text-sm transition-colors",
+                    "rounded-sm border px-phi-3 py-phi-2 text-[length:var(--text-sm)] transition-colors",
                     libraryFilter === filter
-                      ? "border-white/18 bg-white/[0.08] text-white"
-                      : "border-white/8 bg-white/[0.03] text-zinc-400 hover:border-white/14 hover:text-white",
+                      ? "border-border-strong bg-surface-3 text-white"
+                      : "border-border-subtle bg-surface-1 text-zinc-400 hover:border-border hover:text-white",
                   ].join(" ")}
                 >
                   {filter === "all" ? "All files" : scopeLabel(filter)}
@@ -444,8 +444,8 @@ export function KnowledgeDashboard({
         ) : null}
 
         {activeTab === "upload" ? (
-          <CardContent className="space-y-5">
-            <div className="grid gap-3 lg:grid-cols-3">
+          <CardContent className="space-y-phi-5">
+            <div className="grid gap-phi-5 lg:grid-cols-3">
               {(["org", "team", "user"] as ScopeType[]).map((option) => (
                 <ScopeSelectorCard
                   key={option}
@@ -465,12 +465,12 @@ export function KnowledgeDashboard({
             </div>
 
             {scopeType === "team" ? (
-              <div className="space-y-2">
+              <div className="space-y-phi-2">
                 <label className="app-field-label">Target team</label>
                 <select
                   value={teamId}
                   onChange={(event) => setTeamId(event.target.value)}
-                  className="flex h-11 w-full max-w-md rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-2 text-sm text-white"
+                  className="flex h-11 w-full max-w-md rounded-md border border-border bg-surface-2 px-phi-5 py-phi-2 text-[length:var(--text-sm)] text-white"
                 >
                   {teamRecords.map((team) => (
                     <option key={team.id} value={team.id}>
@@ -479,7 +479,7 @@ export function KnowledgeDashboard({
                   ))}
                 </select>
                 {teamRecords.length === 0 ? (
-                  <div className="flex flex-wrap items-center gap-3 text-sm text-amber-300">
+                  <div className="flex flex-wrap items-center gap-phi-3 text-[length:var(--text-sm)] text-amber-300">
                     <span>Create a team in Collections before uploading team documents.</span>
                     <Button type="button" variant="secondary" size="sm" onClick={() => setActiveTab("collections")}>
                       Go to collections
@@ -489,17 +489,17 @@ export function KnowledgeDashboard({
               </div>
             ) : null}
 
-            <div className="rounded-[1.3rem] border border-dashed border-white/12 bg-white/[0.015] p-5">
-              <div className="flex items-start gap-3">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+            <div className="rounded-lg border border-dashed border-border p-phi-5">
+              <div className="flex items-start gap-phi-3">
+                <div className="rounded-md border border-border bg-surface-2 p-phi-3">
                   <Upload className="size-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">Supported files</p>
-                  <p className="mt-1 text-sm leading-6 text-zinc-500">TXT, MD, CSV, and JSON files are parsed into searchable chunks.</p>
+                  <p className="text-[length:var(--text-sm)] font-medium text-white">Supported files</p>
+                  <p className="mt-phi-1 text-[length:var(--text-sm)] leading-relaxed text-zinc-500">TXT, MD, CSV, and JSON files are parsed into searchable chunks.</p>
                 </div>
               </div>
-              <div className="mt-5 flex flex-wrap items-center gap-3">
+              <div className="mt-phi-5 flex flex-wrap items-center gap-phi-3">
                 <Button
                   type="button"
                   variant="secondary"
@@ -519,16 +519,16 @@ export function KnowledgeDashboard({
                     event.currentTarget.value = "";
                   }}
                 />
-                <span className="text-sm text-zinc-500">TXT, MD, CSV, and JSON</span>
+                <span className="text-[length:var(--text-sm)] text-zinc-500">TXT, MD, CSV, and JSON</span>
               </div>
-              <div className="mt-3 flex items-center justify-between gap-3 text-sm">
+              <div className="mt-phi-3 flex items-center justify-between gap-phi-3 text-[length:var(--text-sm)]">
                 <span className="truncate text-zinc-400">{selectedFile ? selectedFile.name : "No file selected yet"}</span>
                 <span className="shrink-0 text-zinc-500">{scopeLabel(scopeType)} library</span>
               </div>
             </div>
 
-            {error ? <p className="text-sm text-red-400">{error}</p> : null}
-            {success ? <p className="text-sm text-emerald-300">{success}</p> : null}
+            {error ? <p className="text-[length:var(--text-sm)] text-red-400">{error}</p> : null}
+            {success ? <p className="text-[length:var(--text-sm)] text-emerald-300">{success}</p> : null}
 
             <Button onClick={uploadDocument} disabled={!selectedFile || uploading || (scopeType === "team" && !teamId)}>
               {uploading ? (
@@ -544,22 +544,22 @@ export function KnowledgeDashboard({
         ) : null}
 
         {activeTab === "collections" ? (
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-phi-8">
             {canManageShared ? (
-              <Card className="border-white/8 bg-white/[0.02]">
+              <Card variant="inset">
                 <CardHeader>
                   <CardTitle>Create team</CardTitle>
                   <CardDescription>
                     Team collections live here. New teams become available in the Upload tab right away.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    <div className="space-y-2">
+                <CardContent className="space-y-phi-5">
+                  <div className="grid gap-phi-5 lg:grid-cols-2">
+                    <div className="space-y-phi-2">
                       <label className="app-field-label">Team name</label>
                       <Input value={teamName} onChange={(event) => setTeamName(event.target.value)} placeholder="Engineering" />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-phi-2">
                       <label className="app-field-label">Description</label>
                       <Input
                         value={teamDescription}
@@ -575,50 +575,50 @@ export function KnowledgeDashboard({
               </Card>
             ) : null}
 
-            <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-              <Card className="border-white/8 bg-white/[0.02]">
+            <div className="grid gap-phi-5 lg:grid-cols-2">
+              <Card variant="inset">
                 <CardHeader>
                   <CardTitle>Collections</CardTitle>
                   <CardDescription>High-level library breakdown by scope.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="rounded-[1.1rem] border border-white/8 bg-white/[0.02] p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="rounded-xl border border-white/8 bg-white/[0.04] p-2">
+                <CardContent className="space-y-phi-3">
+                  <div className="rounded-md border border-border-subtle bg-surface-1 p-phi-5">
+                    <div className="flex items-center justify-between gap-phi-3">
+                      <div className="flex items-center gap-phi-3">
+                        <div className="rounded-md border border-border-subtle bg-surface-2 p-phi-2">
                           <Building2 className="size-4 text-white" />
                         </div>
                         <div>
-                          <p className="font-medium text-white">Company library</p>
-                          <p className="text-sm text-zinc-400">Shared operational references</p>
+                          <p className="text-[length:var(--text-sm)] font-medium text-white">Company library</p>
+                          <p className="text-[length:var(--text-sm)] text-zinc-400">Shared operational references</p>
                         </div>
                       </div>
                       <Badge variant="default">{companyDocs.length}</Badge>
                     </div>
                   </div>
-                  <div className="rounded-[1.1rem] border border-white/8 bg-white/[0.02] p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="rounded-xl border border-white/8 bg-white/[0.04] p-2">
+                  <div className="rounded-md border border-border-subtle bg-surface-1 p-phi-5">
+                    <div className="flex items-center justify-between gap-phi-3">
+                      <div className="flex items-center gap-phi-3">
+                        <div className="rounded-md border border-border-subtle bg-surface-2 p-phi-2">
                           <Users className="size-4 text-white" />
                         </div>
                         <div>
-                          <p className="font-medium text-white">Team libraries</p>
-                          <p className="text-sm text-zinc-400">Department or function-specific collections</p>
+                          <p className="text-[length:var(--text-sm)] font-medium text-white">Team libraries</p>
+                          <p className="text-[length:var(--text-sm)] text-zinc-400">Department or function-specific collections</p>
                         </div>
                       </div>
                       <Badge variant="default">{teamDocsByTeam.reduce((total, entry) => total + entry.docs.length, 0)}</Badge>
                     </div>
                   </div>
-                  <div className="rounded-[1.1rem] border border-white/8 bg-white/[0.02] p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="rounded-xl border border-white/8 bg-white/[0.04] p-2">
+                  <div className="rounded-md border border-border-subtle bg-surface-1 p-phi-5">
+                    <div className="flex items-center justify-between gap-phi-3">
+                      <div className="flex items-center gap-phi-3">
+                        <div className="rounded-md border border-border-subtle bg-surface-2 p-phi-2">
                           <FolderOpen className="size-4 text-white" />
                         </div>
                         <div>
-                          <p className="font-medium text-white">Personal library</p>
-                          <p className="text-sm text-zinc-400">Private notes and working context</p>
+                          <p className="text-[length:var(--text-sm)] font-medium text-white">Personal library</p>
+                          <p className="text-[length:var(--text-sm)] text-zinc-400">Private notes and working context</p>
                         </div>
                       </div>
                       <Badge variant="default">{personalDocs.length}</Badge>
@@ -627,12 +627,12 @@ export function KnowledgeDashboard({
                 </CardContent>
               </Card>
 
-              <Card className="border-white/8 bg-white/[0.02]">
+              <Card variant="inset">
                 <CardHeader>
                   <CardTitle>Team coverage</CardTitle>
                   <CardDescription>Each team collection and its current document count.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-phi-3">
                   {teamDocsByTeam.length === 0 ? (
                     <EmptyLibraryState
                       title="No team coverage yet"
@@ -640,11 +640,11 @@ export function KnowledgeDashboard({
                     />
                   ) : (
                     teamDocsByTeam.map(({ team, docs: scopedDocs }) => (
-                      <div key={team.id} className="rounded-[1.1rem] border border-white/8 bg-white/[0.02] p-4">
-                        <div className="flex items-start justify-between gap-3">
+                      <div key={team.id} className="rounded-md border border-border-subtle bg-surface-1 p-phi-5">
+                        <div className="flex items-start justify-between gap-phi-3">
                           <div className="min-w-0">
-                            <p className="truncate font-medium text-white">{team.name}</p>
-                            <p className="mt-1 text-sm text-zinc-400">{team.description || "No description yet."}</p>
+                            <p className="truncate text-[length:var(--text-sm)] font-medium text-white">{team.name}</p>
+                            <p className="mt-phi-1 text-[length:var(--text-sm)] text-zinc-400">{team.description || "No description yet."}</p>
                           </div>
                           <Badge variant="default">{scopedDocs.length}</Badge>
                         </div>
@@ -655,36 +655,36 @@ export function KnowledgeDashboard({
               </Card>
             </div>
 
-            <Card className="border-white/8 bg-white/[0.02]">
+            <Card variant="inset">
               <CardHeader>
                 <CardTitle>Retrieval map</CardTitle>
                 <CardDescription>What each agent can see based on assignment scope.</CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-3 md:grid-cols-3">
-                <div className="rounded-[1.1rem] border border-white/8 bg-white/[0.02] p-4">
-                  <div className="flex items-center gap-3">
+              <CardContent className="grid gap-phi-3 md:grid-cols-3">
+                <div className="rounded-md border border-border-subtle bg-surface-1 p-phi-5">
+                  <div className="flex items-center gap-phi-3">
                     <Building2 className="size-4 text-white" />
-                    <p className="text-sm font-medium text-white">Company agents</p>
+                    <p className="text-[length:var(--text-sm)] font-medium text-white">Company agents</p>
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-zinc-400">Company library only</p>
+                  <p className="mt-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">Company library only</p>
                 </div>
-                <div className="rounded-[1.1rem] border border-white/8 bg-white/[0.02] p-4">
-                  <div className="flex items-center gap-3">
+                <div className="rounded-md border border-border-subtle bg-surface-1 p-phi-5">
+                  <div className="flex items-center gap-phi-3">
                     <Users className="size-4 text-white" />
-                    <p className="text-sm font-medium text-white">Team agents</p>
+                    <p className="text-[length:var(--text-sm)] font-medium text-white">Team agents</p>
                   </div>
-                  <p className="mt-2 flex items-center gap-2 text-sm leading-6 text-zinc-400">
+                  <p className="mt-phi-2 flex items-center gap-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
                     Company
                     <ArrowRight className="size-3.5" />
                     Team library
                   </p>
                 </div>
-                <div className="rounded-[1.1rem] border border-white/8 bg-white/[0.02] p-4">
-                  <div className="flex items-center gap-3">
+                <div className="rounded-md border border-border-subtle bg-surface-1 p-phi-5">
+                  <div className="flex items-center gap-phi-3">
                     <User2 className="size-4 text-white" />
-                    <p className="text-sm font-medium text-white">Employee agents</p>
+                    <p className="text-[length:var(--text-sm)] font-medium text-white">Employee agents</p>
                   </div>
-                  <p className="mt-2 flex items-center gap-2 text-sm leading-6 text-zinc-400">
+                  <p className="mt-phi-2 flex items-center gap-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
                     Company
                     <ArrowRight className="size-3.5" />
                     Personal library
@@ -694,7 +694,7 @@ export function KnowledgeDashboard({
             </Card>
 
             {processingCount > 0 ? (
-              <div className="rounded-[1.1rem] border border-amber-400/20 bg-amber-400/5 p-4 text-sm text-amber-100">
+              <div className="rounded-lg border border-amber-400/20 bg-amber-400/5 p-phi-5 text-[length:var(--text-sm)] text-amber-100">
                 {processingCount} document{processingCount === 1 ? "" : "s"} still processing. They will appear in retrieval once indexing finishes.
               </div>
             ) : null}

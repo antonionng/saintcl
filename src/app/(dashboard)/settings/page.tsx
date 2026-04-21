@@ -1,6 +1,7 @@
 import { Activity, Cable, CreditCard, ShieldCheck } from "lucide-react";
 
 import { PolicyForm } from "@/components/dashboard/policy-form";
+import { SkillPolicyForm } from "@/components/dashboard/skill-policy-form";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { SettingsEmailPreferencesForm } from "@/components/dashboard/settings-email-preferences-form";
 import { SettingsAllowlistForm } from "@/components/dashboard/settings-allowlist-form";
@@ -191,39 +192,57 @@ async function SettingsTabContent({
       getOrgModelCatalogState(orgId),
     ]);
 
+    const skillPolicyData = (policy?.skill_policy as {
+      allowedSources?: string[];
+      allowedTrustTiers?: string[];
+      requireApprovalForCommunity?: boolean;
+    } | null) ?? null;
+
     return (
-      <PolicyForm
-        mission={policy?.mission ?? ""}
-        reasonForAgents={policy?.reason_for_agents ?? ""}
-        defaultModel={policy?.default_model ?? ""}
-        requireApprovalOnSpend={policy?.require_approval_on_spend ?? false}
-        guardrails={(policy?.guardrails as Record<string, unknown>) ?? {}}
-        approvedModels={catalogState?.snapshot.approvedModels ?? []}
-        blockedModels={(policy?.blocked_models as string[] | undefined) ?? []}
-        modelGuardrails={
-          catalogState?.snapshot.guardrails ?? {
-            allowAgentOverride: true,
-            allowSessionOverride: true,
-            requireApprovalForPremiumModels: false,
-            premiumInputCostPerMillionCents: null,
-            premiumOutputCostPerMillionCents: null,
+      <>
+        <PolicyForm
+          mission={policy?.mission ?? ""}
+          reasonForAgents={policy?.reason_for_agents ?? ""}
+          defaultModel={policy?.default_model ?? ""}
+          requireApprovalOnSpend={policy?.require_approval_on_spend ?? false}
+          guardrails={(policy?.guardrails as Record<string, unknown>) ?? {}}
+          approvedModels={catalogState?.snapshot.approvedModels ?? []}
+          blockedModels={(policy?.blocked_models as string[] | undefined) ?? []}
+          modelGuardrails={
+            catalogState?.snapshot.guardrails ?? {
+              allowAgentOverride: true,
+              allowSessionOverride: true,
+              requireApprovalForPremiumModels: false,
+              premiumInputCostPerMillionCents: null,
+              premiumOutputCostPerMillionCents: null,
+            }
           }
-        }
-        readOnly={!capabilities.canManagePolicies}
-      />
+          readOnly={!capabilities.canManagePolicies}
+        />
+        <SkillPolicyForm
+          orgId={orgId}
+          allowedSources={skillPolicyData?.allowedSources ?? ["clawhub", "github"]}
+          allowedTrustTiers={skillPolicyData?.allowedTrustTiers ?? ["official", "curated"]}
+          requireApprovalForCommunity={skillPolicyData?.requireApprovalForCommunity ?? true}
+          readOnly={!capabilities.canManagePolicies}
+        />
+      </>
     );
   }
 
   if (activeTab === "billing") {
     const policy = await getOrgPolicy(orgId);
-    const [sync, wallet, ledger, usage] = await Promise.all([
-      syncOpenClawUsageForOrg(orgId, {
-        defaultModel: policy?.default_model ?? undefined,
-      }),
+
+    const syncPromise = syncOpenClawUsageForOrg(orgId, {
+      defaultModel: policy?.default_model ?? undefined,
+    }).catch(() => ({ chargedCents: 0, chargedSessions: 0, skippedSessions: 0, lastError: "Sync unavailable" }));
+
+    const [wallet, ledger, usage] = await Promise.all([
       getOrgWallet(orgId),
       getWalletLedger(orgId, 12),
       getUsageSummary(orgId),
     ]);
+    const sync = await syncPromise;
 
     const balance = (wallet?.balance_cents ?? 0) / 100;
     const weeklyBurn = usage.last7dSpendCents / 100;

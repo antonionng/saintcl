@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { ParticipantMagicLink } from "@/components/training/participant-magic-link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { env } from "@/lib/env";
 import { getCurrentPlatformTrainingSession } from "@/lib/platform-training-session";
 import { getTrainingModules, getTrainingModuleFacilitatorHref, getTrainingDeliveryStats } from "@/lib/training";
 import { getTrainingCohortSnapshots } from "@/lib/training-dal";
+
+function buildMagicLink(inviteCode: string | null | undefined, token: string) {
+  const base = env.appUrl.replace(/\/+$/, "");
+  const code = inviteCode ?? "";
+  return `${base}/academy/${encodeURIComponent(code)}/launch?token=${encodeURIComponent(token)}`;
+}
 
 export default async function FacilitatorHubPage() {
   const session = await getCurrentPlatformTrainingSession();
@@ -40,6 +48,12 @@ export default async function FacilitatorHubPage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/facilitator/assessments"
+              className="rounded-full border border-white/10 px-4 py-2 text-sm text-white transition hover:border-white/20 hover:bg-white/[0.05]"
+            >
+              Assessment review queue
+            </Link>
             <Link
               href="/training/admin"
               className="rounded-full border border-white/10 px-4 py-2 text-sm text-white transition hover:border-white/20 hover:bg-white/[0.05]"
@@ -143,15 +157,34 @@ export default async function FacilitatorHubPage() {
                             ? participantEnrollments.map((enrollment) => `${enrollment.progressPercent.toFixed(0)}%`).join(", ")
                             : "No module activity yet";
 
+                        const isInviteOnly = !participant.authUserId;
+                        const magicLink = participant.checkInToken
+                          ? buildMagicLink(snapshot.cohort.inviteCode, participant.checkInToken)
+                          : null;
                         return (
                           <div
                             key={participant.id}
                             className="rounded-2xl border border-white/8 bg-black/10 px-4 py-3 text-sm text-zinc-300"
                           >
-                            <p className="font-medium text-white">{participant.fullName}</p>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="font-medium text-white">{participant.fullName}</p>
+                              {isInviteOnly ? (
+                                <span className="rounded-full border border-amber-400/30 bg-amber-400/[0.08] px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-amber-100">
+                                  Invited
+                                </span>
+                              ) : null}
+                            </div>
                             <p className="mt-1">{participant.email}</p>
                             <p className="mt-1 capitalize">Status: {participant.status}</p>
                             <p className="mt-1">Module progress: {progressSummary}</p>
+                            {magicLink ? (
+                              <div className="mt-3 flex flex-wrap items-center gap-2">
+                                <ParticipantMagicLink link={magicLink} />
+                                <span className="truncate text-[10px] text-zinc-500" title={magicLink}>
+                                  {magicLink}
+                                </span>
+                              </div>
+                            ) : null}
                           </div>
                         );
                       })}

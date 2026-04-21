@@ -2,11 +2,11 @@ import { notFound } from "next/navigation";
 
 import { AgentDeleteButton } from "@/components/dashboard/agent-delete-button";
 import { AgentModelControls } from "@/components/dashboard/agent-model-controls";
+import { AgentPersonaEditor } from "@/components/dashboard/agent-persona-editor";
 import { AgentTerminalPanel } from "@/components/dashboard/agent-terminal-panel";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { getCurrentOrg, getSessionModelOverrides, getVisibleAgentForSession } from "@/lib/dal";
 import { getOrgModelCatalogState } from "@/lib/openclaw/model-governance";
 import { titleCase } from "@/lib/utils";
@@ -97,9 +97,10 @@ export default async function AgentDetailPage({
             </div>
             <div className="rounded-xl border border-white/8 bg-white/[0.02] p-4">
               <p className="app-kicker">Persona</p>
-              <Textarea
-                defaultValue={config.persona ? String(config.persona) : ""}
-                readOnly
+              <AgentPersonaEditor
+                agentId={agent.id}
+                initialPersona={config.persona ? String(config.persona) : ""}
+                canEdit={session.capabilities.canManageAgents}
               />
             </div>
             {config.workspace ? (

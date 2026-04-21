@@ -18,5 +18,12 @@ export const config = {
     "/training/:path*",
     "/facilitator/:path*",
     "/academy/:path*",
+    "/python-training/:path*",
+    "/machine-learning-training/:path*",
+    "/neural-networks/:path*",
+    "/business-applications-in-ai/:path*",
+    "/automation-in-ai/:path*",
+    "/advanced-data-visualization/:path*",
+    "/ai-in-banking-and-finance/:path*",
   ],
 };

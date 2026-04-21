@@ -329,3 +329,59 @@ exec "$TRAINING_WORKSPACE_VENV/bin/python" -m jupyter lab \
     launchUrl: null,
   };
 }
+
+const MAX_DATASET_UPLOAD_BYTES = 25 * 1024 * 1024;
+const FORBIDDEN_DATASET_NAME_CHARS = /[\\/]|^\.{1,2}$|^$/;
+
+function sanitiseDatasetFileName(fileName: string): string | null {
+  const trimmed = fileName.trim();
+  const base = trimmed.split(/[\\/]/).pop() ?? "";
+  if (FORBIDDEN_DATASET_NAME_CHARS.test(base)) return null;
+  return base.slice(0, 200);
+}
+
+export type ManagedTrainingDatasetUpload = {
+  fileName: string;
+  bytes: Uint8Array;
+};
+
+export type ManagedTrainingDatasetUploadResult = {
+  fileName: string;
+  destination: string;
+  size: number;
+};
+
+/**
+ * Writes uploaded dataset bytes into the participant's managed Jupyter
+ * workspace under `data/uploads/`. Sanitises file names, enforces a per-file
+ * byte limit, and returns the persisted destinations for caller bookkeeping.
+ *
+ * Designed so the participant can upload data once and have it immediately
+ * available in both the in-browser Pyodide lab (mounted under the same path)
+ * and the managed Jupyter environment.
+ */
+export async function uploadManagedTrainingDatasets(input: {
+  orgId: string;
+  participantId: string;
+  moduleSlug: string;
+  files: ManagedTrainingDatasetUpload[];
+}): Promise<ManagedTrainingDatasetUploadResult[]> {
+  const paths = buildTrainingWorkspacePaths(input.orgId, input.participantId, input.moduleSlug);
+  const uploadsDir = path.join(paths.dataDir, "uploads");
+  await mkdir(uploadsDir, { recursive: true });
+
+  const results: ManagedTrainingDatasetUploadResult[] = [];
+  for (const file of input.files) {
+    const safeName = sanitiseDatasetFileName(file.fileName);
+    if (!safeName) continue;
+    if (file.bytes.byteLength > MAX_DATASET_UPLOAD_BYTES) continue;
+    const destination = path.join(uploadsDir, safeName);
+    await writeFile(destination, file.bytes);
+    results.push({
+      fileName: safeName,
+      destination,
+      size: file.bytes.byteLength,
+    });
+  }
+  return results;
+}

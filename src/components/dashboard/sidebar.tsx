@@ -7,13 +7,14 @@ import {
   Activity,
   AlertTriangle,
   Bot,
+  Cable,
   ChevronLeft,
   ChevronRight,
   Command,
   Database,
-  GraduationCap,
   LayoutDashboard,
   type LucideIcon,
+  Puzzle,
   Settings,
   UserCircle2,
 } from "lucide-react";
@@ -172,6 +173,9 @@ export function DashboardSidebar({
       items: fleetItems,
     },
   ].filter((group) => group.items.length > 0);
+  const isChannelsRoute = pathname === "/channels" || pathname.startsWith("/channels/");
+  const isSkillsRoute = pathname === "/skills" || pathname.startsWith("/skills/");
+
   const navigationSections: NavigationSection[] = [
     {
       id: "main",
@@ -179,9 +183,10 @@ export function DashboardSidebar({
         { href: "/openclaw", label: agentNavLabel, icon: Bot, requires: "canManageConsole" },
         { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
         { href: "/agents", label: "Agents", icon: Command },
+        { href: "/channels", label: "Channels", icon: Cable },
+        { href: "/skills", label: "Skills", icon: Puzzle },
         { href: "/observability", label: "Observability", icon: Activity },
         { href: "/knowledge", label: "Knowledge", icon: Database },
-        { href: "/training", label: "Training", icon: GraduationCap, requires: "canManagePlatformTraining" },
         { href: "/account", label: "Account", icon: UserCircle2 },
       ],
     },
@@ -236,6 +241,64 @@ export function DashboardSidebar({
         ],
       },
     ],
+    channels: [
+      {
+        id: "channels-setup",
+        label: "Setup",
+        items: [
+          {
+            href: "/channels",
+            label: "All channels",
+            active: pathname === "/channels" && !hash,
+          },
+          {
+            href: "/channels#connect",
+            label: "Connect new",
+            active: hash === "#connect",
+          },
+        ],
+      },
+      {
+        id: "channels-health",
+        label: "Health",
+        items: [
+          {
+            href: "/channels#status",
+            label: "Status",
+            active: hash === "#status",
+          },
+        ],
+      },
+    ],
+    skills: [
+      {
+        id: "skills-library",
+        label: "Library",
+        items: [
+          {
+            href: "/skills",
+            label: "Browse skills",
+            active: pathname === "/skills" && !hash,
+          },
+          {
+            href: "/skills#installed",
+            label: "Installed",
+            active: hash === "#installed",
+          },
+        ],
+      },
+      {
+        id: "skills-manage",
+        label: "Manage",
+        items: [
+          {
+            href: "/skills#updates",
+            label: "Updates",
+            active: hash === "#updates",
+          },
+        ],
+      },
+    ],
     account: [
       {
         id: "account",
@@ -263,23 +326,23 @@ export function DashboardSidebar({
   };
 
   return (
-    <aside className="border-b border-white/8 bg-[linear-gradient(180deg,rgba(7,8,10,0.92),rgba(10,11,14,0.88))] backdrop-blur-xl lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
+    <aside className="border-b border-border-subtle bg-surface-0 lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r lg:border-border-subtle">
       <div
         className={cn(
-          "flex h-full flex-col gap-6 px-4 py-4 sm:px-6 lg:px-4 lg:py-5",
-          collapsed && "lg:items-center lg:gap-4 lg:px-2.5",
+          "flex h-full flex-col px-phi-5 py-phi-5 sm:px-phi-8 lg:px-phi-5 lg:py-phi-8",
+          collapsed && "lg:items-center lg:px-phi-3",
         )}
       >
-        <div className={cn("space-y-4", collapsed && "lg:flex lg:w-full lg:flex-col lg:items-center lg:space-y-3")}>
-          <div className="flex items-start justify-between gap-3">
-            <div className={cn("flex w-full items-start justify-between gap-3", collapsed && "lg:flex-col lg:items-center lg:justify-center")}>
+        <div className={cn("space-y-phi-5", collapsed && "lg:flex lg:w-full lg:flex-col lg:items-center lg:space-y-phi-3")}>
+          <div className="flex items-start justify-between gap-phi-3">
+            <div className={cn("flex w-full items-start justify-between gap-phi-3", collapsed && "lg:flex-col lg:items-center lg:justify-center")}>
               <Logo className="self-start" showWordmark={!collapsed} />
               {onToggle ? (
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className={cn("hidden lg:inline-flex", collapsed && "lg:size-10 lg:rounded-2xl lg:border lg:border-white/8 lg:bg-white/[0.03]")}
+                  className={cn("hidden lg:inline-flex", collapsed && "lg:size-9 lg:rounded-md")}
                   onClick={onToggle}
                   aria-label={collapsed ? "Expand left menu" : "Collapse left menu"}
                   title={collapsed ? "Expand left menu" : "Collapse left menu"}
@@ -291,20 +354,20 @@ export function DashboardSidebar({
           </div>
           <div
             className={cn(
-              "rounded-2xl border border-white/8 bg-white/[0.025] px-3.5 py-3",
-              collapsed && "lg:w-full lg:rounded-[1.75rem] lg:px-2 lg:py-2.5",
+              "rounded-lg border border-border-subtle bg-surface-1 px-phi-3 py-phi-3",
+              collapsed && "lg:w-full lg:px-phi-2 lg:py-phi-2",
             )}
             title={collapsed ? orgLabel : undefined}
           >
-            <div className={cn(collapsed && "lg:flex lg:flex-col lg:items-center lg:gap-2")}>
-              <p className={cn("text-[0.68rem] uppercase tracking-[0.16em] text-zinc-500", collapsed && "lg:hidden")}>
+            <div className={cn(collapsed && "lg:flex lg:flex-col lg:items-center lg:gap-phi-2")}>
+              <p className={cn("text-[length:var(--text-xs)] font-medium tracking-[0.08em] uppercase text-zinc-500", collapsed && "lg:hidden")}>
                 Workspace
               </p>
-              <div className={cn("mt-3 flex items-center gap-3", collapsed && "lg:mt-0 lg:flex-col lg:gap-2")}>
+              <div className={cn("mt-phi-3 flex items-center gap-phi-3", collapsed && "lg:mt-0 lg:flex-col lg:gap-phi-2")}>
                 <div
                   className={cn(
-                    "flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))]",
-                    collapsed && "lg:size-11",
+                    "flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-surface-2",
+                    collapsed && "lg:size-10",
                   )}
                 >
                   {platformStatus.orgLogoUrl ? (
@@ -315,16 +378,16 @@ export function DashboardSidebar({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <span className="text-sm font-medium text-white">{orgInitials}</span>
+                    <span className="text-[length:var(--text-sm)] font-medium text-white">{orgInitials}</span>
                   )}
                 </div>
                 <div className={cn("min-w-0", collapsed && "lg:hidden")}>
-                  <p className="truncate text-sm font-medium text-white">{orgLabel}</p>
+                  <p className="truncate text-[length:var(--text-sm)] font-medium text-white">{orgLabel}</p>
                 </div>
                 <p
                   className={cn(
-                    "hidden text-sm font-medium text-white",
-                    collapsed && "lg:inline lg:text-[0.7rem] lg:tracking-[0.16em]",
+                    "hidden text-[length:var(--text-sm)] font-medium text-white",
+                    collapsed && "lg:inline lg:text-[length:var(--text-xs)] lg:tracking-[0.12em]",
                   )}
                 >
                   {orgInitials}
@@ -334,12 +397,11 @@ export function DashboardSidebar({
           </div>
         </div>
 
-        <nav className={cn("overflow-x-auto lg:flex-1 lg:overflow-visible", collapsed && "lg:w-full")}>
+        <nav className={cn("mt-phi-8 overflow-x-auto lg:flex-1 lg:overflow-visible", collapsed && "lg:mt-phi-5 lg:w-full")}>
           <div
             className={cn(
-              "flex gap-2 pb-1 lg:flex-col lg:gap-6",
-              collapsed &&
-                "lg:rounded-[2rem] lg:border lg:border-white/8 lg:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] lg:px-2 lg:py-3",
+              "flex gap-phi-2 pb-1 lg:flex-col lg:gap-phi-8",
+              collapsed && "lg:gap-phi-3 lg:px-phi-1 lg:py-phi-2",
             )}
           >
             {navigationSections.map((section) => {
@@ -356,17 +418,17 @@ export function DashboardSidebar({
                 <div
                   key={section.id}
                   className={cn(
-                    "space-y-2.5",
-                    collapsed && "lg:space-y-2",
-                    collapsed && section.id === "admin" && "lg:border-t lg:border-white/8 lg:pt-2",
+                    "space-y-phi-1",
+                    collapsed && "lg:space-y-phi-1",
+                    collapsed && section.id === "admin" && "lg:border-t lg:border-border-subtle lg:pt-phi-2",
                   )}
                 >
                   {section.label ? (
-                    <p className={cn("hidden px-2 text-[0.68rem] uppercase tracking-[0.16em] text-zinc-500 lg:block", collapsed && "lg:hidden")}>
+                    <p className={cn("hidden px-phi-2 pb-phi-1 text-[length:var(--text-xs)] font-medium uppercase tracking-[0.08em] text-zinc-500 lg:block", collapsed && "lg:hidden")}>
                       {section.label}
                     </p>
                   ) : null}
-                  <div className="flex gap-2 lg:flex-col lg:gap-1">
+                  <div className="flex gap-phi-1 lg:flex-col lg:gap-0.5">
                     {items.map((item) => {
                       const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
                       const contextualChildren =
@@ -374,38 +436,40 @@ export function DashboardSidebar({
                           ? contextualGroups.settings
                           : item.href === "/agents" && isAgentsRoute
                             ? contextualGroups.agents
-                            : item.href === "/knowledge" && isKnowledgeRoute
-                              ? contextualGroups.knowledge
-                              : item.href === "/account" && isAccountRoute
-                                ? contextualGroups.account
-                              : item.href === "/openclaw" && isConsoleRoute
-                                ? contextualGroups.console
-                                : [];
+                            : item.href === "/channels" && isChannelsRoute
+                              ? contextualGroups.channels
+                              : item.href === "/skills" && isSkillsRoute
+                                ? contextualGroups.skills
+                                : item.href === "/knowledge" && isKnowledgeRoute
+                                  ? contextualGroups.knowledge
+                                  : item.href === "/account" && isAccountRoute
+                                    ? contextualGroups.account
+                                    : item.href === "/openclaw" && isConsoleRoute
+                                      ? contextualGroups.console
+                                      : [];
 
                       return (
-                        <div key={item.href} className="space-y-1">
+                        <div key={item.href} className="space-y-0.5">
                           <Link
                             href={item.href}
                             aria-label={item.label}
                             title={collapsed ? item.label : undefined}
                             className={cn(
-                              "flex shrink-0 items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-sm text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-white lg:w-full",
+                              "flex shrink-0 items-center gap-phi-3 rounded-md px-phi-3 py-phi-2 text-[length:var(--text-sm)] text-zinc-400 transition-colors hover:bg-surface-2 hover:text-white lg:w-full",
                               collapsed &&
-                                "lg:size-11 lg:w-11 lg:justify-center lg:rounded-2xl lg:border-white/0 lg:px-0 lg:text-zinc-500 hover:lg:border-white/10 hover:lg:bg-white/[0.04]",
-                              active && "border-white/8 bg-white/[0.07] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]",
-                              collapsed &&
-                                active &&
-                                "lg:border-white/12 lg:bg-[linear-gradient(180deg,rgba(255,255,255,0.09),rgba(255,255,255,0.04))] lg:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_12px_30px_rgba(0,0,0,0.2)]",
+                                "lg:size-10 lg:w-10 lg:justify-center lg:rounded-md lg:px-0 lg:text-zinc-500 hover:lg:bg-surface-2",
+                              active && "bg-surface-3 text-white",
+                              collapsed && active && "lg:bg-surface-3",
                             )}
                           >
                             <item.icon className="size-4" />
                             <span className={cn(collapsed && "lg:hidden")}>{item.label}</span>
                           </Link>
                           {contextualChildren.length > 0 ? (
-                            <div className={cn("ml-3 space-y-4 border-l border-white/8 pl-4", collapsed && "lg:hidden")}>
+                            <div className={cn("ml-phi-3 space-y-phi-3 border-l border-border-subtle pl-phi-3", collapsed && "lg:hidden")}>
                               {contextualChildren.map((group) => (
-                                <div key={group.id} className="space-y-1.5">
-                                  <p className="px-2 text-[0.68rem] uppercase tracking-[0.16em] text-zinc-500">
+                                <div key={group.id} className="space-y-0.5">
+                                  <p className="px-phi-2 text-[length:var(--text-xs)] font-medium uppercase tracking-[0.08em] text-zinc-500">
                                     {group.label}
                                   </p>
                                   {group.items.map((subitem) => (
@@ -413,10 +477,10 @@ export function DashboardSidebar({
                                       key={subitem.href}
                                       href={subitem.href}
                                       className={cn(
-                                        "block rounded-lg px-2.5 py-2 text-sm transition-colors",
+                                        "block rounded-md px-phi-2 py-phi-2 text-[length:var(--text-sm)] transition-colors",
                                         subitem.active
-                                          ? "bg-white/[0.08] text-white"
-                                          : "text-zinc-400 hover:bg-white/[0.04] hover:text-white",
+                                          ? "bg-surface-3 text-white"
+                                          : "text-zinc-400 hover:bg-surface-2 hover:text-white",
                                       )}
                                     >
                                       {subitem.label}
@@ -436,53 +500,31 @@ export function DashboardSidebar({
           </div>
         </nav>
 
-        <SidebarAccount
-          email={platformStatus.email}
-          displayName={platformStatus.displayName}
-          avatarUrl={platformStatus.avatarUrl}
-          orgName={platformStatus.orgName}
-          role={platformStatus.role}
-          workspaces={platformStatus.workspaces}
-          currentOrgId={platformStatus.currentOrgId}
-          hasSupabase={platformStatus.supabase}
-          collapsed={collapsed}
-        />
+        <div className="mt-auto flex flex-col gap-phi-5">
+          <div
+            className={cn(
+              "flex items-center gap-phi-3 px-phi-3",
+              collapsed && "lg:flex-col lg:items-center lg:gap-phi-2 lg:px-0",
+            )}
+            title={collapsed ? statusLines.join(". ") : statusLines.join(". ")}
+          >
+            <span className={cn("size-2 shrink-0 rounded-full", statusColor)} />
+            <span className={cn("text-[length:var(--text-xs)] text-zinc-500", collapsed && "lg:hidden")}>
+              {allConnected ? "All systems online" : statusLines.join(". ")}
+            </span>
+          </div>
 
-        <div
-          className={cn(
-            "rounded-2xl border border-white/8 bg-white/[0.025] p-4",
-            collapsed && "lg:flex lg:w-full lg:flex-col lg:items-center lg:rounded-[1.75rem] lg:px-2 lg:py-2.5",
-          )}
-          title={collapsed ? statusLines.join(". ") : undefined}
-        >
-          <div className={cn("mb-3 flex items-center justify-between gap-3", collapsed && "lg:mb-0")}>
-            <p className={cn("text-[0.68rem] uppercase tracking-[0.16em] text-zinc-500", collapsed && "lg:hidden")}>
-              Platform
-            </p>
-            <div
-              className={cn(
-                "flex items-center gap-2 text-xs text-zinc-400",
-                collapsed && "lg:flex-col lg:gap-1.5",
-              )}
-              title={allConnected ? "Platform online" : "Platform needs setup"}
-            >
-              <div
-                className={cn(
-                  "flex items-center justify-center",
-                  collapsed &&
-                    "lg:size-11 lg:rounded-2xl lg:border lg:border-white/10 lg:bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]",
-                )}
-              >
-                <StatusIcon className={cn("size-3.5", statusColor)} />
-              </div>
-              <span className={cn(collapsed && "lg:hidden")}>{allConnected ? "Online" : "Check setup"}</span>
-            </div>
-          </div>
-          <p className={cn("text-sm leading-6 text-zinc-400", collapsed && "lg:hidden")}>{statusLines.join(". ")}.</p>
-          <div className={cn("mt-4 flex items-center gap-2", collapsed && "lg:mt-2 lg:flex-col")}>
-            <span className={cn("size-2 rounded-full", statusColor)} />
-            <p className={cn("text-xs text-zinc-500", collapsed && "lg:hidden")}>{orgLabel}</p>
-          </div>
+          <SidebarAccount
+            email={platformStatus.email}
+            displayName={platformStatus.displayName}
+            avatarUrl={platformStatus.avatarUrl}
+            orgName={platformStatus.orgName}
+            role={platformStatus.role}
+            workspaces={platformStatus.workspaces}
+            currentOrgId={platformStatus.currentOrgId}
+            hasSupabase={platformStatus.supabase}
+            collapsed={collapsed}
+          />
         </div>
       </div>
     </aside>

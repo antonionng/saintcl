@@ -14,15 +14,13 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between", className)}>
-      <div className="max-w-3xl space-y-3">
+    <div className={cn("flex flex-col gap-phi-5 pb-phi-8 lg:flex-row lg:items-end lg:justify-between", className)}>
+      <div className="max-w-2xl">
         {eyebrow ? (
-          <p className="app-kicker">{eyebrow}</p>
+          <p className="app-kicker mb-phi-2">{eyebrow}</p>
         ) : null}
-        <div className="space-y-3">
-          <h1 className="app-title text-3xl font-semibold text-white sm:text-[2.25rem]">{title}</h1>
-          <p className="app-copy text-sm sm:text-[0.96rem]">{description}</p>
-        </div>
+        <h1 className="app-title text-[length:var(--text-xl)] font-semibold tracking-[-0.03em] text-white sm:text-[length:var(--text-2xl)]">{title}</h1>
+        <p className="app-copy mt-phi-3 text-[length:var(--text-sm)] sm:text-[length:var(--text-base)]">{description}</p>
       </div>
       {action ? <div className="shrink-0 self-start lg:self-auto">{action}</div> : null}
     </div>

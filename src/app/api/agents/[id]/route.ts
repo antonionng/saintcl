@@ -4,11 +4,15 @@ import { z } from "zod";
 import { getCurrentOrg, getVisibleAgentForSession } from "@/lib/dal";
 import { resolveAgentWorkspaceFromConfig } from "@/lib/openclaw/agent-terminal";
 import { assertModelSelectionAllowed, getOrgModelCatalogState } from "@/lib/openclaw/model-governance";
+import { writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const patchAgentSchema = z.object({
-  model: z.string().min(3).max(255),
+  model: z.string().min(3).max(255).optional(),
+  persona: z.string().min(3).max(8000).optional(),
+}).refine((data) => data.model || data.persona, {
+  message: "At least one of model or persona is required.",
 });
 
 function getModelUpdateErrorStatus(message: string) {
@@ -67,50 +71,63 @@ export async function PATCH(
       return NextResponse.json({ error: { message: "Supabase admin is unavailable." } }, { status: 503 });
     }
 
-    await assertModelSelectionAllowed({
-      orgId: session.org.id,
-      userId: session.userId,
-      isSuperAdmin: session.isSuperAdmin,
-      model: payload.model,
-      context: "agent",
-    });
+    const resolvedModel = payload.model ?? agent.model;
 
-    const workspace = resolveAgentWorkspaceFromConfig({
-      orgId: session.org.id,
-      openClawAgentId: agent.openclaw_agent_id,
-      config: agent.config,
-    });
+    if (payload.model) {
+      await assertModelSelectionAllowed({
+        orgId: session.org.id,
+        userId: session.userId,
+        isSuperAdmin: session.isSuperAdmin,
+        model: payload.model,
+        context: "agent",
+      });
 
-    const { client } = await getTenantOpenClawClient(session.org.id, {
-      orgId: session.org.id,
-      defaultModel: snapshot.defaultModel,
-      approvedModels: snapshot.approvedModels.map((entry) => ({
-        id: entry.id,
-        label: entry.label,
-      })),
-    });
-    await client.applyModelGovernance({
-      defaultModel: snapshot.defaultModel,
-      approvedModels: snapshot.approvedModels.map((entry) => ({
-        id: entry.id,
-        label: entry.label,
-      })),
-    });
-    await client.updateAgentModel({
-      agentId: agent.openclaw_agent_id,
-      workspace,
-      model: payload.model,
-    });
+      const workspace = resolveAgentWorkspaceFromConfig({
+        orgId: session.org.id,
+        openClawAgentId: agent.openclaw_agent_id,
+        config: agent.config,
+      });
+
+      const { client } = await getTenantOpenClawClient(session.org.id, {
+        orgId: session.org.id,
+        defaultModel: snapshot.defaultModel,
+        approvedModels: snapshot.approvedModels.map((entry) => ({
+          id: entry.id,
+          label: entry.label,
+        })),
+      });
+      await client.applyModelGovernance({
+        defaultModel: snapshot.defaultModel,
+        approvedModels: snapshot.approvedModels.map((entry) => ({
+          id: entry.id,
+          label: entry.label,
+        })),
+      });
+      await client.updateAgentModel({
+        agentId: agent.openclaw_agent_id,
+        workspace,
+        model: payload.model,
+      });
+    }
+
+    const configUpdate: Record<string, unknown> = {
+      ...(agent.config ?? {}),
+    };
+    if (payload.model) {
+      configUpdate.lastModelUpdateAt = new Date().toISOString();
+    }
+    if (payload.persona) {
+      configUpdate.persona = payload.persona;
+    }
+
+    const dbUpdate: Record<string, unknown> = { config: configUpdate };
+    if (payload.model) {
+      dbUpdate.model = payload.model;
+    }
 
     const { data, error } = await admin
       .from("agents")
-      .update({
-        model: payload.model,
-        config: {
-          ...(agent.config ?? {}),
-          lastModelUpdateAt: new Date().toISOString(),
-        },
-      })
+      .update(dbUpdate)
       .eq("id", agent.id)
       .eq("org_id", session.org.id)
       .select()
@@ -120,9 +137,25 @@ export async function PATCH(
       throw error;
     }
 
+    if (payload.persona) {
+      await writeAgentBootstrapFiles({
+        orgId: session.org.id,
+        agentId: agent.openclaw_agent_id,
+        name: agent.name,
+        model: resolvedModel,
+        persona: payload.persona,
+        org: {
+          name: session.org.name,
+          website: session.org.website,
+          companySummary: session.org.company_summary,
+          agentBrief: session.org.agent_brief,
+        },
+      }).catch(() => null);
+    }
+
     return NextResponse.json({ data });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unable to update agent model.";
+    const message = error instanceof Error ? error.message : "Unable to update agent.";
     return NextResponse.json({ error: { message } }, { status: getModelUpdateErrorStatus(message) });
   }
 }

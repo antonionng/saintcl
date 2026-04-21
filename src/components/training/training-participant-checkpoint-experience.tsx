@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 
+import { ParticipantNotes } from "@/components/training/participant-notes";
 import type { ParticipantDeckState } from "@/components/training/python-participant-deck-panel";
 import { resolveCheckpointInterventionPrompt, type TrainingLabCheckpoint } from "@/lib/training-lab-checkpoints";
 import type { TrainingParticipantLabCheckpointRecord } from "@/types";
@@ -14,7 +15,6 @@ type TrainingParticipantCheckpointExperienceProps = {
   initialLabProgress: TrainingParticipantLabCheckpointRecord[];
   deckState?: ParticipantDeckState | null;
   facilitatorPrompt?: string | null;
-  enableProgressTracking?: boolean;
 };
 
 type LabStatus = {
@@ -58,7 +58,6 @@ export function TrainingParticipantCheckpointExperience({
   initialLabProgress,
   deckState = null,
   facilitatorPrompt = null,
-  enableProgressTracking = true,
 }: TrainingParticipantCheckpointExperienceProps) {
   const [labStatusOverridesBySlug, setLabStatusOverridesBySlug] = useState<Record<string, LabStatus>>({});
   const [actionMessage, setActionMessage] = useState<string | null>(null);
@@ -129,25 +128,23 @@ export function TrainingParticipantCheckpointExperience({
       eventType,
     });
 
-    const response = enableProgressTracking
-      ? await fetch("/api/training/participant/progress", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            inviteCode,
-            moduleSlug,
-            eventType,
-            progressPercent,
-            metadata: {
-              labSlug: checkpoint.slug,
-              labTitle: checkpoint.title,
-              teachingMoment: activePrompt?.label ?? null,
-            },
-          }),
-        }).catch(() => null)
-      : ({ ok: true } as Response);
+    const response = await fetch("/api/training/participant/progress", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        inviteCode,
+        moduleSlug,
+        eventType,
+        progressPercent,
+        metadata: {
+          labSlug: checkpoint.slug,
+          labTitle: checkpoint.title,
+          teachingMoment: activePrompt?.label ?? null,
+        },
+      }),
+    }).catch(() => null);
 
     if (!response?.ok) {
       setActionMessage("We could not record that checkpoint action. Please try again.");
@@ -166,12 +163,8 @@ export function TrainingParticipantCheckpointExperience({
     }));
     setActionMessage(
       eventType === "lab_completed"
-        ? enableProgressTracking
-          ? `${checkpoint.title} completed. Your facilitator can now see this checkpoint status.`
-          : `${checkpoint.title} completed in review mode. This status is only stored in your current browser session.`
-        : enableProgressTracking
-          ? `${checkpoint.title} started. Stay with this teaching moment until you are ready to mark it complete.`
-          : `${checkpoint.title} started in review mode. You can preview the checkpoint flow without signing in.`,
+        ? `${checkpoint.title} completed. Your facilitator can now see this checkpoint status.`
+        : `${checkpoint.title} started. Stay with this teaching moment until you are ready to mark it complete.`,
     );
   }
 
@@ -273,6 +266,17 @@ export function TrainingParticipantCheckpointExperience({
                 >
                   Mark complete
                 </button>
+              </div>
+              <div className="mt-3">
+                <ParticipantNotes
+                  inviteCode={inviteCode}
+                  moduleSlug={moduleSlug}
+                  scope="checkpoint"
+                  scopeId={checkpoint.slug}
+                  label={`Notes for ${checkpoint.title}`}
+                  placeholder="Capture takeaways, blockers, and decisions for this checkpoint."
+                  compact
+                />
               </div>
             </div>
           );

@@ -1,0 +1,1159 @@
+import type { ModuleScriptPack, SegmentBlock, SlideScript } from "./types";
+
+const segments: SegmentBlock[] = [
+  {
+    start: 1,
+    end: 6,
+    label: "Welcome and cohort intentions",
+    objective:
+      "Open Day 1 with warmth, surface what each colleague wants from the programme, and set the standard for how the cohort will work together before any content lands.",
+    delivery:
+      "This opening block is the room's first impression of the entire programme. Stay calm, slow your pace, and treat every share like it matters, because it does. Most of the room already knows each other from work, so do not frame this as introductions. Frame it as the moment the cohort defines, in its own words, what success looks like for each of them. Participants are deciding right now whether to switch on for the rest of the programme or quietly tolerate it. Earn the switch-on by being present and by modelling the standard of attention you want them to bring back into the rest of the programme.",
+    facilitatorMoves: [
+      "Be in the room ten minutes before the start and greet people warmly as they arrive.",
+      "Make sure every learner speaks aloud at least once in the first hour.",
+      "Capture the room's stated programme intentions on a shared note so you can refer back to them on Day 3 and at certificate handover.",
+    ],
+    debrief: [
+      "Who in the room has not yet spoken aloud, and what is the lightest way to bring them in?",
+    ],
+  },
+  {
+    start: 7,
+    end: 17,
+    label: "Programme map and Breakout 1",
+    objective:
+      "Walk the room through the seven modules in plain language, then have each learner picture and articulate their own future self at the end of the programme.",
+    delivery:
+      "This is the spine of the day. Treat each module slide as a single clear portrait, not a card grid. Say what the learner can do after it, what they walk away with, and where they will use it next year. Resist the urge to oversell technical detail. The room is not learning Python today; they are learning where Python fits in the life of an AJB analyst three months from now.",
+    facilitatorMoves: [
+      "Use the same three-row shape on every module slide: what you can do, what you walk away with, where you'll use it.",
+      "When you reach the artefact chain visual, slow down and trace the chain with your hand on the screen.",
+      "Brief Breakout 1 with a written prompt the room can refer back to, then leave the call for the full 35 minutes.",
+    ],
+    debrief: [
+      "Whose future-self portrait surprised you most, and what does that tell you about the cohort's actual ambition?",
+    ],
+  },
+  {
+    start: 18,
+    end: 23,
+    label: "Studio activation and Breakout 2",
+    objective:
+      "Get every learner logged in to SaintClaw, oriented on their dashboard, profile, and cohort feed, and confident enough to use the studio as their home base for the rest of the programme.",
+    delivery:
+      "This block is technical onboarding without the technical anxiety. The studio is the place every artefact will live and every milestone will be marked, so treat it as the learner's professional environment, not as software training. If anyone is still without an account by the end of this block, the programme will leak them. Do not advance until the room is in.",
+    facilitatorMoves: [
+      "You are the only facilitator. Keep the cohort feed open in a second window so login or invite-code issues surface to you as they happen.",
+      "Demonstrate the dashboard live on your own screen with the room watching before they explore on their own.",
+      "Send the Breakout 2 pairs into rooms only after you have visible confirmation everyone is signed in.",
+    ],
+    debrief: [
+      "Which learners look hesitant in the studio, and which pair partner can sit beside them tomorrow?",
+    ],
+  },
+  {
+    start: 24,
+    end: 32,
+    label: "Achievement plan and Day 1 close",
+    objective:
+      "Make the assessment shape of the programme visible, give each learner a written, personal achievement plan, and close Day 1 with a public commitment that carries into Day 2.",
+    delivery:
+      "The closing block is where the programme becomes personal. Each learner has to put their name on what success looks like for them. Hold the room to specificity: a plan with no numbers, no dates, and no named output is not a plan, it is a wish. End with the spoken commitments deliberately. The room remembers the last voice it heard, and you want that voice to be each learner's own.",
+    facilitatorMoves: [
+      "Demonstrate the achievement plan template once on screen before the breakout, so the room knows what good looks like.",
+      "During the breakout, sit in on at least three trios and listen for vague language, then push for specifics.",
+      "Read the closing commitments back to the room verbatim from your notes so they hear themselves quoted.",
+    ],
+    debrief: [
+      "Whose commitment was strongest, and whose was softest, and what is the lightest nudge for the soft one tomorrow?",
+    ],
+  },
+];
+
+const slides: SlideScript[] = [
+  {
+    slideNumber: 1,
+    deckId: "s01",
+    day: 1,
+    segment: "Cover and welcome",
+    coreMessage:
+      "Open the programme warmly: today we lay the foundations, and by tonight every learner has a personal plan and a real cohort.",
+    sayThis: [
+      "Welcome. Take a breath. Today we lay the foundations for the programme ahead. Today is about three things, and we will do all three together. We hear what each of you wants from this programme. We walk the seven modules ahead of us in plain language. And we set you up so tomorrow runs warm.",
+      "We have five hours together this morning. Three short breakouts in pairs and trios, three short teaching blocks, and two breaks I will hold firmly so you actually rest. By the time we say goodnight, you will know your cohort, you will be signed in to the studio, and you will leave with a written, personal plan for what success looks like for you over the rest of the programme.",
+      "I want to set the temperature now. This programme is hands-on, it is honest, and it expects you to show up. In return, we spend our time on the things that matter for an analyst inside Al Jazira Bank. So switch on, settle in, and let's begin.",
+    ],
+    presenterCues: [
+      "Be in the room ten minutes early; greet by name as people arrive.",
+      "Read the kicker, headline, and subline calmly; do not turn the meta line into a housekeeping list.",
+      "Pause for two beats after the third paragraph before clicking next.",
+    ],
+    showThis:
+      "Hero slide: large headline 'Welcome to your AI and Data programme.' Subline: 'Today we lay the foundations. Form the cohort, walk the programme, and leave with your personal plan.' One meta pill below.",
+    askThis: [
+      "Before we open the next slide, what would make today feel like time well spent for you specifically?",
+    ],
+    doThis: [
+      "Confirm the room can see and hear you and the deck before clicking next.",
+      "Note any participants who join late so you can re-onboard them at the first break.",
+    ],
+    watchFor: [
+      "Cameras off across the cohort. Address it now, not later. Set the expectation that today expects cameras on.",
+      "Anyone joined on a phone. Pair them with a desktop user before the studio activation block.",
+    ],
+    landThePoint:
+      "Today is about you, the cohort, and the plan you will leave the day with.",
+    transition: "Before we go any further, I want to be clear about what today is and what it is not.",
+    estMinutes: 5,
+  },
+  {
+    slideNumber: 2,
+    deckId: "s02",
+    day: 1,
+    segment: "Why Day 1",
+    coreMessage:
+      "Set the contract for Day 1 in plain terms: what today is, what today is not, and why we spend the day on cohort and studio rather than Python.",
+    sayThis: [
+      "Quick word on why we deliberately spend the first day on this and not on Python. Programmes like this fail in two predictable places. The first is when learners arrive on Day 2 without a clear, shared picture of what each member of the cohort is here to achieve. The second is when they arrive on Day 2 and still cannot find the studio, the deck, or the notebook. Both of those failures look small in the morning and feel huge by the afternoon.",
+      "Look at the slide with me. The left column is what today is. We are forming the cohort you will learn alongside across the programme. We are walking through what each of the seven modules gives you. We are getting you signed in. And we are writing one short, real plan. The right column is what today is not. No Python. No test. No lecture. And nothing optional.",
+      "Read the right column back to me later if anyone in the room starts to drift toward Python. We move slowly today on purpose. Tomorrow the pace shifts.",
+    ],
+    presenterCues: [
+      "Spend most of your time on the left column; it is the contract for the rest of the day.",
+      "Resist the urge to start naming modules; that is the next block, not this slide.",
+      "Reassure anyone who looks impatient that pace returns tomorrow.",
+    ],
+    showThis: "Two-column simple grid: 'What today is' on the left, 'What today is not' on the right. Plain bullets, no card chrome.",
+    askThis: [
+      "When you have joined a long programme before, what was missing on Day 1 that you wished had been there?",
+    ],
+    doThis: [
+      "Read the left column line by line; the right column you can paraphrase.",
+    ],
+    watchFor: [
+      "A learner who clearly wants to skip ahead to Python. Acknowledge them, then bring them back to today's contract.",
+    ],
+    landThePoint:
+      "We spend Day 1 on cohort and studio because every other day in the programme assumes both are already in place.",
+    transition: "If we are going to spend the day together, you should know who is in the room with you.",
+    estMinutes: 5,
+  },
+  {
+    slideNumber: 3,
+    deckId: "s03",
+    day: 1,
+    segment: "Facilitator and sponsors",
+    coreMessage:
+      "Introduce the facilitator and the support team in plain terms so the room knows who is accountable for the programme and where help comes from.",
+    sayThis: [
+      "Quick introduction from my side, and then we get straight to you. I am running this programme end to end. Every module, every breakout, every certificate moment. If something is not working for you, you bring it to me directly, in chat or out loud. That is part of what I am here for.",
+      "On the right of the slide is the partnership behind the programme. EMFT designs the curriculum. Al Jazira Bank shapes what it has to do for your work, which is why the examples later are AJB-shaped, not generic content with a logo on top. There is no co-facilitator and no separate support line; the two doors you knock on are this room and the cohort feed, and both come straight to me.",
+      "Let's keep moving and get every voice in the room warmed up.",
+    ],
+    presenterCues: [
+      "Keep this slide short; the room came for the cohort, not for your bio.",
+      "Be explicit that you are the only facilitator; do not invent a support team that does not exist.",
+      "Mention the cohort feed as the second door so the room knows where to surface issues.",
+    ],
+    showThis: "Two-column simple grid: 'Your facilitator' on the left, 'The partnership behind it' on the right.",
+    askThis: [
+      "Has anyone in the room worked with EMFT or Al Jazira Bank training before? What set the bar for you?",
+    ],
+    doThis: [
+      "Pin the cohort feed link into chat as the second door learners can knock on between live blocks.",
+    ],
+    watchFor: [
+      "Late arrivals during this slide; gently re-welcome them so they are not lost in the room.",
+    ],
+    landThePoint:
+      "You have one facilitator who is across every block, and a cohort feed that comes straight to me between sessions.",
+    transition: "Now it is your turn. We start with a paired icebreaker before we open the room to the full cohort.",
+    estMinutes: 5,
+  },
+  {
+    slideNumber: 4,
+    deckId: "s04",
+    day: 1,
+    segment: "Paired check-in",
+    coreMessage:
+      "Run a tight paired check-in so every learner has named what they want from the programme and listened to one other person before the cohort intentions block.",
+    sayThis: [
+      "Right, let's get every voice in the room warmed up. I will put you into random pairs in breakout rooms for six minutes. Half the time is you talking, half is you listening. Cameras on for both halves.",
+      "The brief is on the slide, three things to share. One: one thing you want to be able to do at the end of this programme that you cannot do today. Two: why that matters for your work right now. Three: what would make this programme a waste of your time, so we can all avoid it. Three minutes each. Listen as carefully as you talk.",
+      "When the timer ends, you come back here, and your partner shares your three answers with the rest of the room. Not you. They share. So the listening half is not optional. Six minutes on the clock when I send you in.",
+    ],
+    presenterCues: [
+      "Random pair assignment; do not let people self-select or you will lose the cohort-mixing benefit.",
+      "Hold the timer at six minutes; do not let it stretch even if the room asks.",
+      "Drop the brief into chat in writing before sending people into rooms.",
+    ],
+    showThis: "Step strip with four numbered steps and the prompts under step 3. Six-minute timer button below.",
+    askThis: [
+      "Before I send you in, anyone unclear on the brief? Raise a hand or post in chat now.",
+    ],
+    doThis: [
+      "Send pairs into breakout rooms with the six-minute timer set.",
+      "Walk into one or two rooms briefly to check the conversation has actually started.",
+    ],
+    watchFor: [
+      "An odd number of learners. Make a trio rather than leaving anyone solo.",
+      "A pair in dead silence after sixty seconds. Drop into the room and reseed the prompt.",
+    ],
+    landThePoint:
+      "By the end of the next six minutes, every learner has named what they want from the programme and listened to one other person properly.",
+    transition: "Welcome back. Now your partner shares your answers with the rest of the room.",
+    estMinutes: 8,
+  },
+  {
+    slideNumber: 5,
+    deckId: "s05",
+    day: 1,
+    segment: "Cohort intentions",
+    coreMessage:
+      "Run partner-led shares so the cohort hears every learner's programme intention in someone else's voice, and arrives aligned on what each of them is here for.",
+    sayThis: [
+      "Welcome back. Here is how this works. I will call each of you in turn, and your partner will share what you told them, in two sentences. One sentence on what you want to be able to do at the end of this programme. One sentence on why that matters for your work right now. Two sentences. That is enough. We have a lot of you to get through.",
+      "While each person's intention is being shared, you have one job. The left column on the slide tells you what to write down: each ambition you hear, the ones that overlap with yours, and anyone whose intention pairs naturally with your own work. The right column tells you what to listen for: ambitions that match yours, concerns that are also yours, and people you would happily be in a trio with later.",
+      "I will go first to set the shape, then we go around the room. If your partner forgets a detail, jump in and add it. We are going for warmth, not precision.",
+    ],
+    presenterCues: [
+      "Demonstrate the two-sentence shape on the first introduction so the rest of the room copies it.",
+      "Cut anyone going over two sentences gently and quickly.",
+      "Capture the roster yourself in your facilitator notes; you will use it on Day 2 and at the certificate.",
+    ],
+    showThis: "Two-column simple grid: 'What to write down' on the left, 'What to listen for' on the right. Both as checks.",
+    askThis: [
+      "If anyone wants to add a one-line correction after their partner shares their answers, that is welcome.",
+    ],
+    doThis: [
+      "Call learners in a deliberate order, not alphabetical, so the energy stays varied.",
+      "Note any roles or ambitions that recur; you will reference them in the artefact chain slide later.",
+    ],
+    watchFor: [
+      "A pair where both partners forgot a key detail. Move on, do not embarrass anyone.",
+      "Someone whose share is unusually quiet. Give them a warm follow-up question, not silence.",
+    ],
+    landThePoint:
+      "By the end of this block, every learner has heard, in plain words, what each colleague wants from the programme, and why.",
+    transition: "Now that we have heard what each of us is here for, we set the agreement for how we work together.",
+    estMinutes: 12,
+  },
+  {
+    slideNumber: 6,
+    deckId: "s06",
+    day: 1,
+    segment: "Working agreement and day shape",
+    coreMessage:
+      "Set the working agreement for the cohort and walk the shape of today so every learner knows the standards and the rhythm before content begins.",
+    sayThis: [
+      "Two things before we move on. First, on the left, our working agreement. Cameras on for live blocks. Questions in chat or out loud, whichever you prefer. We honour the timer in breakouts, so when it ends we come back, even mid-sentence. We assume good intent. When something is unclear, we ask. That is the agreement. If anyone wants to add to it, the chat is open right now.",
+      "Second, on the right, the shape of today in four blocks. We close out cohort. We walk the seven modules and you do your first breakout. We activate the studio together. And we build your personal plan, do the third breakout, and close as a cohort with spoken commitments. Two breaks in there too.",
+      "If you only remember one thing from this slide, remember this one. Today is the foundation. Tomorrow is Module 1. Get today right and the rest of the programme runs warmer.",
+    ],
+    presenterCues: [
+      "Read the left column line by line; this is the agreement, do not skim it.",
+      "Use the right column as a clock the room can hold themselves to.",
+      "Invite chat additions to the agreement; capture any new ones in your notes.",
+    ],
+    showThis: "Two-column simple grid: 'How we work together' (left), 'Shape of today' (right). Both as checks.",
+    askThis: [
+      "Anything you want to add to our working agreement before we move on?",
+    ],
+    doThis: [
+      "Pin the agreement and the day shape into the chat as text so people can refer back.",
+    ],
+    watchFor: [
+      "Anyone who has not posted in chat yet by this point; nudge them with a yes-or-no chat question.",
+    ],
+    landThePoint:
+      "We have a written agreement, a four-block shape for today, and a cohort that already knows what each member wants from the programme.",
+    transition: "Now into the seven modules. The next slide is the big picture in three numbers.",
+    estMinutes: 6,
+  },
+  {
+    slideNumber: 7,
+    deckId: "s07",
+    day: 1,
+    segment: "Programme overview",
+    coreMessage:
+      "Set the big picture in three plain numbers so the cohort sees what the programme adds up to before any single module is named.",
+    sayThis: [
+      "Here is what the programme gives you. Three numbers on the slide. Three months. That is the time you and I have together, from today to your final readout on 16 July. Seven modules. Each one clustered in one to three days, with practice time in between, so you have room to apply each module before the next one starts. One cohort. The same people the whole way through. That is it.",
+      "By the end of the programme, you can walk into a leadership meeting at the bank, recommend an AI use case, and defend it with evidence. That is the goal. Hold those two ideas in your head: three months, one real recommendation with your name on it.",
+      "I will show you each module on its own slide in a moment. As you watch them go by, I want you to write down two things. The one you are most curious about. And the one you are quietly worried about. Both honest. You will use both in your first breakout straight after this block.",
+    ],
+    presenterCues: [
+      "Read the three big numbers left to right; let each one sit before you move to the next.",
+      "Be explicit that the cadence is irregular; do not let the room hear 'one module a week'.",
+      "Plant the curiosity-and-worry question now; you will return to it in Breakout 1.",
+    ],
+    showThis:
+      "Big-number row: 3 months, 7 modules, 1 cohort. Subline below sets the goal of the programme.",
+    askThis: [
+      "When you read those three numbers, which one feels biggest to you, and why?",
+    ],
+    doThis: [
+      "Pause briefly after reading the three numbers so the room can take them in before you narrate.",
+    ],
+    watchFor: [
+      "A learner whose face changes at 'three months'. Reassure them about pacing during the next break.",
+    ],
+    landThePoint:
+      "Three months, seven modules, one cohort, and one real AI recommendation each learner can put their name on.",
+    transition: "Now Module 1, where Python for Data starts tomorrow.",
+    estMinutes: 6,
+  },
+  {
+    slideNumber: 8,
+    deckId: "s08",
+    day: 1,
+    segment: "Module 1 portrait",
+    coreMessage:
+      "Make Module 1 concrete: what each learner can do after it, what they walk away with, and where they will use it next year.",
+    sayThis: [
+      "Module 1 is Python for Data. Two days, Monday and Tuesday, 20 and 21 April. After this module, you can open a banking extract from one of our systems, judge whether you can trust it, clean it up, and produce KPIs that leadership can challenge. Not because you are a Python expert. Because you have been through the cleanest version of the workflow that an AJB analyst actually does.",
+      "What you walk away with is on the slide. A defensible written triage on a real extract. Plus a clean feature table that the next module uses as its starting point. So Module 1 is not just learning Python. It is producing the artefact that everything after it sits on top of.",
+      "Where you will use it. Next time someone in your team asks 'is this report safe to send up?', you have the answer with evidence in an afternoon, not in a week.",
+      "One thing to flag now, before we move on. There is a small warm-up to do tonight, after we close. Twenty minutes, no code. We will walk through it on the bridge slide near the end. The reason I am mentioning it on this slide is so you know Module 1 does not start cold tomorrow morning; it starts with what you brought from tonight.",
+    ],
+    presenterCues: [
+      "Trace the three rows top to bottom, then point at the 'Before tomorrow morning' row at the bottom so the warm-up is visible from this slide too.",
+      "Mention the artefact handoff to Module 2; it is the spine of the programme.",
+      "Do not start teaching Python here; that is tomorrow's job. Just plant the warm-up so the bridge slide is not a surprise.",
+    ],
+    showThis:
+      "Module portrait. Big 01 chip on the left. Module name. Four stacked rows: 'What you can do after', 'What you walk away with', 'Where you'll use it', 'Before tomorrow morning' (the warm-up note).",
+    askThis: [
+      "Anyone here already comfortable in Python? Good, you can pair-help in the labs tomorrow.",
+    ],
+    doThis: [
+      "Note any Python-confident learners; they are pair partners for tomorrow's labs.",
+    ],
+    watchFor: [
+      "A learner who looks anxious at 'Python'. Reassure them the labs are paired and the start is gentle.",
+    ],
+    landThePoint:
+      "Module 1 leaves you with a defensible triage on a real extract and a clean feature table the next module needs.",
+    transition: "Module 2 takes that clean table and turns it into a model recommendation.",
+    estMinutes: 6,
+  },
+  {
+    slideNumber: 9,
+    deckId: "s09",
+    day: 1,
+    segment: "Module 2 portrait",
+    coreMessage:
+      "Make Module 2 concrete: how each learner moves from clean data to a defensible model recommendation for the bank.",
+    sayThis: [
+      "Module 2 is Machine Learning Training. Three days, 17 to 19 May. After this module, you can take a banking decision and frame it as a model problem. Build a baseline. Compare it against alternatives. And explain in plain language what the model can and cannot do for the team that has to live with it.",
+      "What you walk away with is a model comparison and a written recommendation: which model the bank should pick for one specific use case, and why. The recommendation includes the metric you used, the false-negative cost, and the operational handover. So it is not a pretty notebook. It is a recommendation a manager can act on.",
+      "Where you will use it. The next time leadership debates whether to use a model for routing service tickets or scoring early-warning signals, you bring the metric and the cost. You change the conversation.",
+    ],
+    presenterCues: [
+      "Mention that the input to this module is the artefact from Module 1; the chain is real.",
+      "Use the false-negative phrase deliberately; it lands as concrete in a banking room.",
+      "Do not get pulled into model-family arguments; you will have weeks to do that later.",
+    ],
+    showThis:
+      "Module portrait. Big 02 chip. Three stacked rows in the same shape as Module 1.",
+    askThis: [
+      "Has anyone in the room been on the receiving end of a model decision that you didn't trust? Hold that story.",
+    ],
+    doThis: [
+      "Capture any banking use-case the room mentions; you will use the strongest one in Module 4.",
+    ],
+    watchFor: [
+      "A learner who confuses ML with everything labelled AI. Gently park the distinction for Module 4.",
+    ],
+    landThePoint:
+      "Module 2 leaves you with a defensible model recommendation, not just a notebook, ready for leadership.",
+    transition: "Module 3 asks where neural networks fit, and where they do not.",
+    estMinutes: 5,
+  },
+  {
+    slideNumber: 10,
+    deckId: "s10",
+    day: 1,
+    segment: "Module 3 portrait",
+    coreMessage:
+      "Make Module 3 concrete: how learners decide when neural networks are the right tool and how to test a vendor's neural-network pitch.",
+    sayThis: [
+      "Module 3 is Neural Networks. Two days, 20 to 21 May, back-to-back with Module 2. One of the shortest modules in the programme, and one of the most useful in a bank. After this module, you can tell when a neural network is the right tool, when a simpler approach is genuinely stronger, and how to test a vendor when they pitch you something with the word 'neural' in the headline.",
+      "What you walk away with is a short notebook that compares a simpler approach to a neural one on the same task, plus a written position on the trade-off. The position names the cost in compute, the cost in explainability, and the cost in operational risk. That is the table you will reach for when a vendor lands in your inbox.",
+      "Where you will use it. Next time a vendor pitches a document classifier or a fraud-detection model, you can ask the right three questions about training data, drift, and review. You stop being the team that has to take their word for it.",
+    ],
+    presenterCues: [
+      "Stress the comparison framing; this module is judgement, not a deep-learning crash course.",
+      "Mention vendor pitches by name; this is where the module pays back fastest at AJB.",
+      "Do not let the room treat this as an optional module because it is short.",
+    ],
+    showThis:
+      "Module portrait. Big 03 chip. Three stacked rows.",
+    askThis: [
+      "Has anyone been pitched a 'neural' tool by a vendor recently? Hold the question you wish you had asked.",
+    ],
+    doThis: [
+      "Note any vendor-pitch story the room raises; we'll use it as a worked example in Module 3.",
+    ],
+    watchFor: [
+      "A learner who assumes neural means harder. Reassure them; the judgement is the point.",
+    ],
+    landThePoint:
+      "Module 3 leaves you with the judgement to choose between simple and neural approaches, and the questions to test a vendor.",
+    transition: "Module 4 widens the lens from one model to where AI can fit across the bank.",
+    estMinutes: 5,
+  },
+  {
+    slideNumber: 11,
+    deckId: "s11",
+    day: 1,
+    segment: "Module 4 portrait",
+    coreMessage:
+      "Make Module 4 concrete: how learners produce a prioritised AI opportunity map for an AJB function.",
+    sayThis: [
+      "Module 4 is Business Applications in AI. Two days, 7 to 8 June. After this module, you can spot where AI can credibly create value in your function, score the options against each other, and shape a recommendation leadership can act on without having to translate it themselves.",
+      "What you walk away with is a prioritised AI opportunity map for one AJB function, with each opportunity scored, owned, and governed. So it is not 'here are some ideas'. It is 'here are five ideas, here is the order, here is who owns each one, here is what it costs, and here is the first one we should actually start'.",
+      "Where you will use it. The next time your function head asks for a one-pager on where AI can help next year, you have the method and the template ready. You do not start from zero in the next quarterly planning round.",
+    ],
+    presenterCues: [
+      "Use the word 'prioritised' deliberately; it signals a list with discipline behind it.",
+      "Make sure the room hears the words 'owned' and 'governed'; bank audiences need this language.",
+      "Do not promise specific use cases; that depends on the cohort's functions.",
+    ],
+    showThis:
+      "Module portrait. Big 04 chip. Three stacked rows.",
+    askThis: [
+      "If you had to point at one workflow in your function that AI could help with, which one would you pick?",
+    ],
+    doThis: [
+      "Capture every workflow the room mentions; the strongest become Module 4 case studies.",
+    ],
+    watchFor: [
+      "A learner who keeps suggesting cool ideas with no cost or owner. Note them; coach in Module 4.",
+    ],
+    landThePoint:
+      "Module 4 leaves you with a prioritised AI opportunity map for an AJB function, scored, owned, and governed.",
+    transition: "Module 5 takes the highest-priority opportunity and turns it into a governed automation design.",
+    estMinutes: 5,
+  },
+  {
+    slideNumber: 12,
+    deckId: "s12",
+    day: 1,
+    segment: "Module 5 portrait",
+    coreMessage:
+      "Make Module 5 concrete: how learners design a governed automation around a real AJB workflow with controls and human review.",
+    sayThis: [
+      "Module 5 is Automation in AI. Two days, 9 to 10 June, back-to-back with Module 4. After this module, you can map a real banking workflow end-to-end, find the steps that are safe to automate, and design a governed flow with human review built in from the start, not retrofitted later.",
+      "What you walk away with is an end-to-end automation design for one AJB process. The design includes the controls, the exceptions, the named owners for each step, and the review points where a human signs off. So when an auditor asks 'who approved this?', the answer is on the page.",
+      "Where you will use it. Next time operations brings you a process that takes hours every week, you can map it, and hand back a design that automates the safe steps and keeps the risky ones in human hands.",
+    ],
+    presenterCues: [
+      "Reinforce 'governed' on every mention; this is the differentiator in a banking room.",
+      "Mention the auditor scenario explicitly; it lands fast in compliance-aware audiences.",
+      "Do not let the room slip into 'just automate everything'; the design is the lesson.",
+    ],
+    showThis:
+      "Module portrait. Big 05 chip. Three stacked rows.",
+    askThis: [
+      "What is one process in your function that takes hours a week and looks ripe for review? Hold it for Module 5.",
+    ],
+    doThis: [
+      "Capture process candidates; we may use one as a worked example in Module 5.",
+    ],
+    watchFor: [
+      "Anyone who treats 'automation' as 'do it all'. Frame controls as the actual skill.",
+    ],
+    landThePoint:
+      "Module 5 leaves you with a governed automation design for one AJB process, with controls, exceptions, and named owners.",
+    transition: "Module 6 asks how all of this gets seen and understood by leadership.",
+    estMinutes: 5,
+  },
+  {
+    slideNumber: 13,
+    deckId: "s13",
+    day: 1,
+    segment: "Module 6 portrait",
+    coreMessage:
+      "Make Module 6 concrete: how learners design visuals that lead a busy leader's eye to the answer.",
+    sayThis: [
+      "Module 6 is Advanced Data Visualization. Three days, 28 to 30 June. The longest module in the programme, and the one that often surprises people most. After this module, you can design visuals that lead a busy leader's eye straight to the answer, rather than visuals that make them work to find it.",
+      "What you walk away with is a leadership-ready dashboard concept and a short reporting pack for an AJB-shaped use case. So you are not learning charts in the abstract. You are producing the dashboard you are going to use in your next quarterly review.",
+      "Where you will use it. Picture your next quarterly review with leadership. Twelve minutes. Three slides. Half the work is done by the visuals before you open your mouth. That is what this module gives you.",
+    ],
+    presenterCues: [
+      "Use the twelve-minute, three-slide framing; it makes the value tangible.",
+      "Stress that this module is design discipline, not chart software training.",
+      "Do not let the room treat 'visualisation' as an aesthetic concern.",
+    ],
+    showThis:
+      "Module portrait. Big 06 chip. Three stacked rows.",
+    askThis: [
+      "Think of the last leadership readout you sat in. What did the visuals do well, and what did they hide?",
+    ],
+    doThis: [
+      "Capture any 'visuals that hid the answer' stories; great input for Module 6.",
+    ],
+    watchFor: [
+      "A learner who claims they do not need visualisation. Park the position; revisit in Module 6.",
+    ],
+    landThePoint:
+      "Module 6 leaves you with a leadership-ready dashboard concept and a short reporting pack for an AJB use case.",
+    transition: "Module 7 is the capstone, where the whole programme lands as one recommendation.",
+    estMinutes: 5,
+  },
+  {
+    slideNumber: 14,
+    deckId: "s14",
+    day: 1,
+    segment: "Module 7 portrait",
+    coreMessage:
+      "Make Module 7 concrete: how learners take a structured position on AI adoption inside their part of the bank, in one short briefing.",
+    sayThis: [
+      "Module 7 is AI in Banking and Finance. One day, 16 July, the capstone of the entire programme. By this point you'll have walked through data, models, neural networks, business AI, automation, and visualisation. Module 7 ties all of that together into one piece of work: a leadership briefing that takes a position on how AI should be adopted in your part of the bank, with the controls and the trade-offs explicit.",
+      "What you walk away with is a short, sharp leadership briefing. Recommended use case. Value. Risks. Governance. Next move. That is the briefing. It is the thing you actually take into a bank meeting and put your name on.",
+      "Where you will use it. In the bank's next AI strategy session, you bring a credible recommendation with evidence, instead of a question. That moves you from being a participant in those rooms to being a contributor.",
+    ],
+    presenterCues: [
+      "This is the capstone, not the last module on a list; treat it that way.",
+      "Stress that the briefing is the artefact, not the slides; it is meant to land in a bank meeting.",
+      "Connect the briefing back to Modules 1 and 4; the room should hear the chain.",
+    ],
+    showThis:
+      "Module portrait. Big 07 chip. Three stacked rows.",
+    askThis: [
+      "Picture the meeting where you would present this briefing. Who is in the room with you?",
+    ],
+    doThis: [
+      "Note who in the cohort talks about specific bank meetings; they often become natural capstone leads.",
+    ],
+    watchFor: [
+      "A learner who shrinks at 'leadership briefing'. Reassure them: by week nine, the work is already done.",
+    ],
+    landThePoint:
+      "Module 7 leaves you with a real AI briefing you can take into an AJB leadership meeting and put your name on.",
+    transition: "Now look at how each module hands its work to the next. The chain is the point.",
+    estMinutes: 6,
+  },
+  {
+    slideNumber: 15,
+    deckId: "s15",
+    day: 1,
+    segment: "Artefact chain",
+    coreMessage:
+      "Show the artefact chain so the cohort sees that each module hands its work to the next, and the capstone is built on real work.",
+    sayThis: [
+      "Each module hands its work to the next. That is the most important sentence I will say in this block. Look at the chain on the screen. Module 1 produces a clean feature table. Module 2 turns it into a model recommendation. Module 3 adds the position on neural complexity. Module 4 widens the lens to an opportunity map for your function. Module 5 takes the top opportunity and designs a governed automation around it. Module 6 turns the result into a leadership dashboard. Module 7 ties it all into one short AI briefing.",
+      "By the time you reach Module 7, you are not building a notebook. You are making a recommendation a leadership team will act on, and every piece of evidence behind it has come from work you did in the earlier modules. Nothing is theoretical at the end. Everything is real, because you produced it.",
+      "You will see the same data points show up in different shapes across the modules. That is intentional. The work compounds. The portfolio you leave with is real and yours.",
+    ],
+    presenterCues: [
+      "Trace the chain with your hand on the screen as you say each step.",
+      "Stop briefly after the second paragraph; this is the moment that justifies the programme.",
+      "Do not let the room speed past this slide; it is the spine of the entire programme.",
+    ],
+    showThis:
+      "Artefact chain: seven labelled boxes connected by chevrons, in module order. Plain subline above and a note below.",
+    askThis: [
+      "Look at the chain. Which two adjacent artefacts feel most useful to your team specifically?",
+    ],
+    doThis: [
+      "Note which artefacts the room calls out; you will reference them in Breakout 1.",
+    ],
+    watchFor: [
+      "A learner who asks 'do I have to do all of them?'. Yes; the chain depends on it.",
+    ],
+    landThePoint:
+      "Each module hands its work forward. The capstone is built on real artefacts you produced, not on theory.",
+    transition: "Now into the first breakout, where you put yourself into that picture.",
+    estMinutes: 8,
+  },
+  {
+    slideNumber: 16,
+    deckId: "s16",
+    day: 1,
+    segment: "Breakout 1 launch",
+    coreMessage:
+      "Launch Breakout 1 cleanly: thirty-five minutes in groups of four to draft a future-self portrait against the seven modules.",
+    sayThis: [
+      "Time for your first breakout. Thirty-five minutes in groups of four. Cameras on. Seven minutes each, then one observation back from your group at the end. The slide has the four steps in order.",
+      "Step 1, you each name the module you are most curious about, and why. Step 2, you each name the one you are quietly worried about, and why. Be honest. No one is grading your worries. Step 3, you each describe your future self at the end of the programme, in one sentence. Concrete, not aspirational. Step 4, one volunteer per group brings one observation back to the room when we reconvene.",
+      "I will drop the prompts into chat so they are with you in the breakout rooms. Thirty-five minutes on the clock when I send you in.",
+    ],
+    presenterCues: [
+      "Random groups of four; if the maths gives a leftover, prefer a five over a three.",
+      "Set the timer at thirty-five minutes; do not let it stretch.",
+      "Drop all four prompts into chat in writing before sending people into rooms.",
+    ],
+    showThis:
+      "Step strip with four numbered steps. Thirty-five-minute timer button below.",
+    askThis: [
+      "Anyone unsure how to phrase 'future self in one sentence'? I'll give you an example before you go in.",
+    ],
+    doThis: [
+      "Send groups of four into rooms with the timer running.",
+      "Sit in on at least three rooms; listen for honesty in the worry step.",
+    ],
+    watchFor: [
+      "A group that turns the worry step into a celebration of confidence. Push for one honest worry each.",
+      "A group running over by minute thirty. Send a one-minute warning into all rooms together.",
+    ],
+    landThePoint:
+      "Every learner has spoken aloud one curiosity, one worry, and one one-sentence future self by the end of this breakout.",
+    transition: "Welcome back. Each group brings one observation, then we move into the studio.",
+    estMinutes: 38,
+  },
+  {
+    slideNumber: 17,
+    deckId: "s17",
+    day: 1,
+    segment: "Breakout 1 debrief",
+    coreMessage:
+      "Run a tight Breakout 1 debrief that surfaces patterns across groups and bridges the cohort into the studio block.",
+    sayThis: [
+      "Welcome back from Breakout 1. We are going to take one observation per group, in the order of the room. The left column on the slide is what we listen for: one observation, where future-self portraits cluster, where worries cluster, and what the cohort already shares. So please keep each share short; do not try to summarise the whole group's discussion.",
+      "While each group shares, I want the rest of you to do the right column. Hold your future-self picture in your head, hold one worry that is also yours, and grab one observation from another group that resonates with you. That is what you carry forward into the studio block, not your full notes.",
+      "I am going to pick one or two patterns I hear across the room and name them out loud, so you can see we are listening across the cohort, not just within your group. Then we go into the studio.",
+    ],
+    presenterCues: [
+      "Hold each share to one observation; cut gently if a learner tries to summarise the group.",
+      "Name two patterns you heard; do not name three or you'll lose the room's attention.",
+      "Use this slide to bridge cleanly into the studio block; energy belongs there next.",
+    ],
+    showThis:
+      "Two-column simple grid: 'What we listen for' (left), 'What you carry forward' (right). Both as checks.",
+    askThis: [
+      "Whose volunteer is going first? I'll go around the room from there.",
+    ],
+    doThis: [
+      "Capture recurring worries on a private note; you will use them in coaching during Day 2 to Day 4.",
+    ],
+    watchFor: [
+      "A group whose volunteer says 'we didn't really discuss it'. Reframe and ask for one honest moment from anyone.",
+    ],
+    landThePoint:
+      "The cohort hears each other's curiosities and worries across groups, and you have a list of coaching themes for the rest of the programme.",
+    transition: "Now into your studio. We get every learner signed in and oriented before we touch the plan.",
+    estMinutes: 12,
+  },
+  {
+    slideNumber: 18,
+    deckId: "s18",
+    day: 1,
+    segment: "Studio framing",
+    coreMessage:
+      "Frame the studio as the learner's professional environment for the rest of the programme, not as software training.",
+    sayThis: [
+      "SaintClaw is your studio for the rest of the programme. It is where your work lives, where your cohort lives, and where your plan lives. Treat it the way you treat your work email or your bank's intranet: it is the place you sign in to every working day.",
+      "I will give you the full tour in the next two slides. Right now, all I want is for the words to land. The studio is not a learning portal. It is your environment. Tomorrow, when Module 1 starts, we will not stop and explain how to find a deck or where the workbook lives. You already know, because you spent today getting in.",
+      "If you are not signed in by the end of this block, the rest of the programme will be harder than it has to be. So we will not move past the studio block until everyone is in.",
+    ],
+    presenterCues: [
+      "Hero slide: stay calm and centred; keep the energy below the breakout high.",
+      "Make the 'we will not move on until everyone is in' commitment explicit.",
+      "Do not start clicking through the studio yet; that is the next slide.",
+    ],
+    showThis:
+      "Hero slide: large headline 'SaintClaw is your studio.' Subline: 'It is where your work lives, where your cohort lives, where your plan lives.'",
+    askThis: [
+      "Has anyone failed to sign in already this morning? Raise it now and I will pick it up before we move on.",
+    ],
+    doThis: [
+      "Get a chat 'in' from any learner who has not signed in yet, before the next slide.",
+    ],
+    watchFor: [
+      "A learner who has been quiet through the cohort block; they are often the ones blocked on access.",
+    ],
+    landThePoint:
+      "The studio is each learner's professional environment for the rest of the programme, not a one-off tour.",
+    transition: "Quick guided walk of your dashboard, then we open it together.",
+    estMinutes: 5,
+  },
+  {
+    slideNumber: 19,
+    deckId: "s19",
+    day: 1,
+    segment: "Dashboard tour",
+    coreMessage:
+      "Walk the dashboard live in three regions so every learner knows where to look from tomorrow morning onward.",
+    sayThis: [
+      "Quick tour of your dashboard before you do anything yourself. Three regions on the screen. On the left, the seven modules in order. Today's orientation tile is open. Module 1 unlocks tomorrow morning at the top of the hour. The other modules are visible but locked, so you can see what is coming.",
+      "In the centre, your active module's deck, workbook, notebook, and resources. Right now that is the orientation deck. Tomorrow it becomes Module 1 by default, and from then on, this is the region you spend most of your time in.",
+      "On the right, your cohort. The activity feed and the people in the room. That feed is the second door I mentioned earlier; anything you post there comes straight to me, even between live sessions. Type a single plus into chat once you can see all three regions on your own dashboard. We do not advance for the impatient minority.",
+    ],
+    presenterCues: [
+      "Share your screen and walk the regions in order: left, centre, right.",
+      "Do not advance until you have plus signs in chat from at least 90 percent of the room.",
+      "Reassure anyone whose dashboard looks slightly different; the regions are the same.",
+    ],
+    showThis:
+      "Step strip with three numbered regions: modules left, active module centre, cohort and support right. Note line below.",
+    askThis: [
+      "Anyone seeing a dashboard that does not match the three regions on screen? Raise it in chat now.",
+    ],
+    doThis: [
+      "Watch chat for plus signs; only advance when most of the room has typed one.",
+    ],
+    watchFor: [
+      "A learner whose dashboard is missing a region. Pick it up yourself in chat before the next slide.",
+    ],
+    landThePoint:
+      "Every learner can see the three regions of the studio dashboard and knows where Module 1 will appear tomorrow.",
+    transition: "Now the social half of the studio: your profile and the cohort feed.",
+    estMinutes: 8,
+  },
+  {
+    slideNumber: 20,
+    deckId: "s20",
+    day: 1,
+    segment: "Profile and feed",
+    coreMessage:
+      "Get every learner to fill in their profile and post once on the cohort feed so the studio feels social, not just functional.",
+    sayThis: [
+      "Two things to do in your studio while we are still on this slide together. Look at the left column. Open your profile. Fill in your display name. Add your role at the bank. Write a one-line introduction; if you are stuck, use the line your partner used about you this morning. Type 'profile in' into chat once your profile is saved.",
+      "Now look at the right column. Open the cohort feed. Read whatever is there. Comment on one post that resonates with you, even if it is just a sentence. The feed is part of how you stay connected between live sessions, and it is part of how I see how the cohort is doing. Type 'feed in' into chat once you can see at least one post.",
+      "This is one of the few moments today where you are doing administrative work. It is worth doing properly, because everything in the rest of the programme assumes your profile and the feed are real and warm.",
+    ],
+    presenterCues: [
+      "Wait until the room has typed 'profile in' before moving on; do not skip it.",
+      "Encourage at least one comment on the cohort feed; it sets the social standard.",
+      "Pin both 'profile in' and 'feed in' in chat so the room can see who is in.",
+    ],
+    showThis:
+      "Two-column simple grid: 'Profile fields to fill in' (left), 'Cohort feed standard' (right). Both as checks.",
+    askThis: [
+      "Anyone struggling to find the profile or the feed? Raise it in chat and I will jump in.",
+    ],
+    doThis: [
+      "Track 'profile in' and 'feed in' chats; the room is ready when both have most of the cohort.",
+    ],
+    watchFor: [
+      "A learner who types 'profile in' without actually filling fields. Drop a private chat and ask for a screenshot.",
+    ],
+    landThePoint:
+      "Every learner has a real profile in the studio and at least one comment on the cohort feed.",
+    transition: "Now into Breakout 2, where you actually put the studio through its paces in pairs.",
+    estMinutes: 10,
+  },
+  {
+    slideNumber: 21,
+    deckId: "s21",
+    day: 1,
+    segment: "Breakout 2 launch",
+    coreMessage:
+      "Launch Breakout 2 cleanly: thirty minutes in fresh pairs to test the studio together and surface anything broken.",
+    sayThis: [
+      "Time for Breakout 2, a paired studio shakedown. Thirty minutes. Fresh pairs, different from Breakout 1. Cameras on. The whole point is that you put your studio through its paces with someone else watching, so anything broken or confusing surfaces now, not on Day 2.",
+      "The slide has four steps. Step 1, read each other's profile aloud, and tell each other what you noticed. Step 2, navigate to today's deck inside the studio and confirm the slide list is visible. Step 3, each of you posts one short comment on the cohort feed. Anything human, anything real. Step 4, if something does not work, post it in the feed and I will pick it up.",
+      "I will drop the four steps into chat. Thirty minutes on the clock when I send you in. Come back ready to confirm you are studio-ready for tomorrow.",
+    ],
+    presenterCues: [
+      "Random pair assignment, fresh from Breakout 1; do not let people self-select.",
+      "Hold the timer at thirty minutes; do not let it stretch.",
+      "Keep the cohort feed open in a side window so you can triage every 'broken' post yourself within five minutes.",
+    ],
+    showThis:
+      "Step strip with four numbered steps. Thirty-minute timer button below.",
+    askThis: [
+      "Anyone who does not yet have a working studio? Raise it now; do not go into the breakout broken.",
+    ],
+    doThis: [
+      "Send pairs into rooms with the thirty-minute timer running.",
+      "Walk between two or three rooms to check the steps are actually being done in order.",
+    ],
+    watchFor: [
+      "A pair that finishes in ten minutes. Send them a follow-up: introduce a third person to the cohort feed.",
+      "A pair that gets stuck on step 1. Drop in and reseed the prompt with a specific question.",
+    ],
+    landThePoint:
+      "Every pair finishes the breakout with a working studio and at least one comment posted between them.",
+    transition: "Welcome back. Quick check-in, then we set up the third and most personal breakout.",
+    estMinutes: 33,
+  },
+  {
+    slideNumber: 22,
+    deckId: "s22",
+    day: 1,
+    segment: "Studio recap",
+    coreMessage:
+      "Confirm the cohort is studio-ready and that any broken studio is being fixed before we move into the personal plan block.",
+    sayThis: [
+      "Quick sanity check before we step into the plan block. The left column on the slide is what 'studio-ready' means tonight. You can sign in to SaintClaw and find your dashboard without help. You can open today's deck inside the studio and jump to a slide. You have made one comment on the cohort feed. Three checks. If you can put a tick next to all three, you are ready.",
+      "The right column is what to do if something is not working. Raise it in chat right now, before we move on. Or post it in the cohort feed and I will pick it up. Do not wait until tomorrow morning. Day 1 is the time to fix small things, because tomorrow's pace is faster.",
+      "I will read each of the three checks aloud and pause. If you cannot tick all three, type a question mark in chat. I will reach out to you privately during the next break.",
+    ],
+    presenterCues: [
+      "Read each tick aloud and pause; resist the urge to keep talking through it.",
+      "Make the question-mark route explicit; it is how shy learners surface a real problem.",
+      "Do not move on until any question marks have been triaged.",
+    ],
+    showThis:
+      "Two-column simple grid: 'You are studio-ready when' (left), 'If something does not work' (right). Both as checks.",
+    askThis: [
+      "Tick all three? Or question mark in chat. Either is welcome.",
+    ],
+    doThis: [
+      "Triage every question mark yourself before advancing to the next slide; do not leave them hanging.",
+    ],
+    watchFor: [
+      "A learner who never ticks. Reach out privately; do not call them out in the room.",
+    ],
+    landThePoint:
+      "Every learner is studio-ready, or you have a named issue you are working with them on right now.",
+    transition: "Now the bridge into the personal plan: cohort, studio, plan.",
+    estMinutes: 6,
+  },
+  {
+    slideNumber: 23,
+    deckId: "s23",
+    day: 1,
+    segment: "Bridge to the plan",
+    coreMessage:
+      "Bridge cleanly into the plan block by naming the three things every learner leaves Day 1 with: cohort, studio, plan.",
+    sayThis: [
+      "Three things you leave today with. Cohort. Studio. Plan. Read them on the slide with me. Two of them are already in place. You have a cohort, because you spent the morning meeting each other. You have a studio, because you spent the last block getting signed in.",
+      "The third one, the plan, is what we build in the next ninety minutes. Of all three, the plan is the one that matters most. The cohort is the people you walk with. The studio is the place you walk in. The plan is the thing that tells you whether you are walking in the right direction.",
+      "So the next block is yours. We do not move forward until each of you has written, reviewed, locked down, and spoken your own plan. That is how Day 1 ends. Take a breath, refill your water, and we go straight into how the plan works.",
+    ],
+    presenterCues: [
+      "Hero slide: read the three words slowly; let each one land.",
+      "Reinforce that two are already done; the room earns confidence by hearing this.",
+      "Bridge the energy down a notch; the next block is reflective, not performative.",
+    ],
+    showThis:
+      "Hero slide: large headline 'Cohort. Studio. Plan.' Subline: 'Three things you leave today with.'",
+    askThis: [
+      "Before we step into the plan, anything you want to flag from the breakout that needs follow-up tonight?",
+    ],
+    doThis: [
+      "Capture any last-minute issues in your private notes; resolve them before close.",
+    ],
+    watchFor: [
+      "Visible fatigue across the room. Take the break here, before you brief the plan template.",
+    ],
+    landThePoint:
+      "By tonight you leave with three things in your hands: a cohort, a working studio, and a personal plan with your name on it.",
+    transition: "Now the assessment shape, so you know what 'done' looks like in this programme.",
+    estMinutes: 4,
+  },
+  {
+    slideNumber: 24,
+    deckId: "s24",
+    day: 1,
+    segment: "Assessment shape",
+    coreMessage:
+      "Make the assessment shape of the programme visible in plain language so the cohort knows what 'complete' looks like before they write their plan.",
+    sayThis: [
+      "Now we look at how each module marks you complete, and how the capstone is judged. The left column is what 'complete' means at the end of every module. You finish the named checkpoints inside the studio. You produce the artefact, like a triage or a model or a dashboard. The studio marks the module complete on your dashboard. There is no surprise rubric, no hidden grading.",
+      "The right column is the capstone, Module 7. Four things judged. Clarity of the recommendation. Evidence behind it. Controls and risks named. Quality of communication to a leadership audience. That is it. You will see this list again at the start of Module 7, and again before submission.",
+      "I am showing you this now, on Day 1, because the plan you write in the next breakout has to point at one of the artefacts in the left column. So before you start writing, you know exactly which artefacts are in play and what 'done' looks like.",
+    ],
+    presenterCues: [
+      "Read the capstone judging list slowly; the room needs to hear all four.",
+      "Make the 'no surprise rubric' line explicit; it lowers anxiety.",
+      "Connect the assessment shape directly to the upcoming plan template.",
+    ],
+    showThis:
+      "Two-column simple grid: 'Each module marks you complete when' (left), 'The capstone is judged on' (right). Both as checks.",
+    askThis: [
+      "Any question on the four capstone judging criteria before we move into the plan template?",
+    ],
+    doThis: [
+      "Pin the four capstone criteria into chat as text so they survive scrollback.",
+    ],
+    watchFor: [
+      "Anyone who looks anxious at 'judged'. Reframe to coaching language during the next break.",
+    ],
+    landThePoint:
+      "Each module is marked complete by the studio, and the capstone is judged on four named criteria.",
+    transition: "Now the plan template itself, so you know exactly what you are about to write.",
+    estMinutes: 6,
+  },
+  {
+    slideNumber: 25,
+    deckId: "s25",
+    day: 1,
+    segment: "Plan template",
+    coreMessage:
+      "Walk the four-part achievement plan template and a worked example so every learner knows exactly what to write in Breakout 3.",
+    sayThis: [
+      "Your achievement plan has four parts. Look at the left column with me. Part one, your future-self statement, the one sentence you wrote in Breakout 1. Part two, three module priorities in order. Not all seven, just three, and the order matters. Part three, one artefact you most want to put your name on. Part four, two risks that will most likely get in the way for you.",
+      "On the right, a worked example you can mirror. Future self: trusted analyst on the branch performance team. Priorities: Modules 1, 4, and 6, in that order. Artefact: a leadership-ready dashboard for branch performance. Risks: Friday workload spikes; underestimating the maths in Module 3. Short, specific, owned. That is the whole plan. No essay. No theory. Yours.",
+      "Before we go into the breakout, scan the worked example one more time. Notice the future-self sentence is concrete. Notice the priorities are in order, not a list. Notice the risks name actual things in this person's working life. Mirror that shape. Do not mirror the content.",
+    ],
+    presenterCues: [
+      "Read each part of the plan with the worked example beside it; the example is the lesson.",
+      "Stress 'in order' on the priorities; this is where most plans go vague.",
+      "Do not let the room turn the risks section into corporate hedging; push for honest ones.",
+    ],
+    showThis:
+      "Two-column simple grid: 'Your plan has four parts' (left), 'Worked example to mirror' (right). Note line below.",
+    askThis: [
+      "Anyone unclear on the difference between an artefact and an outcome? I'll show one more example if needed.",
+    ],
+    doThis: [
+      "Pin the four parts and the worked example into chat as text before sending the room into the breakout.",
+    ],
+    watchFor: [
+      "A learner who tries to list all seven modules as priorities. Hold the line at three; the order is the discipline.",
+    ],
+    landThePoint:
+      "Every learner can see the four parts of the plan and a worked example to mirror in shape, not in content.",
+    transition: "Now into Breakout 3, where you write your plan in trios.",
+    estMinutes: 8,
+  },
+  {
+    slideNumber: 26,
+    deckId: "s26",
+    day: 1,
+    segment: "Breakout 3 launch",
+    coreMessage:
+      "Launch Breakout 3 cleanly: forty minutes in trios to write a personal achievement plan, then sharpen each other's plans with questions only.",
+    sayThis: [
+      "Time for Breakout 3, the personal plan in trios. Forty minutes total. We follow a tight structure, because the structure is the lesson. Phase one is ten minutes of silent writing. Cameras on, mics off, in your trio room. Each of you writes the four parts of the plan from the previous slide. No talking. The silence matters.",
+      "Phase two is thirty minutes of trio review. Each of you reads your plan aloud, three minutes each. The other two each ask one sharpening question. Questions only, not edits. Things like 'why those three modules in that order?' or 'what does that risk actually look like in your week?'. Do not rewrite each other's plans. Sharpen them with your questions.",
+      "When you come back, one volunteer per trio shares the one sentence in their plan that was hardest to write. Not the whole plan, just one sentence. Forty minutes on the clock when I send you in.",
+    ],
+    presenterCues: [
+      "Random trios, fresh from Breakout 2; do not let people self-select.",
+      "Brief both phases in writing in chat before sending them in; the structure is the assessment.",
+      "Sit in on at least three trios; listen for vague language and push for specifics in real time.",
+    ],
+    showThis:
+      "Step strip with three named steps: phase 1 (10 min), phase 2 (30 min), bring back one sentence. Forty-minute timer button below.",
+    askThis: [
+      "Any trio unclear on phase boundaries? I'll repeat the timing once before you go in.",
+    ],
+    doThis: [
+      "Send trios into rooms with the forty-minute timer set.",
+      "Drop into trios at minute fifteen; that is when phase two usually slips into edits.",
+    ],
+    watchFor: [
+      "A trio in pure phase-two silence. Reseed with one of the sharpening question examples.",
+      "A trio that gets stuck on phase one. Privately remind them: silent writing is the whole phase.",
+    ],
+    landThePoint:
+      "Every learner has written, read aloud, and been sharpened on a personal achievement plan by the end of this breakout.",
+    transition: "Welcome back. Each trio shares one sentence, then we put the plans into the studio.",
+    estMinutes: 43,
+  },
+  {
+    slideNumber: 27,
+    deckId: "s27",
+    day: 1,
+    segment: "Trio share",
+    coreMessage:
+      "Run a focused trio share where each volunteer surfaces one hardest sentence and the cohort hears the patterns across plans.",
+    sayThis: [
+      "Welcome back from Breakout 3. We are going to take one sentence from each trio, in the order of the room. Just the one sentence in your plan that was hardest to write. Not the full plan. The left column on the slide is what we share back: one sentence per trio, where the hardest parts resonate, where the same pattern shows up across trios, and what that says about the cohort.",
+      "While each trio shares, look at the right column. The point of this share is for you to hear that you are not the only one who found a particular part hard. Recurring hardest parts become coaching themes for the whole programme. So write down one specific phrase from another trio that is worth borrowing for your own plan tonight.",
+      "I will name two patterns I hear across the room before we move on, so the cohort can see I am listening across all of you, not just within your trio. Then we lock the plans down so they survive the night.",
+    ],
+    presenterCues: [
+      "Hold each share to one sentence; cut gently if a learner reads the whole plan.",
+      "Name two patterns you heard; do not name three, you'll lose the room's attention.",
+      "Use this slide to bridge into the capture step; energy belongs on locking the plan down next.",
+    ],
+    showThis:
+      "Two-column simple grid: 'What we share back' (left), 'What you carry forward' (right). Both as checks.",
+    askThis: [
+      "Whose volunteer is going first? I'll go around the room from there.",
+    ],
+    doThis: [
+      "Capture the recurring hardest parts in your private notes; they are your coaching themes for Day 2 onward.",
+    ],
+    watchFor: [
+      "A trio whose volunteer says 'we did not find anything hard'. Reframe and ask for the part that took the longest to phrase.",
+    ],
+    landThePoint:
+      "The cohort hears one hardest sentence from each trio, and the recurring patterns become coaching themes for the rest of the programme.",
+    transition: "Now we lock the plan down so it survives tonight.",
+    estMinutes: 12,
+  },
+  {
+    slideNumber: 28,
+    deckId: "s28",
+    day: 1,
+    segment: "Capture your plan",
+    coreMessage:
+      "Have every learner lock their plan down offline tonight in a place they will actually re-read, and post a one-line headline in the cohort feed so the room knows it landed.",
+    sayThis: [
+      "Now we lock the plan down. There is no card to paste it into and no upload button. The plan lives with you. The discipline today is making sure it survives tonight, because tomorrow morning the first thing we do is look at it again.",
+      "Four steps on the slide. Step one, write the four parts cleanly. Notebook, notes app on your phone, or a doc on your laptop. Future self, priorities, artefact, risks. The version you would re-read in a month, not the rough one from Breakout 3. Step two, photograph it or save it. If it is on paper, take a photo right now. If it is in a doc, file it somewhere you will find it tomorrow. Step three, open the cohort feed in the studio and post one short line: the headline of your future-self sentence. Not the full plan. Just the header. Step four, type 'plan locked' in chat once you have done all three. That is the signal to me that you are done.",
+      "We do not advance until every name on my screen has typed 'plan locked'. The plan you just wrote is the artefact for Day 1, and tomorrow's first task is to look at it again.",
+    ],
+    presenterCues: [
+      "Read the lede out loud first: no system to upload to, the plan lives with you. Set the expectation early.",
+      "Track 'plan locked' chats on a private list; you need every name before the next slide.",
+      "Sanity-check the cohort feed yourself; you should see one short headline appear from each learner.",
+    ],
+    showThis:
+      "Step strip with four numbered capture steps. No timer. Lede explains there is no upload, the plan lives with the learner.",
+    askThis: [
+      "Anyone struggling to find a place to put it? Paper, notes app, doc, anything works. Tell me in chat now.",
+    ],
+    doThis: [
+      "Wait for 'plan locked' from the entire room before clicking next.",
+      "Watch the cohort feed live and acknowledge the first two or three headlines so the room sees the channel works.",
+    ],
+    watchFor: [
+      "A learner who silently does not type 'plan locked'. Reach out privately in chat; do not call them out.",
+    ],
+    landThePoint:
+      "Every learner has their personal achievement plan written, captured somewhere they will re-read, and signalled in the cohort feed before close.",
+    transition: "Now the most important sentence each of you will say today, out loud.",
+    estMinutes: 10,
+  },
+  {
+    slideNumber: 29,
+    deckId: "s29",
+    day: 1,
+    segment: "Spoken commitments",
+    coreMessage:
+      "Run the spoken commitments around the room so every learner speaks one specific, dated, honest 'I will' sentence aloud before close.",
+    sayThis: [
+      "Last big moment of Day 1, and the reason the timing of this slide matters. We are going to go round the room, one by one, and each of you will say one sentence aloud. The shape of the sentence is on the screen. 'I will do something specific by a date, because an honest reason.' Three parts. Specific. Dated. Honest. No 'I'll try'. No 'maybe by then'. No vague reason.",
+      "Look at the three examples below the sentence. Module 1 with a defendable triage by 21 April, because trust in our extracts is overdue. A branch performance dashboard by week six, because the team needs it next quarter. A real AI recommendation to the function head by certificate week, because the speaker wants to lead the conversation. Notice the shape: specific output, real date, honest reason. Mirror that shape. Do not mirror that content.",
+      "I will go first to set the tone. Then we go round the room. Speak the sentence as if you mean it, because the cohort needs to hear your promise, and you need to hear yourself make it.",
+    ],
+    presenterCues: [
+      "You go first, with a real and specific sentence; the room mirrors your standard.",
+      "If a learner says 'I'll try', stop them gently and ask them to restate as 'I will'.",
+      "Capture every commitment in your notes; you will quote them back in coaching.",
+    ],
+    showThis:
+      "Commitment card hero with the sentence shape, three worked examples below as plain rows, and a note line at the bottom.",
+    askThis: [
+      "Anyone want a moment to draft their sentence in writing first before we go round?",
+    ],
+    doThis: [
+      "Go round the room in a deliberate order; do not let people opt out by saying 'pass to me later'.",
+      "Read three or four of the strongest commitments back at the very end so the room hears themselves.",
+    ],
+    watchFor: [
+      "A learner who softens their sentence at the last moment. Quote it back to them and ask if that is really what they mean.",
+    ],
+    landThePoint:
+      "Every learner has spoken one specific, dated, honest 'I will' commitment aloud, and you have it written down word for word.",
+    transition: "Now the bridge into tomorrow. The next slide tells you exactly what changes overnight.",
+    estMinutes: 12,
+  },
+  {
+    slideNumber: 30,
+    deckId: "s30",
+    day: 1,
+    segment: "Python warm-up before Module 1",
+    coreMessage:
+      "Bridge from orientation into Module 1 by giving every learner a small, no-code warm-up to do tonight, plus a clear picture of what the first hour tomorrow morning looks like.",
+    sayThis: [
+      "Last working slide of the day. Tomorrow morning, Module 1 opens and the pace shifts. We are hands on a notebook within the first hour. To make sure you arrive ready, not cold, I am giving you a small warm-up to do tonight. No code. No installs. About twenty minutes total. The output is what we use to ground the very first lab.",
+      "On the left, three things to do tonight. One: find one extract you actually receive at work. A daily report, a dashboard download, an extract someone in your team forwards you regularly. Spend five minutes looking at it the way an outsider would. Note how many columns it has, roughly how many rows, and the one number on it you trust the least. Two: write one question. On a single line, write the question you would want a script to answer about that extract tomorrow morning. Honest, small, concrete. Examples on the slide. 'How many transactions over fifty thousand AED?' or 'Which customers appear more than once and why?' That sentence is your starting line. Three: click into the Module 1 tile in the studio at least once tonight so it is already loaded on your machine.",
+      "On the right, what happens tomorrow morning. Same time, same room. Module 1 starts at the top of the hour. Five-minute reconnect with the cohort. Then in the first fifteen minutes, you read your warm-up question aloud and we use it to ground the first lab. By the end of the first hour, you are in the notebook, answering the question you already wrote down. So you do not start tomorrow staring at a blank page. You start tomorrow answering the question you brought with you.",
+    ],
+    presenterCues: [
+      "Pin the three warm-up steps into chat as a numbered list so they survive scrollback overnight.",
+      "Read both example questions aloud so the room hears what 'small and concrete' actually sounds like.",
+      "Make it explicit that no Python is required tonight; the warm-up is thinking, not coding.",
+    ],
+    showThis:
+      "Two-column simple grid: 'Tonight (about 20 min)' on the left with three numbered actions, 'What happens tomorrow morning' on the right as checks. Note line at the bottom.",
+    askThis: [
+      "Quick test in chat. In one line, what is the kind of question you might bring tomorrow? Just a few examples in chat, not the full room.",
+    ],
+    doThis: [
+      "Read two or three of the chat examples back to the room so the rest see what 'small and concrete' looks like.",
+      "Pin the cohort feed link into chat so anyone who gets stuck on the warm-up tonight knows where to post.",
+    ],
+    watchFor: [
+      "A learner whose question is too big or too vague (e.g. 'how do I use AI in my team?'). Reframe gently in chat: 'pick one extract, one number'.",
+      "A learner who looks anxious at 'extract'. Reassure them any small file, even a single email attachment, counts.",
+    ],
+    landThePoint:
+      "Every learner leaves with a small, doable warm-up tonight and a clear picture of how the first hour tomorrow morning uses what they brought.",
+    transition: "Now the recap of what today actually built before we close.",
+    estMinutes: 6,
+  },
+  {
+    slideNumber: 31,
+    deckId: "s31",
+    day: 1,
+    segment: "Day 1 recap",
+    coreMessage:
+      "Recap Day 1 in three plain numbers so every learner leaves with a clear picture of what the day delivered.",
+    sayThis: [
+      "Quick recap before we close Day 1. Three numbers on the slide. One cohort. You have heard, in someone else's voice, what every member of this cohort wants from the programme, and why. You shared concerns you were quietly carrying alone. One studio. Every learner is signed in, has a profile, and has posted at least once on the cohort feed. One plan. Four parts, written, locked down, and yours.",
+      "That is what today built. A real morning of work, with no code written. Hold those three things in your head as you log off. They are the foundation that the rest of the programme sits on top of.",
+      "The standard you set today is the standard the rest of the programme inherits. You showed up, you spoke, you wrote, you committed. Tomorrow morning, Module 1 takes that energy and starts using it. So we end on a high.",
+    ],
+    presenterCues: [
+      "Read the three numbers slowly; this is the room's last big breath before close.",
+      "Connect the three numbers back to the bridge slide on s23; the cohort should hear the symmetry.",
+      "Keep the energy warm; the close slide is hero, not high-energy.",
+    ],
+    showThis:
+      "Big-number row: 1 cohort, 1 studio, 1 plan. Note line below.",
+    askThis: [
+      "Anything unsaid we want to acknowledge before we close?",
+    ],
+    doThis: [
+      "Pause briefly after the three numbers; do not rush into the close.",
+    ],
+    watchFor: [
+      "A learner who tries to use this slide to reopen something. Honour it briefly, then bridge to the close.",
+    ],
+    landThePoint:
+      "Day 1 leaves the cohort connected, the studio active, the plan locked down, and the standard set.",
+    transition: "Last slide. We close warmly and we close on time.",
+    estMinutes: 5,
+  },
+  {
+    slideNumber: 32,
+    deckId: "s32",
+    day: 1,
+    segment: "Day 1 close",
+    coreMessage:
+      "Close Day 1 warmly and on time so the cohort leaves with energy for tomorrow morning.",
+    sayThis: [
+      "See you tomorrow morning. Same room. Module 1 starts at the top of the hour. Bring your plan, your laptop, and the one extract and one question you wrote down tonight. The cohort feed is open all evening, and anything you post there comes straight to me if something wobbles.",
+      "Before we close, one thing from me. You showed up today. You spoke aloud. You wrote your plan. You committed. That is exactly the standard the rest of the programme needs from you, and you set it on Day 1. So the work tomorrow has a foundation under it that not every cohort gives itself. Carry that into the morning.",
+      "Have a good evening, look after each other on the feed tonight, and I will see all of you at the same time tomorrow.",
+    ],
+    presenterCues: [
+      "Hero close: read the headline calmly; the room remembers the last thing it hears.",
+      "Stay on screen for thirty seconds after the close so any last questions can land.",
+      "Drop a 'good evening' note into the cohort feed yourself; it sets the tone for tomorrow.",
+    ],
+    showThis:
+      "Hero slide: large headline 'See you tomorrow morning.' Subline: 'Same room. Module 1. Bring your plan, your laptop, and your warm-up answers.' One meta pill below.",
+    askThis: [
+      "Any final question before we close, or anything we should leave on the cohort feed for me to pick up overnight?",
+    ],
+    doThis: [
+      "Wait for any last chat questions, then close on time.",
+    ],
+    watchFor: [
+      "A learner who lingers on the call. They often have a question they did not raise; invite them to chat with you privately.",
+    ],
+    landThePoint:
+      "Day 1 closes with the cohort connected, the studio active, the plan locked down, and the commitment spoken aloud.",
+    transition: "End of Day 1.",
+    estMinutes: 5,
+  },
+];
+
+const programmeOrientationPack: ModuleScriptPack = {
+  moduleSlug: "programme-orientation",
+  moduleTitle: "Programme Orientation",
+  durationDays: 1,
+  hoursPerDay: 5,
+  totalSlides: 32,
+  segments,
+  slides,
+};
+
+export default programmeOrientationPack;
+export {
+  segments as programmeOrientationSegments,
+  slides as programmeOrientationSlides,
+};

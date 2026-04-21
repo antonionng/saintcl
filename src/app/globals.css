@@ -4,20 +4,53 @@
 @source not "../../runtime-data";
 
 :root {
-  --background: #000000;
-  --background-elevated: #000000;
+  /* Fibonacci spacing scale (~1.618x between steps) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-5: 1.25rem;
+  --space-8: 2rem;
+  --space-13: 3.25rem;
+  --space-21: 5.25rem;
+  --space-34: 8.5rem;
+
+  /* Typography scale (golden-ratio derived) */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.625rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.625rem;
+
+  /* Border radius (3 tiers) */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+
+  /* Surface elevation */
+  --surface-0: #09090b;
+  --surface-1: rgba(255, 255, 255, 0.03);
+  --surface-2: rgba(255, 255, 255, 0.055);
+  --surface-3: rgba(255, 255, 255, 0.09);
+
+  /* Semantic colors */
+  --background: var(--surface-0);
+  --background-elevated: var(--surface-0);
   --foreground: #ffffff;
-  --muted: #000000;
-  --muted-foreground: rgba(255, 255, 255, 0.68);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.14);
-  --panel: #000000;
-  --panel-strong: #000000;
-  --panel-soft: #000000;
+  --muted: var(--surface-0);
+  --muted-foreground: rgba(255, 255, 255, 0.55);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --panel: var(--surface-0);
+  --panel-strong: var(--surface-0);
+  --panel-soft: var(--surface-0);
   --success: #34d399;
   --warning: #fbbf24;
   --ring: rgba(255, 255, 255, 0.22);
   --shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.28);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 @theme inline {
@@ -25,13 +58,29 @@
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-border-subtle: var(--border-subtle);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-panel: var(--panel);
   --color-panel-strong: var(--panel-strong);
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --font-sans: var(--font-inter);
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --spacing-phi-1: 0.25rem;
+  --spacing-phi-2: 0.5rem;
+  --spacing-phi-3: 0.75rem;
+  --spacing-phi-5: 1.25rem;
+  --spacing-phi-8: 2rem;
+  --spacing-phi-13: 3.25rem;
+  --spacing-phi-21: 5.25rem;
+  --spacing-phi-34: 8.5rem;
 }
 
 * {
@@ -63,10 +112,12 @@ html {
 
 body {
   min-height: 100vh;
-  background: #000000;
+  background: var(--surface-0);
   color: var(--foreground);
   font-family: var(--font-inter), Arial, Helvetica, sans-serif;
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 a {
@@ -101,7 +152,7 @@ select {
 }
 
 option {
-  background: #000000;
+  background: var(--surface-0);
   color: var(--foreground);
 }
 
@@ -116,21 +167,21 @@ option {
 
 .app-surface {
   border: 1px solid var(--border);
-  background: #000000;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.02),
-    var(--shadow-lg);
+  background: var(--surface-2);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
 }
 
 .app-surface-subtle {
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  background: #000000;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-1);
+  border-radius: var(--radius-lg);
 }
 
 .app-kicker {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.12em;
   color: var(--muted-foreground);
   text-transform: uppercase;
 }
@@ -145,7 +196,7 @@ option {
 }
 
 .app-field-label {
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   font-weight: 500;
   color: rgba(245, 247, 250, 0.86);
 }
@@ -153,18 +204,16 @@ option {
 .app-checkbox {
   height: 1rem;
   width: 1rem;
-  border-radius: 0.35rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
 }
 
 .settings-panel {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1.1rem;
-  background: #000000;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.015),
-    0 8px 32px rgba(0, 0, 0, 0.16);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+  box-shadow: var(--shadow-card);
 }
 
 .saintclaw-terminal .xterm {

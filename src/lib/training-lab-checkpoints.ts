@@ -1,5 +1,64 @@
+
 import type { PythonTaskCheck } from "@/lib/python-task-checks";
 import { resolvePythonTaskChecksForCheckpoint } from "@/lib/python-task-checks";
+
+export type WorkbenchTaskKind =
+  | "analysis"
+  | "design"
+  | "code"
+  | "prompt"
+  | "artifact"
+  | "discussion";
+
+export type WorkbenchEvidenceKind =
+  | "notes"
+  | "artifact_link"
+  | "file_upload"
+  | "workbench_state";
+
+export type WorkbenchTask = {
+  // Discriminator so the UI can branch between Python validation tasks
+  // (PythonTaskCheck) and craft-specific workbench tasks.
+  taskKind: "workbench";
+  id: string;
+  checkpointSlug: string;
+  title: string;
+  prompt: string;
+  successCriteria: string[];
+  evidenceKinds: WorkbenchEvidenceKind[];
+  kind: WorkbenchTaskKind;
+};
+
+export type TrainingLabCheckpointTask = PythonTaskCheck | WorkbenchTask;
+
+export function isWorkbenchTask(task: TrainingLabCheckpointTask): task is WorkbenchTask {
+  return (task as WorkbenchTask).taskKind === "workbench";
+}
+
+// Challenge questions sit on the Defend step of the four-step loop
+// (Brief -> Engage -> Verify -> Defend). The coach picks one per
+// engineer per lab and asks it after the technical work is done.
+// See python-training/MODULE-REFRAME.md sections 5 and 7.
+export type ChallengeQuestionType =
+  | "definition"
+  | "denominator"
+  | "lineage"
+  | "counterfactual"
+  | "audience";
+
+export type ChallengeQuestion = {
+  id: string;
+  type: ChallengeQuestionType;
+  prompt: string;
+  // Short bullets the coach uses to evaluate whether a participant's
+  // written answer is shallow or substantive.
+  rubric: string[];
+};
+
+// The data quality posture each lab takes toward its dataset.
+// Communicated to participants in the lab brief so verification feels
+// like a professional habit, not a gotcha.
+export type LabDataPosture = "declared" | "mixed" | "unspecified";
 
 export type TrainingLabCheckpoint = {
   slug: string;
@@ -10,149 +69,492 @@ export type TrainingLabCheckpoint = {
   startSlide: number;
   endSlide: number;
   facilitatorPrompt: string;
-  tasks?: PythonTaskCheck[];
+  tasks?: TrainingLabCheckpointTask[];
   interventionPrompts?: Array<{
     startSlide: number;
     endSlide: number;
     label: string;
     prompt: string;
   }>;
+  challengeQuestions?: ChallengeQuestion[];
+  dataPosture?: LabDataPosture;
+  // The actual question leadership is asking, written in their voice. This is
+  // what the participant restates in their own words on the BRIEF beat. Surfaced
+  // prominently in the active task bar and passed to the coach context so the
+  // coach can quote it back when asked to help with the brief.
+  leadershipQuestion?: string;
 };
 
+// Helper: build the standard four-step workbench tasks for a python lab.
+// Each lab in the "Truths from Bank Data" curriculum runs the same loop
+// (Brief -> Engage -> Verify -> Defend). Verify is auto-validated python
+// (PythonTaskCheck, supplied separately). Brief, Note-an-issue, and Defend
+// are workbench tasks captured as written notes in the active task bar.
+function buildPythonLabWorkbenchTasks(args: {
+  slug: string;
+  briefPrompt: string;
+  notePrompt: string;
+}): WorkbenchTask[] {
+  const { slug, briefPrompt, notePrompt } = args;
+  return [
+    {
+      taskKind: "workbench",
+      id: `${slug}-brief`,
+      checkpointSlug: slug,
+      title: "Brief the task before you prompt",
+      prompt: briefPrompt,
+      successCriteria: [
+        "Restate the leadership question in your own words",
+        "Name what a defendable answer would have to look like",
+        "Pin the one definition, denominator, cut-off, or scope choice before you talk to the AI",
+      ],
+      evidenceKinds: ["notes"],
+      kind: "analysis",
+    },
+    {
+      taskKind: "workbench",
+      id: `${slug}-note-issue`,
+      checkpointSlug: slug,
+      title: "Name one issue you would flag",
+      prompt: notePrompt,
+      successCriteria: [
+        "Name one specific issue, assumption, or weakness",
+        "Say it in language a manager would understand, not in code",
+        "State whether it changes your conclusion or only your confidence",
+      ],
+      evidenceKinds: ["notes"],
+      kind: "analysis",
+    },
+    {
+      taskKind: "workbench",
+      id: `${slug}-defend`,
+      checkpointSlug: slug,
+      title: "Answer the challenge question",
+      prompt:
+        "On the Defend step the coach picks one challenge question for you. Write a one-paragraph answer using evidence from your own work. The coach holds you to the rubric.",
+      successCriteria: [
+        "Answer the question that was asked, not a generic recap",
+        "Cite evidence from the data or your run",
+        "Name what you still do not know or what could still be wrong",
+      ],
+      evidenceKinds: ["notes"],
+      kind: "discussion",
+    },
+  ];
+}
+
+function pythonLabTasks(args: {
+  slug: string;
+  briefPrompt: string;
+  notePrompt: string;
+}): TrainingLabCheckpointTask[] {
+  return [
+    ...buildPythonLabWorkbenchTasks(args).slice(0, 1), // Brief first
+    ...resolvePythonTaskChecksForCheckpoint(args.slug), // Verify (auto python)
+    ...buildPythonLabWorkbenchTasks(args).slice(1), // Note + Defend last
+  ];
+}
+
+// Slide ranges below are placeholders that match the current 84-slide deck.
+// They will be re-anchored to the new ~60-slide deck in Phase 2 of the
+// reframe (see python-training/MODULE-REFRAME.md). Verification output paths
+// reuse the existing day1/day2/day3_pack folders so current notebooks keep
+// working during the transition; notebook layout updates in Phase 3.
 const pythonLabCheckpoints: TrainingLabCheckpoint[] = [
   {
-    slug: "setup-sprint",
-    title: "Setup sprint",
-    description: "Open the Day 1 notebook, run the setup block, and confirm the data and output paths are working.",
-    notebookSlug: "day1",
-    blockIndex: 0,
-    startSlide: 1,
-    endSlide: 9,
-    facilitatorPrompt: "Pause here and complete the setup sprint in the Python workspace before moving on.",
-    tasks: resolvePythonTaskChecksForCheckpoint("setup-sprint"),
-    interventionPrompts: [
-      {
-        startSlide: 1,
-        endSlide: 4,
-        label: "Open materials",
-        prompt:
-          "If you are not yet inside the Day 1 notebook and training folder, stop here, open the materials now, and rejoin once both are visible.",
-      },
-      {
-        startSlide: 5,
-        endSlide: 7,
-        label: "Run setup block",
-        prompt:
-          "Run the Day 1 setup block now. Do not move on until the imports work and your data and output paths are visible in the notebook.",
-      },
-      {
-        startSlide: 8,
-        endSlide: 9,
-        label: "Fix setup issues",
-        prompt:
-          "If your setup cell failed, stay here and fix the import or file path issue now. Do not continue until the notebook runs cleanly.",
-      },
-    ],
-  },
-  {
-    slug: "data-triage",
-    title: "Data triage",
-    description: "Load the transactions extract, inspect the DataFrame, and make a defensible first-pass fitness judgement.",
+    slug: "lab-a-triage",
+    title: "Lab A: Triage an extract",
+    description:
+      "Leadership wants to know if a transactions extract is usable for a first performance cut. Brief the task, work the four-step loop with the coach, verify with checks you pick yourself, and write a fitness call you can defend.",
+    leadershipQuestion:
+      "Is this transactions extract clean enough that we can trust a first performance cut on it for next week's review? I need a 'fit / partly fit / not yet fit' call with one reason I can repeat to the board.",
     notebookSlug: "day1",
     blockIndex: 1,
-    startSlide: 13,
-    endSlide: 18,
-    facilitatorPrompt: "Please complete the data triage checkpoint now and record whether the extract is fit, partly fit, or not yet fit.",
-    tasks: resolvePythonTaskChecksForCheckpoint("data-triage"),
+    startSlide: 10,
+    endSlide: 21,
+    dataPosture: "declared",
+    facilitatorPrompt:
+      "Pause here and run Lab A end to end. The extract has at least one declared issue. Walk the room through the four-step loop and stop on the Defend write-up. The point of this lab is not the triage; it is the habit of briefing before prompting.",
+    tasks: pythonLabTasks({
+      slug: "lab-a-triage",
+      briefPrompt:
+        "Before you open the chat, write the brief. What is leadership actually asking? What would 'fit / partly fit / not yet fit' need to look like for you to commit to that answer in front of them? Pin the one definition or threshold you must lock down before any prompt is worth sending.",
+      notePrompt:
+        "You have looked at the extract. Pick the one issue you would walk into your manager's office to flag right now. Name what it is, what you saw that made you call it, and whether it changes your fitness call or only how confident you are in it.",
+    }),
     interventionPrompts: [
       {
-        startSlide: 13,
-        endSlide: 14,
-        label: "Load the extract",
+        startSlide: 10,
+        endSlide: 13,
+        label: "Brief the task",
         prompt:
-          "Load the transactions extract now and confirm you can see the DataFrame shape, columns, and first rows before following the next slide.",
+          "Stop here and write your brief before you open the chat. The Brief task in the active task bar tells you what good looks like. Skip this step and the rest of the lab unravels.",
       },
       {
-        startSlide: 15,
-        endSlide: 16,
-        label: "Inspect data quality",
+        startSlide: 14,
+        endSlide: 19,
+        label: "Engage and verify",
         prompt:
-          "Pause and complete the five opening checks now. Look for missing values, odd data types, suspicious ranges, and duplicate records before moving on.",
+          "Now work with the coach. Inspect the extract together. Use 'Pressure-test this' and 'What might be wrong here?' to push back on what the AI hands you. The auto-validated task in the active task bar lights up when your triage output is in place.",
       },
       {
-        startSlide: 17,
-        endSlide: 18,
-        label: "State the judgement",
+        startSlide: 20,
+        endSlide: 21,
+        label: "Defend with evidence",
         prompt:
-          "Make the triage judgement now. Decide whether the extract is fit, partly fit, or not yet fit, and be ready to justify that answer with evidence from the notebook.",
+          "Reach the Defend step. The coach picks one challenge question for you. Answer it in a paragraph, citing evidence from your run. Bring the answer to the debrief; be ready to read it aloud.",
+      },
+    ],
+    challengeQuestions: [
+      {
+        id: "lab-a-q-definition",
+        type: "definition",
+        prompt:
+          "Talk us through what 'fit for first-pass analysis' actually means here. If you tightened the definition by one notch, would your fitness call still hold? If you loosened it by one notch, would it flip? Where did you draw the line, and why there?",
+        rubric: [
+          "Names the criteria that make something 'fit' in their own words",
+          "Tests the call against a stricter and a looser definition",
+          "Lands on a defended position rather than a hedge",
+        ],
+      },
+      {
+        id: "lab-a-q-lineage",
+        type: "lineage",
+        prompt:
+          "Imagine you trusted the row count without checking the source system. Which banking process would have to wobble for that row count to mislead you tomorrow? Walk us through one realistic upstream failure and what it would do to the call you just made.",
+        rubric: [
+          "Identifies a specific upstream system or process",
+          "Describes a concrete failure mode, not a generic risk",
+          "Ties the failure mode back to how the conclusion would change",
+        ],
+      },
+      {
+        id: "lab-a-q-counterfactual",
+        type: "counterfactual",
+        prompt:
+          "Pick the single biggest data quality issue you spotted in this extract. If it had not been there, would your fitness call have changed? Talk us through the logic, and what that tells you about how brittle your judgement is.",
+        rubric: [
+          "Names the issue specifically",
+          "Reasons through the counterfactual without overclaiming",
+          "Reflects on how reliant the judgement is on a single observation",
+        ],
+      },
+      {
+        id: "lab-a-q-audience",
+        type: "audience",
+        prompt:
+          "You are now standing in front of a CFO who already distrusts the data team. Rewrite your fitness statement for them in two sentences. What survives, what gets cut, and why?",
+        rubric: [
+          "Uses precise, non-hedging language a CFO can act on",
+          "Keeps the most defensible evidence and drops the noise",
+          "Names a specific risk or caveat without burying it",
+        ],
       },
     ],
   },
   {
-    slug: "kpi-build",
-    title: "KPI build",
-    description: "Move into the Day 2 notebook and build joined analysis outputs, branch KPIs, and quality evidence.",
+    slug: "lab-b-kpi",
+    title: "Lab B: Define and build a branch KPI",
+    description:
+      "Leadership wants branch performance for last quarter. Write the numerator, denominator, exclusion logic, and cut-off rules before you open the chat. Build with the coach. Recompute under one alternative denominator. Ship the version you can defend.",
+    leadershipQuestion:
+      "How did each branch perform last quarter? Give me one table I can take to the regional managers on Monday: per branch, with a single performance number and any obvious outliers flagged.",
     notebookSlug: "day2",
     blockIndex: 1,
-    startSlide: 34,
-    endSlide: 45,
-    facilitatorPrompt: "Take a moment to finish the KPI build checkpoint in the Day 2 notebook before continuing.",
-    tasks: resolvePythonTaskChecksForCheckpoint("kpi-build"),
+    startSlide: 23,
+    endSlide: 33,
+    dataPosture: "mixed",
+    facilitatorPrompt:
+      "Pause here for Lab B. The definitions are the lesson, not the pandas. Push the room to commit numerator, denominator, and exclusion logic in writing before they prompt the coach. If they prompt first, they have already lost the lab.",
+    tasks: pythonLabTasks({
+      slug: "lab-b-kpi",
+      briefPrompt:
+        "Before you open the chat, write the KPI brief. Numerator: what gets counted or summed, and why. Denominator: what each ratio divides by, and why that one. Exclusion logic: which rows are out of scope, and why. Cut-off rules: what date window, what timezone, what batch boundary you are assuming. Every one of these will be challenged on Defend.",
+      notePrompt:
+        "Look at your branch KPI table. Name one definition choice that another good engineer would push back on. Say whether their pushback would shift the ranking, the absolute numbers, or only how the table is read.",
+    }),
     interventionPrompts: [
       {
-        startSlide: 34,
-        endSlide: 37,
-        label: "Set up the join",
+        startSlide: 23,
+        endSlide: 27,
+        label: "Pin the definitions",
         prompt:
-          "Move into the Day 2 notebook now and get the join working before you continue. Make sure the tables connect on the intended keys.",
+          "Stop the room and finish the Brief task. No prompting until numerator, denominator, exclusion, and cut-off are on the page. The whole lab pivots here.",
       },
+      {
+        startSlide: 28,
+        endSlide: 30,
+        label: "Build and stress-test",
+        prompt:
+          "Now build the KPI table with the coach. Once it runs, hit 'Pressure-test this' and ask the coach to argue for one alternative denominator. Recompute. Hold the two views side by side before anyone moves on.",
+      },
+      {
+        startSlide: 31,
+        endSlide: 33,
+        label: "Ship the defended version",
+        prompt:
+          "Reach the Defend step. Pick the version of the KPI you would actually ship. The coach will challenge that pick. Be specific about why your denominator wins; vague wins are losses here.",
+      },
+    ],
+    challengeQuestions: [
+      {
+        id: "lab-b-q-definition",
+        type: "definition",
+        prompt:
+          "Imagine a customer who opens an account at one branch and transacts at another. What does 'branch performance' mean for them in your KPI? Walk us through the choice you made, and name the assumption a regional manager would push back on first.",
+        rubric: [
+          "States the chosen attribution rule clearly",
+          "Names the realistic alternative and why it was rejected",
+          "Identifies the manager-level pushback before it is asked",
+        ],
+      },
+      {
+        id: "lab-b-q-denominator",
+        type: "denominator",
+        prompt:
+          "Try this for us: recompute total_fee_sar per active customer instead of per transaction. Which version would you ship to leadership, and why? Be explicit about what question each version is actually answering.",
+        rubric: [
+          "Both versions are described in terms of the question they answer",
+          "The chosen version is justified by the audience and the decision",
+          "The trade-off (sensitivity, fairness across branches, comparability) is named",
+        ],
+      },
+      {
+        id: "lab-b-q-lineage",
+        type: "lineage",
+        prompt:
+          "Where does branch_id come from in your join? Talk us through one realistic upstream change to that field, however small, that would silently break this KPI tomorrow without throwing an error.",
+        rubric: [
+          "Traces branch_id back to a concrete source",
+          "Describes a silent failure mode (no error, wrong answer)",
+          "Suggests a check that would catch it",
+        ],
+      },
+      {
+        id: "lab-b-q-counterfactual",
+        type: "counterfactual",
+        prompt:
+          "Picture the date filter being off by one day at the period boundary. How would the branch ranking shift? What does that say about how confidently you can publish this table on Monday morning?",
+        rubric: [
+          "Reasons through the boundary effect concretely",
+          "Names which branches or segments are most exposed",
+          "Connects the result to confidence in the published number",
+        ],
+      },
+      {
+        id: "lab-b-q-audience",
+        type: "audience",
+        prompt:
+          "You are now sitting next to a regional manager who is about to use this KPI to set next quarter's targets. Where do you want them to push back on you? And what would you say to them if they did not push back at all?",
+        rubric: [
+          "Frames the KPI in terms a manager owns and acts on",
+          "Names a specific weakness the engineer should surface unprompted",
+          "Suggests the conversation that should happen if pushback never comes",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "lab-c-pack",
+    title: "Lab C: Executive performance pack",
+    description:
+      "Build two charts and one exception view from the Day 1 KPI table. Have the coach argue against your reading of them. Close the pack with one explicit caveat written in your own words.",
+    leadershipQuestion:
+      "Put together a short performance pack for the exec meeting. I want one trend chart, one comparison chart, an exception list, and one caveat in writing so we do not over-promise on the read.",
+    notebookSlug: "day3",
+    blockIndex: 1,
+    startSlide: 38,
+    endSlide: 48,
+    dataPosture: "mixed",
+    facilitatorPrompt:
+      "Pause here for Lab C. Press the room on the gap between what their chart actually shows and what leadership will read into it. The caveat the engineer writes is the artefact, not the chart.",
+    tasks: pythonLabTasks({
+      slug: "lab-c-pack",
+      briefPrompt:
+        "Before you build the pack, write what each piece is meant to support. Chart 1: what claim does this trend make, and what claim could a sceptical reader make from the same chart. Chart 2: same. Exception view: what is the threshold logic, and what does a false flag cost you versus a missed flag.",
+      notePrompt:
+        "Look at the finished pack the way a busy executive will. Name one place where the visual or framing could push them to a wrong conclusion. Write the one caveat that has to travel with the pack to stop that.",
+    }),
+    interventionPrompts: [
       {
         startSlide: 38,
         endSlide: 42,
-        label: "Build the KPI view",
+        label: "Brief each chart claim",
         prompt:
-          "Complete the KPI build now. Your branch-level output should show the core measures clearly before you continue with the deck.",
+          "Stop here and finish the Brief task. For every chart and the exception view, write the claim it supports AND the strongest objection a sceptical reader could raise. Do not let anyone skip the second one.",
       },
       {
         startSlide: 43,
-        endSlide: 45,
-        label: "Quality-check the output",
+        endSlide: 46,
+        label: "Build and pressure-test",
         prompt:
-          "Pause here and quality-check the KPI output. Confirm the counts, totals, and grouping logic make business sense before moving forward.",
+          "Now build the charts and the exception view with the coach. Once they render, hit 'Pressure-test this' and make the coach argue against your reading. Edit titles, subtitles, and thresholds with what you hear back.",
+      },
+      {
+        startSlide: 47,
+        endSlide: 48,
+        label: "Defend the pack",
+        prompt:
+          "Reach the Defend step. The coach picks one challenge question. The caveat you wrote for the pack is the artefact to bring to the debrief; be ready to read it aloud.",
+      },
+    ],
+    challengeQuestions: [
+      {
+        id: "lab-c-q-definition",
+        type: "definition",
+        prompt:
+          "Talk us through the 'movement' your trend chart is actually showing. Could it be a definition change, a pipeline change, or a data quality artefact dressed up as a real shift? Where is your evidence that it is real?",
+        rubric: [
+          "Distinguishes the visible movement from possible alternative explanations",
+          "Names a specific definition or pipeline change that could fake the movement",
+          "Provides evidence the movement is real, not just plausible",
+        ],
+      },
+      {
+        id: "lab-c-q-audience",
+        type: "audience",
+        prompt:
+          "Imagine leadership reads only the headline of your trend chart and nothing else. What wrong conclusion might they walk out with? Rewrite the title and subtitle so that conclusion becomes harder to reach.",
+        rubric: [
+          "Identifies a realistic misreading specific to this chart",
+          "Proposes a tighter title or subtitle that closes the gap",
+          "Demonstrates respect for the audience's actual reading habits",
+        ],
+      },
+      {
+        id: "lab-c-q-counterfactual",
+        type: "counterfactual",
+        prompt:
+          "Try this for us: shift the comparison period by one quarter. Does the story this pack tells still hold, or does it lean on the exact window you chose? Talk us through what survives and what does not.",
+        rubric: [
+          "Tests sensitivity to the chosen comparison window",
+          "Names which conclusions are robust and which are window-dependent",
+          "Justifies the chosen window beyond convenience",
+        ],
+      },
+      {
+        id: "lab-c-q-lineage",
+        type: "lineage",
+        prompt:
+          "Your exception view flags branches above a threshold. Walk us through one upstream condition that could fake a flag here without the reader knowing. What warning belongs in the pack so they do not act on it?",
+        rubric: [
+          "Names a specific upstream condition that would inflate the flag",
+          "Distinguishes a false flag from a real one for this rule",
+          "Drafts the actual warning sentence to ship with the pack",
+        ],
+      },
+      {
+        id: "lab-c-q-definition-2",
+        type: "definition",
+        prompt:
+          "Rewrite your chart subtitle so a sceptical engineer reading over your shoulder can see exactly what you did and did not include. Two lines, no marketing language.",
+        rubric: [
+          "Subtitle states the metric, the scope, and the period precisely",
+          "Calls out one exclusion that matters",
+          "Reads as engineer-to-engineer, not pitch deck",
+        ],
       },
     ],
   },
   {
-    slug: "reporting-pack",
-    title: "Reporting pack",
-    description: "Use the Day 3 notebook to create reporting outputs, exception views, and ML handoff artefacts.",
+    slug: "lab-d-handoff",
+    title: "Lab D: ML-ready handoff table",
+    description:
+      "Build a customer-level feature table with the coach. Make the cut-off date explicit. Get the coach to surface one leakage risk. Write a data dictionary entry for each feature, in your own words. The handoff plus the dictionary is the module's closing artefact.",
+    leadershipQuestion:
+      "We want to start scoring customers next month. Hand the modelling team a clean, dated feature table at the customer level, plus a dictionary that tells them what each column actually means and one warning per feature.",
     notebookSlug: "day3",
-    blockIndex: 1,
+    blockIndex: 2,
     startSlide: 50,
-    endSlide: 67,
-    facilitatorPrompt: "Complete the reporting pack checkpoint now so your charts and handoff outputs are ready for review.",
-    tasks: resolvePythonTaskChecksForCheckpoint("reporting-pack"),
+    endSlide: 60,
+    dataPosture: "unspecified",
+    facilitatorPrompt:
+      "Pause here for Lab D. The handoff is what the module is judged on. Push the room to write the dictionary themselves; the moment they let the coach generate it, the lesson is gone.",
+    tasks: pythonLabTasks({
+      slug: "lab-d-handoff",
+      briefPrompt:
+        "Before you build, write the handoff brief. Cut-off date: what point in time the snapshot is taken at, and what is in or out because of that. Customer scope: what one row represents, and how you handle joint accounts and closed accounts. Feature list: which features you intend to ship and why each one is plausible for a downstream model. Leakage risks: which features could accidentally peek at information from after the cut-off.",
+      notePrompt:
+        "Pick one feature in your handoff. Write its data dictionary entry yourself, in your own words: definition, source, edge cases, and the one warning the modelling team has to read before they use it.",
+    }),
     interventionPrompts: [
       {
         startSlide: 50,
-        endSlide: 56,
-        label: "Build reporting outputs",
+        endSlide: 54,
+        label: "Brief the handoff",
         prompt:
-          "Use the Day 3 notebook now to build the reporting outputs. Do not move on until the first chart or table is rendering correctly.",
+          "Stop here and finish the Brief task. Cut-off, scope, features, and leakage risks all on the page before any prompt is sent. The handoff is only as trustworthy as this brief.",
       },
       {
-        startSlide: 57,
-        endSlide: 62,
-        label: "Create exception views",
+        startSlide: 55,
+        endSlide: 57,
+        label: "Build and check leakage",
         prompt:
-          "Pause and create the exception view now. Your notebook should isolate the cases that need escalation or follow-up before you continue.",
+          "Now build the feature table with the coach. Once it is up, ask 'What might be wrong here?' and make it surface a leakage risk. The auto-validated task confirms the file and cut-off are in place.",
       },
       {
-        startSlide: 63,
-        endSlide: 67,
-        label: "Prepare the ML handoff",
+        startSlide: 58,
+        endSlide: 60,
+        label: "Write the dictionary, then defend",
         prompt:
-          "Finish the reporting pack now by preparing the handoff output for downstream modelling. Make sure the final artefacts are saved and reviewable.",
+          "Write the data dictionary entries yourself, in your own words. Then reach the Defend step. The coach picks one challenge question. The dictionary plus the challenge answer is the module's closing artefact; treat it that way.",
+      },
+    ],
+    challengeQuestions: [
+      {
+        id: "lab-d-q-lineage",
+        type: "lineage",
+        prompt:
+          "Pick one feature and trace it back to its source for us. What upstream condition or process change would silently leak future information into your training data? Walk us through one specific path.",
+        rubric: [
+          "Names the feature and traces it to a specific source field or process",
+          "Describes a concrete leakage mechanism, not a generic warning",
+          "States how the modelling team would (or would not) catch it",
+        ],
+      },
+      {
+        id: "lab-d-q-definition",
+        type: "definition",
+        prompt:
+          "What is a 'customer' in your handoff? If the modelling team interpreted it differently, where would they end up training on the wrong unit of analysis? Talk us through your choice and the realistic alternative.",
+        rubric: [
+          "Defines the unit of analysis precisely (per customer ID, per relationship, per household, etc.)",
+          "Names a realistic alternative interpretation",
+          "Explains how that alternative would change a model's behaviour",
+        ],
+      },
+      {
+        id: "lab-d-q-counterfactual",
+        type: "counterfactual",
+        prompt:
+          "Now imagine the cut-off date moves one month later. Which features go invalid or leaky, and why? Which stay safe? Reason through it concretely.",
+        rubric: [
+          "Picks specific features and tests them against the moved cut-off",
+          "Distinguishes safe features from features that drift or leak",
+          "Names the rule a modelling team should apply before re-extracting",
+        ],
+      },
+      {
+        id: "lab-d-q-audience",
+        type: "audience",
+        prompt:
+          "Write the handoff note for an ML engineer downstream who has never seen your data dictionary. Three sentences maximum. What is the one warning they MUST read before they fit a model on this table?",
+        rubric: [
+          "Identifies the single highest-risk fact in the handoff",
+          "Writes for an engineer who will not read the appendix",
+          "Avoids hedging language while still being honest about uncertainty",
+        ],
+      },
+      {
+        id: "lab-d-q-definition-2",
+        type: "definition",
+        prompt:
+          "Pick the feature you trust least in your own handoff. Defend keeping it, or defend cutting it. Either call is fine here; what we want is the reasoning.",
+        rubric: [
+          "Names the least-trusted feature and why it earns that label",
+          "Commits to keep or cut and defends the call",
+          "Shows the trade-off between modelling value and analytical risk",
+        ],
       },
     ],
   },
@@ -800,8 +1202,114 @@ const trainingLabCheckpointMap: Record<string, TrainingLabCheckpoint[]> = {
   "ai-in-banking-and-finance": aiBankingLabCheckpoints,
 };
 
+// Default workbench task profile per non-Python module. Each profile defines
+// what kind of craft work the participant produces inside the workbench, what
+// "good" looks like, and what evidence kinds the workbench shell should accept.
+type WorkbenchProfile = {
+  kind: WorkbenchTaskKind;
+  evidenceKinds: WorkbenchEvidenceKind[];
+  buildSuccessCriteria: (checkpoint: TrainingLabCheckpoint) => string[];
+};
+
+const workbenchProfileByModule: Record<string, WorkbenchProfile> = {
+  "machine-learning-training": {
+    kind: "analysis",
+    evidenceKinds: ["notes", "artifact_link", "workbench_state"],
+    buildSuccessCriteria: () => [
+      "Problem framing recorded with target, metric, and constraint",
+      "Baseline established and beaten or explained",
+      "Risk, fairness, and governance notes captured",
+      "Evidence link or model card attached",
+    ],
+  },
+  "neural-networks": {
+    kind: "design",
+    evidenceKinds: ["notes", "artifact_link", "workbench_state"],
+    buildSuccessCriteria: () => [
+      "Architecture choice justified for the problem",
+      "Training curves captured and interpreted",
+      "Failure modes and mitigations recorded",
+      "Recommendation written for next iteration",
+    ],
+  },
+  "business-applications-in-ai": {
+    kind: "analysis",
+    evidenceKinds: ["notes", "artifact_link", "workbench_state"],
+    buildSuccessCriteria: () => [
+      "Opportunity scored on value, feasibility, and risk",
+      "Governance and people impact documented",
+      "Pilot scope and success metric defined",
+      "Exec recommendation drafted",
+    ],
+  },
+  "automation-in-ai": {
+    kind: "design",
+    evidenceKinds: ["notes", "artifact_link", "workbench_state"],
+    buildSuccessCriteria: () => [
+      "Swimlane shows actor, system, and exception per step",
+      "Human-in-the-loop checkpoints identified",
+      "Pilot KPIs and rollback plan written",
+      "Owner and rollout phase agreed",
+    ],
+  },
+  "advanced-data-visualization": {
+    kind: "design",
+    evidenceKinds: ["notes", "artifact_link", "file_upload", "workbench_state"],
+    buildSuccessCriteria: () => [
+      "Audience and decision the chart supports stated",
+      "Chart type defended against alternatives",
+      "Hierarchy: primary message in under three seconds",
+      "Accessibility and labelling rubric pass",
+    ],
+  },
+  "ai-in-banking-and-finance": {
+    kind: "prompt",
+    evidenceKinds: ["notes", "artifact_link", "workbench_state"],
+    buildSuccessCriteria: () => [
+      "At least three prompt variants compared",
+      "Guardrails and refusal behaviour tested",
+      "Use-case scored against banking risk lens",
+      "Leadership briefing draft attached",
+    ],
+  },
+  "programme-orientation": {
+    kind: "discussion",
+    evidenceKinds: ["notes", "artifact_link", "workbench_state"],
+    buildSuccessCriteria: () => [
+      "Personal achievement plan written",
+      "Cohort intro post drafted",
+      "Profile completion checked",
+    ],
+  },
+};
+
+function attachWorkbenchTasks(
+  moduleSlug: string,
+  checkpoints: TrainingLabCheckpoint[],
+): TrainingLabCheckpoint[] {
+  const profile = workbenchProfileByModule[moduleSlug];
+  if (!profile) return checkpoints;
+  return checkpoints.map((checkpoint) => {
+    if (checkpoint.tasks && checkpoint.tasks.length > 0) {
+      return checkpoint;
+    }
+    const task: WorkbenchTask = {
+      taskKind: "workbench",
+      id: `${checkpoint.slug}-task`,
+      checkpointSlug: checkpoint.slug,
+      title: checkpoint.title,
+      prompt: checkpoint.description,
+      successCriteria: profile.buildSuccessCriteria(checkpoint),
+      evidenceKinds: profile.evidenceKinds,
+      kind: profile.kind,
+    };
+    return { ...checkpoint, tasks: [task] };
+  });
+}
+
 export function resolveTrainingLabCheckpoints(moduleSlug: string) {
-  return trainingLabCheckpointMap[moduleSlug] ?? [];
+  const baseCheckpoints = trainingLabCheckpointMap[moduleSlug] ?? [];
+  return attachWorkbenchTasks(moduleSlug, baseCheckpoints);
 }
 
 export function resolveCheckpointInterventionPrompt(checkpoint: TrainingLabCheckpoint, slideNumber: number) {

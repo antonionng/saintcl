@@ -90,10 +90,14 @@ function renderAgentSoulMd(options: BootstrapAgentOptions) {
     agentBrief: options.org?.agentBrief,
   });
 
+  const contextGuidance = companyContext
+    ? ""
+    : `\n\nNote: Limited company context is currently available. If asked about the company, share what you know from knowledge files and any available context. The system may enrich company context automatically in the background -- check the knowledge/company directory for any enriched profiles.`;
+
   return `# SOUL.md - Who You Are
 
 ${options.persona}
-${companyContext ? `\n\n${companyContext}` : ""}
+${companyContext ? `\n\n${companyContext}` : ""}${contextGuidance}
 `;
 }
 

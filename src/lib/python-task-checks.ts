@@ -13,7 +13,228 @@ export type PythonTaskCheck = {
   validationPython?: string;
 };
 
+// Auto-validated python tasks for the "Truths from Bank Data" curriculum.
+// Each new lab (lab-a-triage, lab-b-kpi, lab-c-pack, lab-d-handoff) has a
+// single Verify-beat check that runs in the participant's pyodide namespace.
+// Validation paths reuse the existing day1/day2/day3_pack output folders so
+// current notebooks keep working through the transition; output layout
+// updates in Phase 3 of the reframe.
 const pythonTaskChecks: PythonTaskCheck[] = [
+  {
+    id: "lab-a-triage-verify",
+    checkpointSlug: "lab-a-triage",
+    title: "Verify the triage output",
+    prompt:
+      "Load the transactions extract, build a non-empty triage summary, and save it to the day 1 output folder. The auto-check confirms the dataframe and the saved file are both in place.",
+    inputHint:
+      "Keep your loaded transactions dataframe (e.g. `txns`) and your triage summary dataframe (e.g. `triage`) available in the notebook namespace. Save `triage_summary.csv` into `../outputs/day1`.",
+    successCriteria:
+      "A transactions dataframe is loaded, a non-empty triage summary exists in the namespace, and `triage_summary.csv` is saved.",
+    mode: "auto",
+    notebookSlug: "day1",
+    blockIndex: 1,
+    validationPython: `
+from pathlib import Path
+
+import pandas as pd
+
+_user_ns = globals()
+
+
+def _find_dataframe(ns, candidate_names, must_contain=None, exclude_name=None):
+    for name in candidate_names:
+        value = ns.get(name)
+        if (
+            isinstance(value, pd.DataFrame)
+            and not value.empty
+            and name != exclude_name
+            and (must_contain is None or must_contain in value.columns)
+        ):
+            return name, value
+    for name, value in ns.items():
+        if name.startswith("_") or name == exclude_name:
+            continue
+        if (
+            isinstance(value, pd.DataFrame)
+            and not value.empty
+            and (must_contain is None or must_contain in value.columns)
+        ):
+            return name, value
+    return None, None
+
+
+txns_name, txns_df = _find_dataframe(
+    _user_ns,
+    ("txns", "transactions_df", "transactions", "txn_df"),
+    must_contain="txn_id",
+)
+triage_name, triage_df = _find_dataframe(
+    _user_ns,
+    ("triage", "triage_summary", "summary_df", "summary"),
+    exclude_name=txns_name,
+)
+
+output_path = Path("/workspace/outputs/day1/triage_summary.csv")
+file_ok = output_path.exists() and output_path.stat().st_size > 0
+
+txns_ok = txns_df is not None
+triage_ok = triage_df is not None
+
+__cursor_task_passed = bool(txns_ok and triage_ok and file_ok)
+__cursor_task_message = (
+    "Triage output is in place. The verify beat is satisfied."
+    if __cursor_task_passed
+    else "Load the transactions extract, build a non-empty triage summary, and save triage_summary.csv before continuing."
+)
+__cursor_task_details = [
+    f"Transactions dataframe: {txns_name if txns_ok else 'not found'}",
+    f"Triage summary dataframe: {triage_name if triage_ok else 'not found'}",
+    f"triage_summary.csv saved: {file_ok}",
+]
+`,
+  },
+  {
+    id: "lab-b-kpi-verify",
+    checkpointSlug: "lab-b-kpi",
+    title: "Verify the branch KPI table",
+    prompt:
+      "Build the branch KPI table with the columns leadership asked for, then save it to the day 2 output folder. The auto-check confirms the dataframe shape and the saved file.",
+    inputHint:
+      "Keep \`branch_kpi\` available in the notebook namespace with the columns region, branch_id, txn_count, total_fee_sar, avg_ticket_sar. Save \`branch_kpi.csv\` into \`../outputs/day2\`.",
+    successCriteria:
+      "A non-empty branch_kpi dataframe with the expected columns exists, and branch_kpi.csv is saved.",
+    mode: "auto",
+    notebookSlug: "day2",
+    blockIndex: 1,
+    validationPython: `
+from pathlib import Path
+
+import pandas as pd
+
+branch_kpi = globals().get("branch_kpi")
+expected_columns = {"region", "branch_id", "txn_count", "total_fee_sar", "avg_ticket_sar"}
+
+table_ok = isinstance(branch_kpi, pd.DataFrame) and not branch_kpi.empty
+columns_ok = table_ok and expected_columns.issubset(set(branch_kpi.columns))
+
+output_path = Path("/workspace/outputs/day2/branch_kpi.csv")
+file_ok = output_path.exists() and output_path.stat().st_size > 0
+
+__cursor_task_passed = bool(table_ok and columns_ok and file_ok)
+__cursor_task_message = (
+    "Branch KPI table is ready and saved. The verify beat is satisfied."
+    if __cursor_task_passed
+    else "Build a non-empty branch_kpi dataframe with the expected columns and save branch_kpi.csv before continuing."
+)
+__cursor_task_details = [
+    f"Dataframe present: {table_ok}",
+    f"Expected columns present: {columns_ok}",
+    f"branch_kpi.csv saved: {file_ok}",
+]
+`,
+  },
+  {
+    id: "lab-c-pack-verify",
+    checkpointSlug: "lab-c-pack",
+    title: "Verify the executive pack outputs",
+    prompt:
+      "Save the chart pack and the exception view to the day 3 output folder. The auto-check confirms the chart file is non-empty and the exceptions table has reason codes.",
+    inputHint:
+      "Save your two-chart pack as \`pack_charts.png\` and your exception view as \`exceptions.csv\` (with a \`reason_code\` column) into \`../outputs/day3_pack\`.",
+    successCriteria:
+      "pack_charts.png exists and is non-empty, and exceptions.csv exists with a reason_code column and at least one row.",
+    mode: "auto",
+    notebookSlug: "day3",
+    blockIndex: 1,
+    validationPython: `
+from pathlib import Path
+
+import pandas as pd
+
+pack_dir = Path("/workspace/outputs/day3_pack")
+chart_path = pack_dir / "pack_charts.png"
+exception_path = pack_dir / "exceptions.csv"
+
+chart_ok = chart_path.exists() and chart_path.stat().st_size > 0
+
+if exception_path.exists():
+    exceptions_df = pd.read_csv(exception_path)
+else:
+    exceptions_df = None
+
+has_rows = exceptions_df is not None and not exceptions_df.empty
+has_reason = has_rows and "reason_code" in exceptions_df.columns
+
+__cursor_task_passed = bool(chart_ok and has_rows and has_reason)
+__cursor_task_message = (
+    "Executive pack outputs are saved. The verify beat is satisfied."
+    if __cursor_task_passed
+    else "Save pack_charts.png and exceptions.csv (with a reason_code column and at least one row) before continuing."
+)
+__cursor_task_details = [
+    f"pack_charts.png present and non-empty: {chart_ok}",
+    f"exceptions.csv has rows: {has_rows}",
+    f"exceptions.csv has reason_code column: {has_reason}",
+]
+`,
+  },
+  {
+    id: "lab-d-handoff-verify",
+    checkpointSlug: "lab-d-handoff",
+    title: "Verify the ML handoff table",
+    prompt:
+      "Save a customer-level feature table with an explicit cut-off date, plus a data dictionary you wrote yourself. The auto-check confirms both files exist and the cut-off is recorded.",
+    inputHint:
+      "Save \`features.csv\` and \`data_dictionary.csv\` into \`../outputs/day3_pack\`. The features file must include a \`cut_off_date\` column. The dictionary file must have at least one row per feature.",
+    successCriteria:
+      "features.csv exists with a cut_off_date column and at least one row, and data_dictionary.csv exists with at least one row.",
+    mode: "auto",
+    notebookSlug: "day3",
+    blockIndex: 2,
+    validationPython: `
+from pathlib import Path
+
+import pandas as pd
+
+pack_dir = Path("/workspace/outputs/day3_pack")
+features_path = pack_dir / "features.csv"
+dictionary_path = pack_dir / "data_dictionary.csv"
+
+if features_path.exists():
+    features_df = pd.read_csv(features_path)
+else:
+    features_df = None
+
+if dictionary_path.exists():
+    dictionary_df = pd.read_csv(dictionary_path)
+else:
+    dictionary_df = None
+
+features_present = features_df is not None and not features_df.empty
+features_have_cutoff = features_present and "cut_off_date" in features_df.columns
+dictionary_present = dictionary_df is not None and not dictionary_df.empty
+
+__cursor_task_passed = bool(features_present and features_have_cutoff and dictionary_present)
+__cursor_task_message = (
+    "Handoff artefacts are saved. The closing artefact of the module is in place."
+    if __cursor_task_passed
+    else "Save features.csv (with a cut_off_date column) and your hand-written data_dictionary.csv before completing the module."
+)
+__cursor_task_details = [
+    f"features.csv has rows: {features_present}",
+    f"features.csv has cut_off_date column: {features_have_cutoff}",
+    f"data_dictionary.csv has rows: {dictionary_present}",
+]
+`,
+  },
+];
+
+// Legacy tasks from the original three-day "Python for Data" module.
+// Retained but not exported in the new pythonTaskChecks above so existing
+// participant progress records still resolve. New cohorts should not see
+// these slugs because the lab checkpoints no longer reference them.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _legacyPythonTaskChecks: PythonTaskCheck[] = [
   {
     id: "setup-paths",
     checkpointSlug: "setup-sprint",
@@ -63,21 +284,59 @@ __cursor_task_details = [
     validationPython: `
 import pandas as pd
 
-txns = globals().get("txns")
-triage = globals().get("triage")
+_user_ns = globals()
 
-triage_ok = isinstance(triage, pd.DataFrame) and not triage.empty
-txns_ok = isinstance(txns, pd.DataFrame) and not txns.empty and "txn_id" in txns.columns
+def _find_txns_df(ns):
+    candidate_names = ("txns", "transactions_df", "transactions", "txn_df", "df_txns", "df_transactions")
+    for name in candidate_names:
+        value = ns.get(name)
+        if isinstance(value, pd.DataFrame) and not value.empty and "txn_id" in value.columns:
+            return name, value
+    for name, value in ns.items():
+        if name.startswith("_") or name.startswith("__"):
+            continue
+        if isinstance(value, pd.DataFrame) and not value.empty and "txn_id" in value.columns:
+            return name, value
+    return None, None
+
+def _find_triage_df(ns, exclude_name):
+    candidate_names = (
+        "triage",
+        "summary_df",
+        "triage_summary",
+        "summary",
+        "txn_summary",
+        "df_triage",
+        "df_summary",
+    )
+    for name in candidate_names:
+        value = ns.get(name)
+        if isinstance(value, pd.DataFrame) and not value.empty and name != exclude_name:
+            return name, value
+    for name, value in ns.items():
+        if name.startswith("_") or name.startswith("__"):
+            continue
+        if name == exclude_name:
+            continue
+        if isinstance(value, pd.DataFrame) and not value.empty:
+            return name, value
+    return None, None
+
+txns_name, txns_df = _find_txns_df(_user_ns)
+triage_name, triage_df = _find_triage_df(_user_ns, txns_name)
+
+txns_ok = txns_df is not None
+triage_ok = triage_df is not None
 
 __cursor_task_passed = bool(txns_ok and triage_ok)
 __cursor_task_message = (
     "The first inspection outputs are in place."
     if __cursor_task_passed
-    else "Load the transactions extract and create the triage summary before moving on."
+    else "Load the transactions extract and create a triage summary before moving on."
 )
 __cursor_task_details = [
-    f"Transactions loaded: {txns_ok}",
-    f"Triage summary available: {triage_ok}",
+    f"Transactions DataFrame: {txns_name if txns_ok else 'not found (expected a non-empty DataFrame with a txn_id column, e.g. txns or transactions_df)'}",
+    f"Triage summary: {triage_name if triage_ok else 'not found (expected a second non-empty DataFrame, e.g. triage or summary_df)'}",
 ]
 `,
   },

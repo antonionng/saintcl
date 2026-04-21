@@ -14,7 +14,7 @@ export default async function AgentsPage() {
   const agents = session ? await getVisibleAgentsForSession(session) : [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-phi-13">
       <PageHeader
         eyebrow="Agents"
         title="Agent fleet"
@@ -38,9 +38,9 @@ export default async function AgentsPage() {
           }
         />
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-white/8 bg-white/[0.02]">
+        <div className="overflow-x-auto rounded-lg border border-border bg-surface-2 shadow-[var(--shadow-card)]">
           <div className="min-w-[860px]">
-            <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)_180px_120px_150px] gap-4 border-b border-white/8 px-5 py-3 text-[0.72rem] uppercase tracking-[0.16em] text-zinc-500">
+            <div className="grid grid-cols-[minmax(0,1.618fr)_minmax(0,1fr)_180px_120px_140px] gap-phi-5 border-b border-border-subtle px-phi-5 py-phi-3 text-[length:var(--text-xs)] font-medium uppercase tracking-[0.08em] text-zinc-500">
               <span>Agent</span>
               <span>Assignment</span>
               <span>Model</span>
@@ -56,28 +56,28 @@ export default async function AgentsPage() {
               return (
                 <div
                   key={agent.id}
-                  className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)_180px_120px_150px] items-center gap-4 border-t border-white/6 px-5 py-4 first:border-t-0"
+                  className="grid grid-cols-[minmax(0,1.618fr)_minmax(0,1fr)_180px_120px_140px] items-center gap-phi-5 border-t border-border-subtle px-phi-5 py-phi-5 first:border-t-0"
                 >
                   <div className="min-w-0">
-                    <p className="font-medium text-white">{agent.name}</p>
+                    <p className="text-[length:var(--text-sm)] font-medium text-white">{agent.name}</p>
                     {config.persona ? (
-                      <p className="mt-1 truncate text-sm text-zinc-400">{String(config.persona)}</p>
+                      <p className="mt-phi-1 truncate text-[length:var(--text-sm)] text-zinc-400">{String(config.persona)}</p>
                     ) : (
-                      <p className="mt-1 text-sm text-zinc-500">No persona configured</p>
+                      <p className="mt-phi-1 text-[length:var(--text-sm)] text-zinc-500">No persona configured</p>
                     )}
                   </div>
-                  <div className="min-w-0 text-sm text-zinc-300">
+                  <div className="min-w-0 text-[length:var(--text-sm)] text-zinc-300">
                     {agent.assignment
                       ? `${titleCase(agent.assignment.assignee_type)} · ${assignmentLabel}`
                       : "Unassigned"}
                   </div>
-                  <div className="min-w-0 text-sm text-zinc-300">{agent.model}</div>
+                  <div className="min-w-0 text-[length:var(--text-sm)] text-zinc-300">{agent.model}</div>
                   <div>
                     <Badge variant={agent.status === "online" ? "success" : "default"}>
                       {agent.status}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-phi-2">
                     <Button asChild variant="ghost" size="sm">
                       <Link href={`/agents/${agent.id}`}>
                         Open

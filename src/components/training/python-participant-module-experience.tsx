@@ -1,6 +1,6 @@
 "use client";
 
-import { PythonLearningWorkspace } from "@/components/training/python-learning-workspace";
+import { PythonLearningWorkspace } from "@/components/training/python-studio-workspace";
 import type { ParticipantDeckState } from "@/components/training/python-participant-deck-panel";
 import type {
   TrainingLabWorkspaceRecord,
@@ -41,7 +41,6 @@ type PythonParticipantModuleExperienceProps = {
   initialWorkspaces: TrainingLabWorkspaceRecord[];
   deckState?: ParticipantDeckState | null;
   facilitatorPrompt?: string | null;
-  enableProgressTracking?: boolean;
 };
 
 export function PythonParticipantModuleExperience({
@@ -57,7 +56,6 @@ export function PythonParticipantModuleExperience({
   initialWorkspaces,
   deckState = null,
   facilitatorPrompt = null,
-  enableProgressTracking = true,
 }: PythonParticipantModuleExperienceProps) {
   return (
     <PythonLearningWorkspace
@@ -74,7 +72,6 @@ export function PythonParticipantModuleExperience({
       currentSlideIndex={deckState?.slideIndex ?? null}
       currentSlideTitle={deckState?.title ?? null}
       facilitatorPrompt={facilitatorPrompt}
-      enableProgressTracking={enableProgressTracking}
     />
   );
 }
