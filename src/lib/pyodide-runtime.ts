@@ -170,21 +170,55 @@ try:
 except Exception:
     pd = None
 
+def _cursor_jsonable(cell):
+    if cell is None:
+        return None
+    if pd is not None:
+        try:
+            if pd.isna(cell):
+                return None
+        except Exception:
+            pass
+        if isinstance(cell, (pd.Timestamp, pd.Period)):
+            try:
+                return cell.isoformat()
+            except Exception:
+                return str(cell)
+        if isinstance(cell, pd.Timedelta):
+            return str(cell)
+    if isinstance(cell, (bool, int, float, str)):
+        return cell
+    try:
+        import datetime as _dt
+        if isinstance(cell, (_dt.datetime, _dt.date, _dt.time)):
+            return cell.isoformat()
+    except Exception:
+        pass
+    return str(cell)
+
+
 dataframe_preview = None
 if pd is not None:
     user_ns = globals().get("__cursor_user_ns", {})
     user_items = list(user_ns.items())
     for name, value in user_items:
         if isinstance(value, pd.DataFrame):
-            preview = value.head(8).copy()
-            preview = preview.where(pd.notnull(preview), None)
-            dataframe_preview = {
-                "name": str(name),
-                "rowCount": int(value.shape[0]),
-                "columnCount": int(value.shape[1]),
-                "columns": [str(column) for column in value.columns.tolist()],
-                "rows": preview.to_dict(orient="records"),
-            }
+            try:
+                preview = value.head(8).copy()
+                preview = preview.where(pd.notnull(preview), None)
+                rows = [
+                    {str(column): _cursor_jsonable(row[column]) for column in preview.columns}
+                    for _, row in preview.iterrows()
+                ]
+                dataframe_preview = {
+                    "name": str(name),
+                    "rowCount": int(value.shape[0]),
+                    "columnCount": int(value.shape[1]),
+                    "columns": [str(column) for column in value.columns.tolist()],
+                    "rows": rows,
+                }
+            except Exception:
+                dataframe_preview = None
             break
 
 charts = []
@@ -204,10 +238,16 @@ try:
 except Exception:
     charts = []
 
-__cursor_artifacts = json.dumps({
-    "charts": charts,
-    "dataframePreview": dataframe_preview,
-})
+try:
+    __cursor_artifacts = json.dumps({
+        "charts": charts,
+        "dataframePreview": dataframe_preview,
+    }, default=str)
+except Exception:
+    __cursor_artifacts = json.dumps({
+        "charts": charts,
+        "dataframePreview": None,
+    }, default=str)
 `);
 
   const rawArtifacts = String(pyodide.globals.get("__cursor_artifacts") ?? "{}");
@@ -374,8 +414,24 @@ finally:
         const stdout = String(pyodide.globals.get("__cursor_stdout_output") ?? "").trim();
         const stderr = String(pyodide.globals.get("__cursor_stderr_output") ?? "").trim();
         const failed = stderr.includes("Traceback (most recent call last)");
-        const artifacts = await captureRunArtifacts(pyodide);
-        const nextFiles = refreshFiles(pyodide);
+        let artifacts: { charts: ChartPreview[]; dataframePreview: DataFramePreview | null } = {
+          charts: [],
+          dataframePreview: null,
+        };
+        try {
+          artifacts = await captureRunArtifacts(pyodide);
+        } catch {
+          // Artifact capture is best-effort. A failure here (for example a
+          // DataFrame containing a value the JSON encoder cannot handle) must
+          // never be reported as a user-block error.
+          artifacts = { charts: [], dataframePreview: null };
+        }
+        let nextFiles = files;
+        try {
+          nextFiles = refreshFiles(pyodide);
+        } catch {
+          nextFiles = files;
+        }
         return {
           stdout,
           stderr,

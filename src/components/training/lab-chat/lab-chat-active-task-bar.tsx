@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+
 import type { LabBeat } from "@/components/training/lab-coach-context";
 import type { PythonTaskCheck } from "@/lib/python-task-checks";
 import {
@@ -41,6 +43,11 @@ export type LabChatActiveTaskBarProps = {
   // prominent quote on the BRIEF beat so the participant knows what they are
   // restating, and shown as a quiet reference on later beats.
   leadershipQuestion?: string | null;
+  // True once the participant has actually engaged the chat for this lab
+  // (sent a message, gotten a coach reply, or run code). When true we
+  // auto-collapse the description so more of the chat is visible. The
+  // participant can still expand to re-read the brief at any time.
+  hasChatStarted?: boolean;
 };
 
 const TONE_CLASSES: Record<LabChatNextActionTone, string> = {
@@ -82,6 +89,7 @@ export function LabChatActiveTaskBar({
   currentStep,
   stepsCompleted,
   leadershipQuestion,
+  hasChatStarted = false,
 }: LabChatActiveTaskBarProps) {
   const taskTitle = activeTask?.title ?? "All tasks complete - ready to wrap up";
   const successCriteria = successCriteriaList(activeTask);
@@ -90,6 +98,40 @@ export function LabChatActiveTaskBar({
 
   const stepNumber = currentStep ? STEP_ORDER.indexOf(currentStep) + 1 : null;
   const showStepDots = Boolean(currentStep);
+
+  // Collapsed state. Auto-collapses the first time the participant engages
+  // the chat in this lab so the chat surface gets more room, then respects
+  // any manual toggle the participant makes afterward. The brief for each
+  // new step is always one click away via the "Show brief" toggle, and the
+  // eyebrow row keeps the current step name visible while collapsed.
+  const [collapsed, setCollapsed] = useState(false);
+  const userOverrodeRef = useRef(false);
+  const autoCollapsedRef = useRef(false);
+
+  useEffect(() => {
+    if (!hasChatStarted) {
+      // Switched to a fresh lab (or the user reset progress). Restart the
+      // auto-collapse cycle so the new lab opens with its brief visible.
+      autoCollapsedRef.current = false;
+      userOverrodeRef.current = false;
+      setCollapsed(false);
+      return;
+    }
+    if (!userOverrodeRef.current && !autoCollapsedRef.current) {
+      autoCollapsedRef.current = true;
+      setCollapsed(true);
+    }
+  }, [hasChatStarted]);
+
+  const handleToggleCollapsed = () => {
+    userOverrodeRef.current = true;
+    setCollapsed((current) => !current);
+  };
+
+  const hasDescriptionContent =
+    Boolean(leadershipQuestion) || successCriteria.length > 0 || taskState === "passed" || taskState === "retry";
+  const showToggle = hasDescriptionContent;
+  const showDescription = !collapsed;
 
   // Eyebrow: one row, plain language.
   // Format: "Step N of 4 - <StepName>  *  <Activity>  *  Task X / Y"
@@ -138,61 +180,92 @@ export function LabChatActiveTaskBar({
         ) : null}
 
         <div>
-          <h3 className="text-[15px] font-semibold leading-snug text-white">
-            {taskTitle}
-          </h3>
-          {leadershipQuestion ? (
-            currentStep === "brief" ? (
-              <figure className="mt-2 rounded-2xl border border-amber-300/25 bg-amber-300/[0.06] px-3.5 py-2.5">
-                <figcaption className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-200/80">
-                  Leadership is asking
-                </figcaption>
-                <blockquote className="mt-1 text-[13px] leading-relaxed text-amber-50/95">
-                  &ldquo;{leadershipQuestion}&rdquo;
-                </blockquote>
-                <p className="mt-1.5 text-[11px] text-amber-200/70">
-                  Restate this in your own words below before you open the chat.
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="text-[15px] font-semibold leading-snug text-white">
+              {taskTitle}
+            </h3>
+            {showToggle ? (
+              <button
+                type="button"
+                onClick={handleToggleCollapsed}
+                aria-expanded={!collapsed}
+                aria-controls="lab-task-description"
+                className="-mr-1 -mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-400 transition hover:bg-white/[0.08] hover:text-zinc-200"
+              >
+                <span>{collapsed ? "Show brief" : "Hide brief"}</span>
+                <svg
+                  aria-hidden
+                  viewBox="0 0 12 12"
+                  className={`size-2.5 transition-transform ${collapsed ? "" : "rotate-180"}`}
+                >
+                  <path
+                    d="M2 4.5l4 4 4-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            ) : null}
+          </div>
+          {showDescription ? (
+            <div id="lab-task-description">
+              {leadershipQuestion ? (
+                currentStep === "brief" ? (
+                  <figure className="mt-2 rounded-2xl border border-amber-300/25 bg-amber-300/[0.06] px-3.5 py-2.5">
+                    <figcaption className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-200/80">
+                      Leadership is asking
+                    </figcaption>
+                    <blockquote className="mt-1 text-[13px] leading-relaxed text-amber-50/95">
+                      &ldquo;{leadershipQuestion}&rdquo;
+                    </blockquote>
+                    <p className="mt-1.5 text-[11px] text-amber-200/70">
+                      Restate this in your own words below before you open the chat.
+                    </p>
+                  </figure>
+                ) : (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer text-[11px] uppercase tracking-[0.16em] text-zinc-500 hover:text-zinc-300">
+                      Leadership ask &middot; show
+                    </summary>
+                    <blockquote className="mt-1.5 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[12px] italic leading-relaxed text-zinc-300">
+                      &ldquo;{leadershipQuestion}&rdquo;
+                    </blockquote>
+                  </details>
+                )
+              ) : null}
+              {!isDone && successCriteria.length > 0 ? (
+                successCriteria.length === 1 ? (
+                  <p className="mt-1 text-[12.5px] leading-relaxed text-zinc-300">
+                    {successCriteria[0]}
+                  </p>
+                ) : (
+                  <ul className="mt-1.5 space-y-0.5 text-[12.5px] leading-relaxed text-zinc-300">
+                    {successCriteria.map((criterion, index) => (
+                      <li
+                        key={`${criterion}-${index}`}
+                        className="flex gap-2"
+                      >
+                        <span aria-hidden className="mt-1 size-1 shrink-0 rounded-full bg-zinc-500" />
+                        <span>{criterion}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )
+              ) : null}
+              {isDone ? (
+                <p className="mt-1 text-[12.5px] text-emerald-300/90">
+                  Done. {nextAction ? "Pick the next move on the right." : "Move on when you are ready."}
                 </p>
-              </figure>
-            ) : (
-              <details className="mt-2">
-                <summary className="cursor-pointer text-[11px] uppercase tracking-[0.16em] text-zinc-500 hover:text-zinc-300">
-                  Leadership ask &middot; show
-                </summary>
-                <blockquote className="mt-1.5 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[12px] italic leading-relaxed text-zinc-300">
-                  &ldquo;{leadershipQuestion}&rdquo;
-                </blockquote>
-              </details>
-            )
-          ) : null}
-          {!isDone && successCriteria.length > 0 ? (
-            successCriteria.length === 1 ? (
-              <p className="mt-1 text-[12.5px] leading-relaxed text-zinc-300">
-                {successCriteria[0]}
-              </p>
-            ) : (
-              <ul className="mt-1.5 space-y-0.5 text-[12.5px] leading-relaxed text-zinc-300">
-                {successCriteria.map((criterion, index) => (
-                  <li
-                    key={`${criterion}-${index}`}
-                    className="flex gap-2"
-                  >
-                    <span aria-hidden className="mt-1 size-1 shrink-0 rounded-full bg-zinc-500" />
-                    <span>{criterion}</span>
-                  </li>
-                ))}
-              </ul>
-            )
-          ) : null}
-          {isDone ? (
-            <p className="mt-1 text-[12.5px] text-emerald-300/90">
-              Done. {nextAction ? "Pick the next move on the right." : "Move on when you are ready."}
-            </p>
-          ) : null}
-          {isRetry ? (
-            <p className="mt-1 text-[11.5px] text-amber-300/90">
-              Last attempt did not pass. Read the run output above, iterate, or ask the coach for a hint.
-            </p>
+              ) : null}
+              {isRetry ? (
+                <p className="mt-1 text-[11.5px] text-amber-300/90">
+                  Last attempt did not pass. Read the run output above, iterate, or ask the coach for a hint.
+                </p>
+              ) : null}
+            </div>
           ) : null}
         </div>
 

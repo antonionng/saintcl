@@ -1658,6 +1658,21 @@ export function LabChatShell({
     attachOpenerRef.current = open;
   }, []);
 
+  // True once the participant has actually engaged the chat for this lab
+  // (sent a message, gotten a coach reply, or run code). Drives the
+  // auto-collapse on the active task bar so the chat surface gets more
+  // room once the conversation is underway.
+  const hasChatStarted = useMemo(
+    () =>
+      messages.some(
+        (message) =>
+          message.kind === "user_text" ||
+          message.kind === "assistant_reply" ||
+          message.kind === "code_run",
+      ),
+    [messages],
+  );
+
   return (
     <div className="flex min-h-0 flex-1 gap-0">
       <section className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -1679,6 +1694,7 @@ export function LabChatShell({
             currentStep={currentStep}
             stepsCompleted={stepsCompleted}
             leadershipQuestion={activeCheckpoint.leadershipQuestion ?? null}
+            hasChatStarted={hasChatStarted}
           />
         ) : null}
         <LabChatThread
