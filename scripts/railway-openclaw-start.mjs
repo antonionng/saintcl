@@ -129,6 +129,24 @@ function mergeConfig(existingConfig, options) {
   gateway.mode = gateway.mode || "local";
   defaults.workspace = defaults.workspace || options.workspaceDir;
 
+  // Behind Railway's edge proxy the gateway sees X-Forwarded-* from a private
+  // Railway IP. Without trustedProxies set, the gateway logs `[ws] Proxy headers
+  // detected from untrusted address` and refuses to treat the connection as
+  // local, which breaks "local client" assumptions in pairing/CORS code paths.
+  // Trust loopback + RFC1918 + ULA by default; that covers Railway's internal
+  // proxy network without needing to chase dynamic per-deploy IPs. Operators
+  // can still override by setting `gateway.trustedProxies` explicitly.
+  if (!Array.isArray(gateway.trustedProxies) || gateway.trustedProxies.length === 0) {
+    gateway.trustedProxies = [
+      "127.0.0.1/32",
+      "::1/128",
+      "10.0.0.0/8",
+      "172.16.0.0/12",
+      "192.168.0.0/16",
+      "fd00::/8",
+    ];
+  }
+
   const currentModel =
     defaults.model && typeof defaults.model === "object" && !Array.isArray(defaults.model)
       ? { ...defaults.model }
