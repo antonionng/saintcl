@@ -143,6 +143,10 @@ function mergeConfig(existingConfig, options) {
       "10.0.0.0/8",
       "172.16.0.0/12",
       "192.168.0.0/16",
+      // Railway's internal proxy network uses CGNAT (RFC 6598). Without this
+      // the gateway sees X-Forwarded-* from a 100.64.x.x peer it doesn't trust
+      // and emits the `untrusted address` warning even with trustedProxies set.
+      "100.64.0.0/10",
       "fd00::/8",
     ];
   }
