@@ -130,26 +130,32 @@ function mergeConfig(existingConfig, options) {
   defaults.workspace = defaults.workspace || options.workspaceDir;
 
   // Behind Railway's edge proxy the gateway sees X-Forwarded-* from a private
-  // Railway IP. Without trustedProxies set, the gateway logs `[ws] Proxy headers
-  // detected from untrusted address` and refuses to treat the connection as
-  // local, which breaks "local client" assumptions in pairing/CORS code paths.
-  // Trust loopback + RFC1918 + ULA by default; that covers Railway's internal
-  // proxy network without needing to chase dynamic per-deploy IPs. Operators
-  // can still override by setting `gateway.trustedProxies` explicitly.
-  if (!Array.isArray(gateway.trustedProxies) || gateway.trustedProxies.length === 0) {
-    gateway.trustedProxies = [
-      "127.0.0.1/32",
-      "::1/128",
-      "10.0.0.0/8",
-      "172.16.0.0/12",
-      "192.168.0.0/16",
-      // Railway's internal proxy network uses CGNAT (RFC 6598). Without this
-      // the gateway sees X-Forwarded-* from a 100.64.x.x peer it doesn't trust
-      // and emits the `untrusted address` warning even with trustedProxies set.
-      "100.64.0.0/10",
-      "fd00::/8",
-    ];
+  // Railway IP. Without trustedProxies the gateway logs
+  // `[ws] Proxy headers detected from untrusted address` and refuses to treat
+  // the connection as local, which breaks pairing/CORS code paths. We always
+  // ensure these CIDRs are present (loopback, RFC1918, RFC 6598 CGNAT, ULA).
+  // CGNAT covers Railway's internal proxy network; without it the warning
+  // still fires even when trustedProxies is otherwise populated. Operators
+  // can add their own entries on top — we merge in, never clobber.
+  const requiredTrustedProxyCidrs = [
+    "127.0.0.1/32",
+    "::1/128",
+    "10.0.0.0/8",
+    "172.16.0.0/12",
+    "192.168.0.0/16",
+    "100.64.0.0/10",
+    "fd00::/8",
+  ];
+  const existingTrustedProxies = Array.isArray(gateway.trustedProxies)
+    ? gateway.trustedProxies.filter((value) => typeof value === "string" && value.trim().length > 0)
+    : [];
+  const mergedTrustedProxies = [...existingTrustedProxies];
+  for (const cidr of requiredTrustedProxyCidrs) {
+    if (!mergedTrustedProxies.includes(cidr)) {
+      mergedTrustedProxies.push(cidr);
+    }
   }
+  gateway.trustedProxies = mergedTrustedProxies;
 
   const currentModel =
     defaults.model && typeof defaults.model === "object" && !Array.isArray(defaults.model)
