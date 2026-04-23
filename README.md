@@ -1,6 +1,6 @@
-# Saint AGI
+# SaintClaw
 
-Saint AGI is an enterprise-focused SaaS control plane for managed OpenClaw runtimes. It combines a Next.js dashboard, Supabase backend, tenant-scoped OpenClaw process management, governed terminal access, channel configuration, knowledge upload, and billing surfaces.
+SaintClaw is an enterprise-focused SaaS control plane for managed agent runtimes. It combines a Next.js dashboard, Supabase backend, tenant-scoped runtime process management, governed terminal access, app and channel configuration, knowledge upload, and billing surfaces.
 
 ## Stack
 
@@ -29,7 +29,7 @@ npm run openclaw:install
 npm run openclaw:build
 ```
 
-4. Start the Saint AGI app:
+4. Start the SaintClaw app:
 
 ```bash
 npm run dev
@@ -67,13 +67,13 @@ Copy `.env.local.example` to `.env.local` and provide:
 - `OPENROUTER_API_KEY` if you want Saint AGI-managed OpenClaw runtimes to use OpenRouter
 - optional OpenClaw runtime overrides like `OPENCLAW_VENDOR_DIR`, `OPENCLAW_RUNTIME_ROOT`, and `OPENCLAW_BASE_PORT`
 
-By default, Saint AGI now points tenant runtimes at `OPENCLAW_DEFAULT_MODEL=openrouter/auto`. To force a specific OpenRouter model, set `OPENCLAW_DEFAULT_MODEL` explicitly, for example:
+By default, SaintClaw now points tenant runtimes at `OPENCLAW_DEFAULT_MODEL=openrouter/auto`. To force a specific OpenRouter model, set `OPENCLAW_DEFAULT_MODEL` explicitly, for example:
 
 ```text
 OPENCLAW_DEFAULT_MODEL=openrouter/meta-llama/llama-3.3-70b:free
 ```
 
-OpenClaw already has native OpenRouter support, so you do not need a separate OpenRouter CLI bridge inside Saint AGI. Under the hood, the vendored runtime can also be onboarded directly with:
+OpenClaw already has native OpenRouter support, so you do not need a separate OpenRouter CLI bridge inside SaintClaw. Under the hood, the vendored runtime can also be onboarded directly with:
 
 ```bash
 cd openclaw-vendored
@@ -81,18 +81,6 @@ pnpm openclaw onboard --auth-choice apiKey --token-provider openrouter --token "
 ```
 
 OpenRouter does offer many free models, usually marked with a `:free` suffix. Availability and rate limits change over time, so `openrouter/auto` is the safer default for general use, while a specific `:free` model is better if you want to constrain cost.
-
-## Training Copilot
-
-The AJB training programme has its own governed AI surface so participants can use GenAI inside notebooks without bypassing the platform. The same `OPENROUTER_API_KEY` powers it.
-
-- API: `POST /api/training/participant/copilot` (auth via the academy cookie or a Bearer token equal to the participant's check-in token).
-- Lib: `src/lib/training-copilot.ts` (per-module default model, participant allowlist, PII redaction, audit log).
-- Notebook helper: `notebook-helpers/saintclaw_copilot.py` exposes `ask`, `compare`, `critique`, `explain`.
-- Audit table: `public.training_copilot_calls` records model, tokens, cost, redactions, and exercise per call.
-- Policy: see `docs/training/copilot-ai-use-policy.md` for what participants may and may not do.
-
-A worked example using `compare()` against two OpenRouter models lives in `ai-in-banking-and-finance/notebooks/day1_use_case_and_prompt_studio.ipynb` (Exercise 3.5).
 
 ## Batch Prerequisites
 
@@ -167,13 +155,13 @@ Notes:
 
 - The Railway startup script seeds `gateway.mode=local`, a persistent workspace path, and Control UI origin handling automatically.
 - If `OPENCLAW_ALLOWED_ORIGINS` is not set yet, the service falls back to host-header origin mode so you can bootstrap the first deploy, then tighten origins afterward.
-- Saint AGI launches the advanced admin console against the hosted gateway directly, while the main product experience remains inside the Saint AGI UI.
+- SaintClaw launches the advanced admin console against the hosted gateway directly, while the main product experience remains inside the SaintClaw UI.
 
 ## Vendored OpenClaw
 
-The OpenClaw snapshot is stored in `openclaw-vendored`. It is pinned to upstream commit `3ada30e6707e117ceb394a934e2d8be424a0ea59` from upstream version `2026.3.8`.
+The OpenClaw snapshot is stored in `openclaw-vendored`. It is pinned to upstream version `2026.4.21` (see `openclaw-vendored/package.json`). When bumping this snapshot, smoke-test the RPC paths used in `src/lib/openclaw/client.ts` (`config.patch`, `agent.create`, `skills.install`, `chat.*`) and the proxy in `src/app/api/openclaw/proxy-to-gateway.ts`.
 
-Saint AGI-specific runtime ownership includes:
+SaintClaw-specific runtime ownership includes:
 
 - one OpenClaw runtime per tenant
 - tenant-scoped state/config/workspace roots
@@ -182,7 +170,7 @@ Saint AGI-specific runtime ownership includes:
 
 ## Runtime Layout
 
-Saint AGI manages tenant runtime state beneath:
+SaintClaw manages tenant runtime state beneath:
 
 ```text
 runtime-data/openclaw/<tenantId>/

@@ -63,7 +63,7 @@ export function SettingsEmailPreferencesForm({
         <CardHeader>
           <CardTitle>Email preferences</CardTitle>
           <CardDescription>
-            Control which non-essential Saint AGI messages reach you for this workspace.
+            Control which non-essential SaintClaw messages reach you for this workspace.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -81,7 +81,7 @@ export function SettingsEmailPreferencesForm({
           />
           <PreferenceRow
             title="Welcome series"
-            description="The onboarding sequence that helps new users get more value from Saint AGI quickly."
+            description="The onboarding sequence that helps new users get more value from SaintClaw quickly."
             checked={preferences.welcomeSeriesOptIn}
             onChange={(checked) => setPreferences((current) => ({ ...current, welcomeSeriesOptIn: checked }))}
           />
@@ -101,7 +101,7 @@ export function SettingsEmailPreferencesForm({
 
       <Card className="settings-panel">
         <CardHeader>
-          <CardTitle>How Saint AGI uses email</CardTitle>
+          <CardTitle>How SaintClaw uses email</CardTitle>
           <CardDescription>Transactional mail stays on so your workspace can keep working.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm leading-7 text-zinc-400">

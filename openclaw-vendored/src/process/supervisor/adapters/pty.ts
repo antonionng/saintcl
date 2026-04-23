@@ -9,7 +9,6 @@ type PtyDisposable = { dispose: () => void };
 type PtySpawnHandle = {
   pid: number;
   write: (data: string | Buffer) => void;
-  resize?: (cols: number, rows: number) => void;
   onData: (listener: (value: string) => void) => PtyDisposable | void;
   onExit: (listener: (event: PtyExitEvent) => void) => PtyDisposable | void;
   kill: (signal?: string) => void;
@@ -35,6 +34,13 @@ type PtyModule = {
 
 export type PtyAdapter = SpawnProcessAdapter;
 
+let ptyModulePromise: Promise<PtyModule> | null = null;
+
+async function loadPtyModule(): Promise<PtyModule> {
+  ptyModulePromise ??= import("@lydell/node-pty") as Promise<unknown> as Promise<PtyModule>;
+  return ptyModulePromise;
+}
+
 export async function createPtyAdapter(params: {
   shell: string;
   args: string[];
@@ -44,7 +50,7 @@ export async function createPtyAdapter(params: {
   rows?: number;
   name?: string;
 }): Promise<PtyAdapter> {
-  const module = (await import("@lydell/node-pty")) as unknown as PtyModule;
+  const module = await loadPtyModule();
   const spawn = module.spawn ?? module.default?.spawn;
   if (!spawn) {
     throw new Error("PTY support is unavailable (node-pty spawn not found).");
@@ -127,7 +133,7 @@ export async function createPtyAdapter(params: {
   const onStdout = (listener: (chunk: string) => void) => {
     dataListener =
       pty.onData((chunk) => {
-        listener(chunk.toString());
+        listener(chunk);
       }) ?? null;
   };
 
@@ -172,17 +178,6 @@ export async function createPtyAdapter(params: {
     }
   };
 
-  const resize = (cols: number, rows: number) => {
-    if (typeof pty.resize !== "function") {
-      return;
-    }
-    try {
-      pty.resize(cols, rows);
-    } catch {
-      // ignore resize errors
-    }
-  };
-
   const dispose = () => {
     try {
       dataListener?.dispose();
@@ -205,7 +200,6 @@ export async function createPtyAdapter(params: {
     stdin,
     onStdout,
     onStderr,
-    resize,
     wait,
     kill,
     dispose,

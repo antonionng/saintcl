@@ -5,22 +5,24 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-md border text-[length:var(--text-sm)] font-medium transition-all duration-200 ease-out disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 rounded-sm border text-[length:var(--text-sm)] font-medium transition-colors duration-150 ease-out disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0 outline-none focus-visible:ring-1 focus-visible:ring-white/40",
   {
     variants: {
       variant: {
         default:
-          "border-white/90 bg-white !text-zinc-950 hover:border-white hover:bg-white/94 hover:!text-zinc-950 [&]:!text-zinc-950 [&>span]:!text-zinc-950 [&>svg]:!text-zinc-950 [&_svg]:!text-zinc-950 [&_span]:!text-zinc-950 [&_a]:!text-zinc-950",
+          "border-white bg-white !text-zinc-950 hover:bg-white/90 [&_svg]:!text-zinc-950 [&_span]:!text-zinc-950",
         secondary:
-          "border-border bg-surface-2 text-white hover:border-border-strong hover:bg-surface-3",
-        ghost: "border-transparent bg-transparent text-white/82 hover:bg-surface-2 hover:text-white",
-        outline: "border-border bg-transparent text-white hover:border-border-strong hover:bg-surface-1",
+          "border-border bg-transparent text-white hover:bg-white/5 hover:border-border-strong",
+        ghost: "border-transparent bg-transparent text-white/70 hover:bg-white/5 hover:text-white",
+        outline: "border-border bg-transparent text-white hover:bg-white/5 hover:border-border-strong",
+        destructive:
+          "border-rose-500/40 bg-transparent text-rose-300 hover:bg-rose-500/10 hover:border-rose-500/60",
       },
       size: {
-        default: "h-10 px-phi-5",
-        sm: "h-8.5 px-phi-3 text-[length:var(--text-sm)]",
-        lg: "h-11 px-phi-5 text-[length:var(--text-base)]",
-        icon: "size-10 rounded-md",
+        default: "h-9 px-3.5",
+        sm: "h-8 px-3 text-[length:var(--text-xs)]",
+        lg: "h-10 px-5 text-[length:var(--text-base)]",
+        icon: "size-9 rounded-sm",
       },
     },
     defaultVariants: {

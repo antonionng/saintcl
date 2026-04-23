@@ -319,7 +319,7 @@ export function PolicyForm({
             value={nextDefaultModel}
             onChange={(event) => setNextDefaultModel(event.target.value)}
             disabled={readOnly}
-            className="flex h-11 w-full rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-2 text-sm text-white"
+            className="flex h-9 w-full rounded-sm border border-border bg-transparent px-3 text-[length:var(--text-sm)] text-white"
           >
             <option value="">Select a default model</option>
             {nextApprovedModels.map((entry) => (
@@ -329,17 +329,17 @@ export function PolicyForm({
             ))}
           </select>
         </div>
-        <div className="space-y-3 rounded-xl border border-white/8 bg-white/[0.02] p-4">
+        <div className="space-y-3 rounded-md border border-border p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-medium text-white">Approved model catalog</p>
-              <p className="text-xs text-zinc-500">Admins control the allowlist users can pick from.</p>
+              <p className="text-[length:var(--text-sm)] font-medium text-white">Approved model catalog</p>
+              <p className="text-[length:var(--text-xs)] text-white/55">Admins control the allowlist users can pick from.</p>
             </div>
-            <span className="text-xs uppercase tracking-[0.18em] text-zinc-500">
+            <span className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/45">
               {nextApprovedModels.length} approved
             </span>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <Input
               value={customModel}
               onChange={(event) => setCustomModel(event.target.value)}
@@ -348,7 +348,8 @@ export function PolicyForm({
             />
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
+              size="default"
               onClick={addCustomApprovedModel}
               disabled={readOnly}
             >
@@ -384,25 +385,26 @@ export function PolicyForm({
               const isBlocked = nextBlockedModels.includes(entry.id);
 
               return (
-                <div key={entry.id} className="rounded-xl border border-white/8 bg-white/[0.02] p-4">
+                <div key={entry.id} className="rounded-sm border border-border-subtle p-3">
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-white">{entry.label}</p>
-                      <p className="text-xs text-zinc-500">{entry.id}</p>
+                    <div className="space-y-1 min-w-0">
+                      <p className="text-[length:var(--text-sm)] font-medium text-white">{entry.label}</p>
+                      <p className="text-[length:var(--text-xs)] text-white/45">{entry.id}</p>
                       {entry.description ? (
-                        <p className="text-xs leading-6 text-zinc-400">{entry.description}</p>
+                        <p className="text-[length:var(--text-xs)] text-white/60">{entry.description}</p>
                       ) : null}
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-[length:var(--text-xs)] text-white/45">
                         {entry.isFree ? "Free or zero-rated" : "Paid"}
                         {entry.isPremium ? " · Premium" : ""}
                         {entry.contextWindow ? ` · ${entry.contextWindow.toLocaleString()} ctx` : ""}
                         {formatPricing(entry)}
                       </p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1">
                       <Button
                         type="button"
-                        variant={isApproved ? "secondary" : "default"}
+                        variant={isApproved ? "outline" : "default"}
+                        size="sm"
                         onClick={() => upsertApprovedModel(entry)}
                         disabled={readOnly}
                       >
@@ -411,6 +413,7 @@ export function PolicyForm({
                       <Button
                         type="button"
                         variant="ghost"
+                        size="sm"
                         onClick={() => toggleBlockedModel(entry.id)}
                         disabled={readOnly}
                       >
@@ -441,14 +444,14 @@ export function PolicyForm({
             </Button>
           </div>
           <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Approved models</p>
-            <div className="flex flex-wrap gap-2">
+            <p className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/45">Approved models</p>
+            <div className="flex flex-wrap gap-1.5">
               {nextApprovedModels.map((entry) => (
                 <button
                   key={entry.id}
                   type="button"
                   onClick={() => !readOnly && upsertApprovedModel(entry)}
-                  className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-zinc-300"
+                  className="rounded-sm border border-border px-2 py-0.5 text-[length:var(--text-xs)] text-white/80 hover:border-border-strong"
                 >
                   {entry.label}
                 </button>
@@ -457,14 +460,14 @@ export function PolicyForm({
           </div>
           {nextBlockedModels.length > 0 ? (
             <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Blocked models</p>
-              <div className="flex flex-wrap gap-2">
+              <p className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/45">Blocked models</p>
+              <div className="flex flex-wrap gap-1.5">
                 {nextBlockedModels.map((entry) => (
                   <button
                     key={entry}
                     type="button"
                     onClick={() => !readOnly && toggleBlockedModel(entry)}
-                    className="rounded-full border border-amber-400/30 bg-amber-400/8 px-3 py-1 text-xs text-amber-300"
+                    className="rounded-sm border border-amber-500/30 px-2 py-0.5 text-[length:var(--text-xs)] text-amber-300"
                   >
                     {entry}
                   </button>
@@ -489,8 +492,8 @@ export function PolicyForm({
           />
           Require approval when wallet thresholds are crossed
         </div>
-        <div className="space-y-3 rounded-xl border border-white/8 bg-white/[0.02] p-4">
-          <p className="text-sm font-medium text-white">Model guardrails</p>
+        <div className="space-y-3 rounded-md border border-border p-4">
+          <p className="text-[length:var(--text-sm)] font-medium text-white">Model guardrails</p>
           <div className="flex items-center gap-3 text-sm text-zinc-300">
             <input
               type="checkbox"
@@ -572,18 +575,23 @@ export function PolicyForm({
       </PolicySection>
 
       <PolicySection
-        title="Advanced guardrails"
-        description="Use raw JSON only for policies that are not yet modeled in the form. Invalid JSON will block saving."
+        title="Advanced"
+        description="Most teams won't need this. Add raw JSON for guardrails not exposed in the form above."
       >
-        <div className="space-y-2">
-          <label className="app-field-label">Guardrails JSON</label>
-          <Textarea
-            value={nextGuardrails}
-            onChange={(event) => setNextGuardrails(event.target.value)}
-            className="min-h-48 font-mono text-xs"
-            readOnly={readOnly}
-          />
-        </div>
+        <details className="rounded-md border border-border p-4">
+          <summary className="cursor-pointer text-[length:var(--text-xs)] font-medium uppercase tracking-[0.08em] text-white/55 hover:text-white">
+            Show guardrails JSON
+          </summary>
+          <div className="mt-3 space-y-2">
+            <Textarea
+              value={nextGuardrails}
+              onChange={(event) => setNextGuardrails(event.target.value)}
+              className="min-h-48 font-mono text-[length:var(--text-xs)]"
+              readOnly={readOnly}
+            />
+            <p className="text-[length:var(--text-xs)] text-white/45">Invalid JSON blocks saving.</p>
+          </div>
+        </details>
       </PolicySection>
 
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
@@ -608,10 +616,10 @@ function PolicySection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="settings-panel space-y-4 rounded-2xl p-5">
+    <div className="settings-panel p-5 space-y-4">
       <div className="space-y-1">
-        <p className="text-sm font-medium text-white">{title}</p>
-        <p className="text-sm leading-6 text-zinc-500">{description}</p>
+        <p className="text-[length:var(--text-sm)] font-medium text-white">{title}</p>
+        <p className="text-[length:var(--text-xs)] text-white/55">{description}</p>
       </div>
       {children}
     </div>
@@ -635,7 +643,7 @@ function CatalogSourceBadge({
   loading: boolean;
 }) {
   if (loading) {
-    return <span className="rounded-full border border-white/10 px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-zinc-500">Refreshing</span>;
+    return <span className="rounded-sm border border-border px-2 py-0.5 text-[10px] uppercase tracking-[0.08em] text-white/55">Refreshing</span>;
   }
 
   if (!source) {
@@ -644,11 +652,11 @@ function CatalogSourceBadge({
 
   const tone =
     source === "live"
-      ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
-      : "border-amber-400/30 bg-amber-400/10 text-amber-300";
+      ? "border-emerald-500/30 text-emerald-300"
+      : "border-amber-500/30 text-amber-300";
 
   return (
-    <span className={`rounded-full border px-2 py-1 text-[10px] uppercase tracking-[0.18em] ${tone}`}>
+    <span className={`rounded-sm border px-2 py-0.5 text-[10px] uppercase tracking-[0.08em] ${tone}`}>
       {source === "live" ? "Live catalog" : "Fallback catalog"}
     </span>
   );

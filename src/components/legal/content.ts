@@ -17,13 +17,13 @@ export const legalDocuments = {
   terms: {
     title: "Terms of Service",
     description:
-      "These terms govern access to and use of the Saint AGI service operated by Neural Network Group Ltd.",
+      "These terms govern access to and use of the SaintClaw service operated by Neural Network Group Ltd.",
     lastUpdated: "17 March 2026",
     sections: [
       {
         title: "Who we are",
         paragraphs: [
-          `Saint AGI is a service operated by ${companyProfile.legalName}, a company based in ${companyProfile.country}. These Terms of Service apply to your access to and use of the Saint AGI website, hosted application, and related services.`,
+          `SaintClaw is a service operated by ${companyProfile.legalName}, a company based in ${companyProfile.country}. These Terms of Service apply to your access to and use of the SaintClaw website, hosted application, and related services.`,
           `If you have questions about these terms, contact ${companyProfile.contactEmail}. Where a registered office address is required for a formal legal notice, use ${companyProfile.registeredOffice} until an updated address is published on this site.`,
         ],
       },
@@ -37,8 +37,8 @@ export const legalDocuments = {
       {
         title: "Using the service",
         paragraphs: [
-          "Subject to these terms, we grant you a limited, non-exclusive, non-transferable right to use Saint AGI in accordance with the product documentation and any plan limits that apply to your subscription.",
-          "You must use the service lawfully and responsibly. You must not use Saint AGI to infringe rights, access systems without authorization, distribute malware, generate unlawful content, or violate applicable sanctions, export controls, employment obligations, or data protection law.",
+          "Subject to these terms, we grant you a limited, non-exclusive, non-transferable right to use SaintClaw in accordance with the product documentation and any plan limits that apply to your subscription.",
+          "You must use the service lawfully and responsibly. You must not use SaintClaw to infringe rights, access systems without authorization, distribute malware, generate unlawful content, or violate applicable sanctions, export controls, employment obligations, or data protection law.",
         ],
         bullets: [
           "Do not attempt to bypass product guardrails, billing controls, rate limits, or access restrictions.",
@@ -49,7 +49,7 @@ export const legalDocuments = {
       {
         title: "Customer content and AI outputs",
         paragraphs: [
-          "You retain ownership of content, prompts, files, and other materials you submit to the service. You are responsible for ensuring that you have the rights needed to provide that content and to instruct Saint AGI to process it.",
+          "You retain ownership of content, prompts, files, and other materials you submit to the service. You are responsible for ensuring that you have the rights needed to provide that content and to instruct SaintClaw to process it.",
           "AI-generated outputs may be inaccurate, incomplete, or unsuitable for your intended purpose. You are responsible for reviewing outputs before acting on them, especially where outputs affect legal, financial, employment, security, or operational decisions.",
         ],
       },
@@ -93,13 +93,13 @@ export const legalDocuments = {
   privacy: {
     title: "Privacy Policy",
     description:
-      "This policy explains how Neural Network Group Ltd collects, uses, stores, and discloses personal data when operating Saint AGI.",
+      "This policy explains how Neural Network Group Ltd collects, uses, stores, and discloses personal data when operating SaintClaw.",
     lastUpdated: "17 March 2026",
     sections: [
       {
         title: "Controller information",
         paragraphs: [
-          `${companyProfile.legalName} operates Saint AGI and is the controller for personal data described in this policy unless a different role is stated. Our contact email is ${companyProfile.contactEmail}.`,
+          `${companyProfile.legalName} operates SaintClaw and is the controller for personal data described in this policy unless a different role is stated. Our contact email is ${companyProfile.contactEmail}.`,
           `Our registered office address is currently listed as ${companyProfile.registeredOffice}. This placeholder will be replaced when the published registered office details are finalized.`,
         ],
       },
@@ -118,7 +118,7 @@ export const legalDocuments = {
       {
         title: "Why we use personal data",
         paragraphs: [
-          "We use personal data to provide and maintain Saint AGI, authenticate users, process transactions, support customers, detect misuse, enforce policies, improve the product, and comply with legal obligations.",
+          "We use personal data to provide and maintain SaintClaw, authenticate users, process transactions, support customers, detect misuse, enforce policies, improve the product, and comply with legal obligations.",
           "Where applicable, we may use contact details to send service notices, important security updates, product changes, and lawful marketing communications. You can opt out of non-essential marketing messages at any time.",
         ],
       },
@@ -162,14 +162,14 @@ export const legalDocuments = {
   gdpr: {
     title: "GDPR Policy",
     description:
-      "This page summarizes how Saint AGI approaches UK GDPR and EU GDPR compliance, roles, lawful bases, and data subject rights.",
+      "This page summarizes how SaintClaw approaches UK GDPR and EU GDPR compliance, roles, lawful bases, and data subject rights.",
     lastUpdated: "17 March 2026",
     sections: [
       {
         title: "Our role under data protection law",
         paragraphs: [
-          `${companyProfile.legalName} may act as a controller for account, billing, security, support, and website data connected to Saint AGI. In some product contexts, we may also act as a processor on behalf of our customers when handling customer-configured workspace content and operational data.`,
-          "Where we act as a processor, the customer remains responsible for determining the legal basis for its use of the service and for ensuring that instructions given to Saint AGI are lawful and appropriate.",
+          `${companyProfile.legalName} may act as a controller for account, billing, security, support, and website data connected to SaintClaw. In some product contexts, we may also act as a processor on behalf of our customers when handling customer-configured workspace content and operational data.`,
+          "Where we act as a processor, the customer remains responsible for determining the legal basis for its use of the service and for ensuring that instructions given to SaintClaw are lawful and appropriate.",
         ],
       },
       {
@@ -202,7 +202,7 @@ export const legalDocuments = {
         title: "How to contact us",
         paragraphs: [
           `For GDPR requests or questions, contact ${companyProfile.contactEmail}. Formal notices may also reference ${companyProfile.registeredOffice} until the final registered office address is published.`,
-          "If you are a Saint AGI customer and need a data processing agreement or transfer documentation, contact us and we will direct your request to the appropriate team.",
+          "If you are a SaintClaw customer and need a data processing agreement or transfer documentation, contact us and we will direct your request to the appropriate team.",
         ],
       },
     ],
@@ -210,14 +210,14 @@ export const legalDocuments = {
   aiUsage: {
     title: "AI Usage Policy",
     description:
-      "This policy explains the expected use of Saint AGI's AI capabilities, including governance, human review, and prohibited uses.",
+      "This policy explains the expected use of SaintClaw's AI capabilities, including governance, human review, and prohibited uses.",
     lastUpdated: "17 March 2026",
     sections: [
       {
         title: "Purpose of this policy",
         paragraphs: [
-          "Saint AGI is designed to help organizations run governed AI agents across real workflows. This policy sets expectations for customers and end users who deploy the service across internal tools, knowledge sources, and business processes.",
-          "Use of Saint AGI must remain lawful, responsible, and consistent with your organization's internal approvals and risk policies.",
+          "SaintClaw is designed to help organizations run governed AI agents across real workflows. This policy sets expectations for customers and end users who deploy the service across internal tools, knowledge sources, and business processes.",
+          "Use of SaintClaw must remain lawful, responsible, and consistent with your organization's internal approvals and risk policies.",
         ],
       },
       {
@@ -230,7 +230,7 @@ export const legalDocuments = {
       {
         title: "Prohibited uses",
         paragraphs: [
-          "You may not use Saint AGI to generate or facilitate unlawful content, fraud, harassment, malware, unauthorized access, deceptive impersonation, or activity that infringes privacy, intellectual property, or other legal rights.",
+          "You may not use SaintClaw to generate or facilitate unlawful content, fraud, harassment, malware, unauthorized access, deceptive impersonation, or activity that infringes privacy, intellectual property, or other legal rights.",
           "You may not use the service in a way that violates employment law, anti-discrimination law, consumer law, sanctions rules, export controls, or any other law that applies to your organization or users.",
         ],
         bullets: [
@@ -242,7 +242,7 @@ export const legalDocuments = {
       {
         title: "Data handling and model use",
         paragraphs: [
-          "You should only submit data to Saint AGI when you have the right and legal basis to do so. Before using personal, confidential, or regulated data, ensure that your organization has approved the workflow and that the selected model path is appropriate for the sensitivity of the task.",
+          "You should only submit data to SaintClaw when you have the right and legal basis to do so. Before using personal, confidential, or regulated data, ensure that your organization has approved the workflow and that the selected model path is appropriate for the sensitivity of the task.",
           "Where the product offers different routing, approval, or visibility controls, you are responsible for choosing settings that fit the relevant level of risk.",
         ],
       },
@@ -256,8 +256,8 @@ export const legalDocuments = {
       {
         title: "Questions and escalation",
         paragraphs: [
-          `If you need clarification on appropriate use of Saint AGI, contact ${companyProfile.contactEmail}. If you believe the service has been used in a way that breaches this policy, notify us promptly using the same address.`,
-          "Organizations using Saint AGI should maintain their own internal approval, escalation, and review processes for higher-risk AI activity.",
+          `If you need clarification on appropriate use of SaintClaw, contact ${companyProfile.contactEmail}. If you believe the service has been used in a way that breaches this policy, notify us promptly using the same address.`,
+          "Organizations using SaintClaw should maintain their own internal approval, escalation, and review processes for higher-risk AI activity.",
         ],
       },
     ],

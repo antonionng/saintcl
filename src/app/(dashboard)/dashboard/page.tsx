@@ -30,21 +30,21 @@ export default async function DashboardPage() {
     : [{ agents: 0, channels: 0, docs: 0, runtimes: 0 }, [], [], []];
 
   const dashboardStats: DashboardStat[] = [
-    { id: "agents", label: "Agents", value: String(stats.agents), delta: stats.agents === 0 ? "None provisioned" : "Provisioned" },
-    { id: "channels", label: "Channels", value: String(stats.channels), delta: stats.channels === 0 ? "None connected" : "Connected" },
-    { id: "docs", label: "Knowledge docs", value: String(stats.docs), delta: stats.docs === 0 ? "None uploaded" : "Indexed" },
-    { id: "runtimes", label: "Runtimes", value: String(stats.runtimes), delta: stats.runtimes === 0 ? "No gateway" : "Running" },
+    { id: "agents", label: "Agents", value: String(stats.agents), delta: stats.agents === 0 ? "None yet" : "Active" },
+    { id: "channels", label: "Apps", value: String(stats.channels), delta: stats.channels === 0 ? "None connected" : "Connected" },
+    { id: "docs", label: "Knowledge", value: String(stats.docs), delta: stats.docs === 0 ? "No documents" : "Indexed" },
+    { id: "runtimes", label: "Workspaces", value: String(stats.runtimes), delta: stats.runtimes === 0 ? "Not started" : "Running" },
   ];
 
   return (
     <div className="space-y-phi-13">
       <PageHeader
         eyebrow="Overview"
-        title="Command center"
-        description="Track agent health, channel bindings, and the operating footprint of your autonomous workforce."
+        title="Home"
+        description="Your agents, connected apps, and recent activity at a glance."
         action={
           <Button asChild>
-            <Link href="/agents/new">Provision agent</Link>
+            <Link href="/agents/new">New agent</Link>
           </Button>
         }
       />
@@ -54,14 +54,14 @@ export default async function DashboardPage() {
       <div className="grid gap-phi-5 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Runtime health</CardTitle>
+            <CardTitle>Workspaces</CardTitle>
           </CardHeader>
           <CardContent>
             {runtimes.length === 0 ? (
               <EmptyState
                 icon={Activity}
-                title="No runtimes"
-                description="Provision your first agent to spin up an OpenClaw runtime."
+                title="No workspaces yet"
+                description="Create your first agent and a workspace will spin up automatically."
                 className="py-phi-8"
               />
             ) : (
@@ -70,10 +70,11 @@ export default async function DashboardPage() {
                   <Card key={runtime.id} variant="inset" className="p-phi-5">
                     <div className="flex items-center justify-between gap-phi-3">
                       <div>
-                        <p className="text-[length:var(--text-sm)] font-medium text-white">{runtime.org_id.slice(0, 8)}</p>
+                        <p className="text-[length:var(--text-sm)] font-medium text-white">
+                          {session?.org.name ?? "Workspace"}
+                        </p>
                         <p className="mt-phi-2 text-[length:var(--text-sm)] text-zinc-400">
-                          Port {runtime.gateway_port}
-                          {runtime.pid ? ` · PID ${runtime.pid}` : ""}
+                          {runtime.status === "online" ? "Ready for chat" : "Connecting"}
                         </p>
                       </div>
                       <Badge variant={runtime.status === "online" ? "success" : "warning"}>
@@ -82,7 +83,7 @@ export default async function DashboardPage() {
                     </div>
                     {runtime.last_heartbeat_at ? (
                       <p className="mt-phi-3 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
-                        Last heartbeat {new Date(runtime.last_heartbeat_at).toLocaleString()}
+                        Last active {new Date(runtime.last_heartbeat_at).toLocaleString()}
                       </p>
                     ) : null}
                   </Card>
@@ -134,14 +135,14 @@ export default async function DashboardPage() {
             <EmptyState
               icon={Bot}
               title="No activity yet"
-              description="Agent logs will stream here once you provision an agent and connect a channel."
+              description="Activity will appear here once your agents start chatting."
               action={
                 <div className="flex flex-wrap justify-center gap-phi-3">
                   <Button asChild size="sm">
-                    <Link href="/agents/new">Provision agent</Link>
+                    <Link href="/agents/new">New agent</Link>
                   </Button>
                   <Button asChild variant="secondary" size="sm">
-                    <Link href="/connections">Connect channel</Link>
+                    <Link href="/apps">Connect an app</Link>
                   </Button>
                 </div>
               }
@@ -170,19 +171,19 @@ export default async function DashboardPage() {
           className="group rounded-lg border border-border-subtle bg-surface-2 p-phi-8 transition-colors hover:border-border hover:bg-surface-3"
         >
           <Bot className="size-5 text-white" />
-          <h3 className="mt-phi-5 text-[length:var(--text-lg)] font-medium tracking-[-0.02em] text-white">Provision an agent</h3>
+          <h3 className="mt-phi-5 text-[length:var(--text-lg)] font-medium tracking-[-0.02em] text-white">Create an agent</h3>
           <p className="mt-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
-            Create a dedicated OpenClaw identity mapped to a model, persona, and workspace.
+            Pick a role and your agent is ready to chat in seconds.
           </p>
         </Link>
         <Link
-          href="/channels"
+          href="/apps"
           className="group rounded-lg border border-border-subtle bg-surface-2 p-phi-8 transition-colors hover:border-border hover:bg-surface-3"
         >
           <Cable className="size-5 text-white" />
-          <h3 className="mt-phi-5 text-[length:var(--text-lg)] font-medium tracking-[-0.02em] text-white">Connect a channel</h3>
+          <h3 className="mt-phi-5 text-[length:var(--text-lg)] font-medium tracking-[-0.02em] text-white">Browse the app store</h3>
           <p className="mt-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
-            Bind Telegram, Slack, or WhatsApp to an agent for inbound message routing.
+            Connect Slack, Telegram, search, and more in one click.
           </p>
         </Link>
         <Link
@@ -192,7 +193,7 @@ export default async function DashboardPage() {
           <Puzzle className="size-5 text-white" />
           <h3 className="mt-phi-5 text-[length:var(--text-lg)] font-medium tracking-[-0.02em] text-white">Install skills</h3>
           <p className="mt-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
-            Browse and install skills per agent from the ClawHub and curated library.
+            Give your agents new abilities from the curated skill library.
           </p>
         </Link>
         <Link
@@ -202,7 +203,7 @@ export default async function DashboardPage() {
           <Database className="size-5 text-white" />
           <h3 className="mt-phi-5 text-[length:var(--text-lg)] font-medium tracking-[-0.02em] text-white">Upload knowledge</h3>
           <p className="mt-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
-            Add documents to Supabase Storage for chunking and retrieval via pgvector.
+            Drop in documents and your agents will use them as context.
           </p>
         </Link>
       </div>

@@ -13,9 +13,9 @@ import { Button } from "@/components/ui/button";
 import { getCurrentOrg, getCurrentUserProfile, getCurrentUserWorkspaces } from "@/lib/dal";
 
 export const metadata: Metadata = {
-  title: "Models | Saint AGI",
+  title: "Models | SaintClaw",
   description:
-    "Explore Saint AGI's model range across deep reasoning, fast execution, open deployment options, and governed routing for company-wide AI adoption.",
+    "Explore SaintClaw's model range across deep reasoning, fast execution, open deployment options, and governed routing for company-wide AI adoption.",
 };
 
 export default async function ModelsPage() {
@@ -30,7 +30,7 @@ export default async function ModelsPage() {
           <Link href="/" className="inline-flex h-10 items-center">
             <Image
               src={placeholderLogo}
-              alt="Saint AGI"
+              alt="SaintClaw"
               className="h-10 w-auto object-contain opacity-95"
               priority
             />

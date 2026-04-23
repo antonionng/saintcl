@@ -1,4 +1,5 @@
 import { html } from "lit";
+import { t } from "../../i18n/index.ts";
 import type { ConfigUiHints } from "../types.ts";
 import { formatChannelExtraValue, resolveChannelConfigValue } from "./channel-config-extras.ts";
 import type { ChannelsProps } from "./channels.types.ts";
@@ -256,20 +257,16 @@ export function renderChannelConfigSection(params: { channelId: string; props: C
   const disabled = props.configSaving || props.configSchemaLoading;
   return html`
     <div style="margin-top: 16px;">
-      ${
-        props.configSchemaLoading
-          ? html`
-              <div class="muted">Loading config schema…</div>
-            `
-          : renderChannelConfigForm({
-              channelId,
-              configValue: props.configForm,
-              schema: props.configSchema,
-              uiHints: props.configUiHints,
-              disabled,
-              onPatch: props.onConfigPatch,
-            })
-      }
+      ${props.configSchemaLoading
+        ? html` <div class="muted">Loading config schema…</div> `
+        : renderChannelConfigForm({
+            channelId,
+            configValue: props.configForm,
+            schema: props.configSchema,
+            uiHints: props.configUiHints,
+            disabled,
+            onPatch: props.onConfigPatch,
+          })}
       <div class="row" style="margin-top: 12px;">
         <button
           class="btn primary"
@@ -278,12 +275,8 @@ export function renderChannelConfigSection(params: { channelId: string; props: C
         >
           ${props.configSaving ? "Saving…" : "Save"}
         </button>
-        <button
-          class="btn"
-          ?disabled=${disabled}
-          @click=${() => props.onConfigReload()}
-        >
-          Reload
+        <button class="btn" ?disabled=${disabled} @click=${() => props.onConfigReload()}>
+          ${t("common.reload")}
         </button>
       </div>
     </div>

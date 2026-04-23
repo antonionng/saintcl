@@ -7,7 +7,7 @@ export function CtaBanner() {
     <section id="start" className="py-18 lg:py-30">
       <div className="site-shell border-t border-white/8 pt-14">
         <div className="mx-auto max-w-3xl space-y-5 text-center">
-          <p className="app-kicker">Start with Saint AGI</p>
+          <p className="app-kicker">Start with SaintClaw</p>
           <h2 className="text-3xl font-semibold tracking-[-0.05em] text-white sm:text-4xl lg:text-[3rem] lg:leading-[1.02]">
             Make your company AI-powered. Keep the rollout under control.
           </h2>

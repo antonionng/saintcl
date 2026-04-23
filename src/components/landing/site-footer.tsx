@@ -16,7 +16,7 @@ export function SiteFooter() {
                 {companyProfile.tagline}
               </h2>
               <p className="text-sm leading-7 text-white/72">
-                Saint AGI is operated by {companyProfile.legalName} in {companyProfile.country}. For product,
+                SaintClaw is operated by {companyProfile.legalName} in {companyProfile.country}. For product,
                 privacy, or legal requests, contact{" "}
                 <a className="text-white transition-colors hover:text-white/80" href={`mailto:${companyProfile.contactEmail}`}>
                   {companyProfile.contactEmail}

@@ -8,7 +8,7 @@ export function HeroSection() {
       <div className="site-shell">
         <div className="border-t border-white/8 pt-16 lg:pt-20">
           <div className="mx-auto flex max-w-5xl flex-col items-center space-y-7 text-center lg:space-y-8">
-            <p className="app-kicker">Saint AGI</p>
+            <p className="app-kicker">SaintClaw</p>
             <div className="space-y-4">
               <h1 className="max-w-5xl text-5xl font-semibold tracking-[-0.08em] text-white sm:text-6xl lg:text-[6.4rem] lg:leading-[0.9]">
                 AI agents for every employee.

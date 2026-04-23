@@ -1,6 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { evaluateChannelHealth, resolveChannelRestartReason } from "./channel-health-policy.js";
 
+function evaluateDiscordHealth(
+  account: Record<string, unknown>,
+  now = 100_000,
+  channelId = "discord",
+) {
+  return evaluateChannelHealth(account, {
+    channelId,
+    now,
+    channelConnectGraceMs: 10_000,
+    staleEventThresholdMs: 30_000,
+  });
+}
+
 describe("evaluateChannelHealth", () => {
   it("treats disabled accounts as healthy unmanaged", () => {
     const evaluation = evaluateChannelHealth(
@@ -123,7 +136,7 @@ describe("evaluateChannelHealth", () => {
     expect(evaluation).toEqual({ healthy: false, reason: "stale-socket" });
   });
 
-  it("skips stale-socket detection for telegram long-polling channels", () => {
+  it("flags stale sockets for telegram polling channels", () => {
     const evaluation = evaluateChannelHealth(
       {
         running: true,
@@ -131,7 +144,49 @@ describe("evaluateChannelHealth", () => {
         enabled: true,
         configured: true,
         lastStartAt: 0,
-        lastEventAt: null,
+        lastEventAt: 0,
+        mode: "polling",
+      },
+      {
+        channelId: "telegram",
+        now: 100_000,
+        channelConnectGraceMs: 10_000,
+        staleEventThresholdMs: 30_000,
+      },
+    );
+    expect(evaluation).toEqual({ healthy: false, reason: "stale-socket" });
+  });
+
+  it("skips stale-socket detection for telegram accounts without explicit polling mode", () => {
+    const evaluation = evaluateChannelHealth(
+      {
+        running: true,
+        connected: true,
+        enabled: true,
+        configured: true,
+        lastStartAt: 0,
+        lastEventAt: 0,
+      },
+      {
+        channelId: "telegram",
+        now: 100_000,
+        channelConnectGraceMs: 10_000,
+        staleEventThresholdMs: 30_000,
+      },
+    );
+    expect(evaluation).toEqual({ healthy: true, reason: "healthy" });
+  });
+
+  it("skips stale-socket detection for telegram accounts with malformed mode", () => {
+    const evaluation = evaluateChannelHealth(
+      {
+        running: true,
+        connected: true,
+        enabled: true,
+        configured: true,
+        lastStartAt: 0,
+        lastEventAt: 0,
+        mode: { polling: true } as unknown as string,
       },
       {
         channelId: "telegram",
@@ -144,48 +199,32 @@ describe("evaluateChannelHealth", () => {
   });
 
   it("skips stale-socket detection for channels in webhook mode", () => {
-    const evaluation = evaluateChannelHealth(
-      {
-        running: true,
-        connected: true,
-        enabled: true,
-        configured: true,
-        lastStartAt: 0,
-        lastEventAt: 0,
-        mode: "webhook",
-      },
-      {
-        channelId: "discord",
-        now: 100_000,
-        channelConnectGraceMs: 10_000,
-        staleEventThresholdMs: 30_000,
-      },
-    );
+    const evaluation = evaluateDiscordHealth({
+      running: true,
+      connected: true,
+      enabled: true,
+      configured: true,
+      lastStartAt: 0,
+      lastEventAt: 0,
+      mode: "webhook",
+    });
     expect(evaluation).toEqual({ healthy: true, reason: "healthy" });
   });
 
   it("does not flag stale sockets for channels without event tracking", () => {
-    const evaluation = evaluateChannelHealth(
-      {
-        running: true,
-        connected: true,
-        enabled: true,
-        configured: true,
-        lastStartAt: 0,
-        lastEventAt: null,
-      },
-      {
-        channelId: "discord",
-        now: 100_000,
-        channelConnectGraceMs: 10_000,
-        staleEventThresholdMs: 30_000,
-      },
-    );
+    const evaluation = evaluateDiscordHealth({
+      running: true,
+      connected: true,
+      enabled: true,
+      configured: true,
+      lastStartAt: 0,
+      lastEventAt: null,
+    });
     expect(evaluation).toEqual({ healthy: true, reason: "healthy" });
   });
 
   it("does not flag stale sockets without an active connected socket", () => {
-    const evaluation = evaluateChannelHealth(
+    const evaluation = evaluateDiscordHealth(
       {
         running: true,
         enabled: true,
@@ -193,18 +232,14 @@ describe("evaluateChannelHealth", () => {
         lastStartAt: 0,
         lastEventAt: 0,
       },
-      {
-        channelId: "slack",
-        now: 75_000,
-        channelConnectGraceMs: 10_000,
-        staleEventThresholdMs: 30_000,
-      },
+      75_000,
+      "slack",
     );
     expect(evaluation).toEqual({ healthy: true, reason: "healthy" });
   });
 
   it("ignores inherited event timestamps from a previous lifecycle", () => {
-    const evaluation = evaluateChannelHealth(
+    const evaluation = evaluateDiscordHealth(
       {
         running: true,
         connected: true,
@@ -213,12 +248,8 @@ describe("evaluateChannelHealth", () => {
         lastStartAt: 50_000,
         lastEventAt: 10_000,
       },
-      {
-        channelId: "slack",
-        now: 75_000,
-        channelConnectGraceMs: 10_000,
-        staleEventThresholdMs: 30_000,
-      },
+      75_000,
+      "slack",
     );
     expect(evaluation).toEqual({ healthy: true, reason: "healthy" });
   });

@@ -7,7 +7,7 @@ export const headerLinks = [
 ];
 
 export const companyProfile = {
-  brandName: "Saint AGI",
+  brandName: "SaintClaw",
   legalName: "Neural Network Group Ltd",
   contactEmail: "hello@neuralnetworkgroup.com",
   country: "England",
@@ -20,7 +20,7 @@ export const capabilitiesIntro = {
   kicker: "Capabilities",
   title: "What your company needs to put AI to work.",
   description:
-    "Saint AGI gives every team governed agents that can plan, act, and follow through across the systems your employees already use.",
+    "SaintClaw gives every team governed agents that can plan, act, and follow through across the systems your employees already use.",
   supportingCopy: "Company-wide adoption. Centralized control.",
   cta: {
     href: "/capabilities",
@@ -164,7 +164,7 @@ export const newsIntro = {
 };
 
 export const articleCta = {
-  kicker: "Build with Saint AGI",
+  kicker: "Build with SaintClaw",
   title: "Make your company AI-powered with governed agents.",
   description:
     "Start free, equip teams with the right agents for the job, and keep approvals, visibility, and policy enforcement in one place.",
@@ -229,7 +229,7 @@ export type AnnouncementCard = {
 export const announcementCards = [
   {
     slug: "gpt-5-4-thinking-signals-a-new-standard-for-ai-work",
-    source: "Saint AGI desk",
+    source: "SaintClaw desk",
     category: "Models",
     publishedAt: "Mar 2026",
     readTime: "5 min read",
@@ -249,7 +249,7 @@ export const announcementCards = [
       {
         title: "Why control matters more as models improve",
         paragraphs: [
-          "For Saint AGI, stronger models create more upside only when they are wrapped in policy, approvals, and visibility. Better reasoning expands the range of tasks companies are willing to delegate. It also increases the need for clear oversight because more capable agents can touch more sensitive workflows.",
+          "For SaintClaw, stronger models create more upside only when they are wrapped in policy, approvals, and visibility. Better reasoning expands the range of tasks companies are willing to delegate. It also increases the need for clear oversight because more capable agents can touch more sensitive workflows.",
           "That is why the control plane matters as much as the model choice. If operators cannot see where work ran, which tools were used, or when approval was requested, reliability gains at the model layer do not translate into organizational trust.",
         ],
       },
@@ -264,7 +264,7 @@ export const announcementCards = [
   },
   {
     slug: "claude-opus-4-6-keeps-the-pressure-on-production-coding",
-    source: "Saint AGI desk",
+    source: "SaintClaw desk",
     category: "Models",
     publishedAt: "Mar 2026",
     readTime: "4 min read",
@@ -285,7 +285,7 @@ export const announcementCards = [
         title: "Routing should be a platform decision",
         paragraphs: [
           "The strongest operating model is centralized routing with decentralized usage. Employees should not need to understand every trade-off between reasoning depth, latency, price, and deployment pattern before they can get value from an agent.",
-          "Saint AGI treats routing as part of the product layer. The best model for the task can change in the background while policies, approvals, audit visibility, and memory behavior stay consistent from one workflow to the next.",
+          "SaintClaw treats routing as part of the product layer. The best model for the task can change in the background while policies, approvals, audit visibility, and memory behavior stay consistent from one workflow to the next.",
         ],
       },
       {
@@ -299,7 +299,7 @@ export const announcementCards = [
   },
   {
     slug: "gemini-3-1-pro-preview-expands-the-frontier-model-playbook",
-    source: "Saint AGI desk",
+    source: "SaintClaw desk",
     category: "Models",
     publishedAt: "Mar 2026",
     readTime: "5 min read",
@@ -334,7 +334,7 @@ export const announcementCards = [
   },
   {
     slug: "trinity-large-preview-shows-why-range-matters-more-than-one-best-model",
-    source: "Saint AGI desk",
+    source: "SaintClaw desk",
     category: "Models",
     publishedAt: "Mar 2026",
     readTime: "4 min read",
@@ -355,7 +355,7 @@ export const announcementCards = [
         title: "Coverage without chaos",
         paragraphs: [
           "That is especially true once AI spreads beyond a few power users. Different teams, tasks, and channels generate different requirements. The platform has to let companies mix and match without introducing chaos at the policy layer.",
-          "Saint AGI is built around that reality. Employees should benefit from the full range of available capability while operators keep a clear handle on policy, spend, and model selection.",
+          "SaintClaw is built around that reality. Employees should benefit from the full range of available capability while operators keep a clear handle on policy, spend, and model selection.",
         ],
       },
       {
@@ -369,7 +369,7 @@ export const announcementCards = [
   },
   {
     slug: "codex-security-makes-the-case-for-tighter-agent-governance",
-    source: "Saint AGI desk",
+    source: "SaintClaw desk",
     category: "Security",
     publishedAt: "Mar 2026",
     readTime: "5 min read",
@@ -396,7 +396,7 @@ export const announcementCards = [
       {
         title: "Trust is now an operational outcome",
         paragraphs: [
-          "For Saint AGI, that is part of the product promise. Better AI execution only matters when the company can see it, govern it, and trust it. Trust becomes more durable when the system makes its own behavior inspectable.",
+          "For SaintClaw, that is part of the product promise. Better AI execution only matters when the company can see it, govern it, and trust it. Trust becomes more durable when the system makes its own behavior inspectable.",
           "The broader implication is straightforward. As agents become continuous, runtime monitoring will define the next security frontier for AI operations inside real companies.",
         ],
       },
@@ -404,7 +404,7 @@ export const announcementCards = [
   },
   {
     slug: "stateful-runtime-momentum-points-to-a-bigger-shift-in-agent-infrastructure",
-    source: "Saint AGI desk",
+    source: "SaintClaw desk",
     category: "Infrastructure",
     publishedAt: "Feb 2026",
     readTime: "4 min read",
@@ -424,7 +424,7 @@ export const announcementCards = [
       {
         title: "Continuity is part of product quality",
         paragraphs: [
-          "This trend matters directly to Saint AGI because the product sits in the operational layer between people, models, and the work itself. If the runtime is weak, the experience breaks down before model quality can deliver its full value.",
+          "This trend matters directly to SaintClaw because the product sits in the operational layer between people, models, and the work itself. If the runtime is weak, the experience breaks down before model quality can deliver its full value.",
           "Persistent state, recoverable sessions, and clear execution history are not background details. They shape whether an agent feels dependable enough to keep inside live workflows across the company.",
         ],
       },

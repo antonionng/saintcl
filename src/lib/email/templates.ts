@@ -79,7 +79,7 @@ function renderShell(input: {
     <div style="max-width:640px;margin:0 auto;padding:32px 20px;">
       <div style="border:1px solid rgba(255,255,255,0.08);border-radius:28px;background:linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02));padding:32px;">
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
-          <img src="${escapeHtml(logoUrl)}" alt="Saint AGI" style="height:42px;width:auto;display:block;" />
+          <img src="${escapeHtml(logoUrl)}" alt="SaintClaw" style="height:42px;width:auto;display:block;" />
           <div>
             <p style="margin:0;color:#a1a1aa;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;">${escapeHtml(input.eyebrow)}</p>
             <p style="margin:6px 0 0 0;font-size:18px;font-weight:600;color:#f4f4f5;">${escapeHtml(companyProfile.brandName)}</p>
@@ -107,7 +107,7 @@ export function renderEmailTemplate(input: EmailTemplateInput): RenderedEmailTem
 
   switch (input.templateKey) {
     case "welcome-1": {
-      const subject = `Welcome to ${input.orgName}. Your Saint AGI workspace is live`;
+      const subject = `Welcome to ${input.orgName}. Your SaintClaw workspace is live`;
       const bullets = [
         "Set your company profile so every agent has the same baseline context.",
         "Create your first governed agent and give it a clear operating brief.",
@@ -119,7 +119,7 @@ export function renderEmailTemplate(input: EmailTemplateInput): RenderedEmailTem
         html: renderShell({
           eyebrow: "Welcome",
           title: `Welcome, ${recipient}.`,
-          intro: `${input.orgName} is now live in Saint AGI. You have everything you need to turn the first workspace into something your team can trust and actually use.`,
+          intro: `${input.orgName} is now live in SaintClaw. You have everything you need to turn the first workspace into something your team can trust and actually use.`,
           bullets,
           ctaLabel: "Open workspace",
           ctaUrl: input.ctaUrl,
@@ -142,7 +142,7 @@ export function renderEmailTemplate(input: EmailTemplateInput): RenderedEmailTem
         html: renderShell({
           eyebrow: "Rollout",
           title: `A clean rollout beats a noisy launch.`,
-          intro: `${recipient}, the fastest way to make Saint AGI stick is to launch around one painful workflow, prove the win, then expand from there.`,
+          intro: `${recipient}, the fastest way to make SaintClaw stick is to launch around one painful workflow, prove the win, then expand from there.`,
           bullets,
           ctaLabel: "Review settings",
           ctaUrl: input.ctaUrl,
@@ -162,7 +162,7 @@ export function renderEmailTemplate(input: EmailTemplateInput): RenderedEmailTem
         html: renderShell({
           eyebrow: "Use cases",
           title: `Turn AI into visible leverage.`,
-          intro: `${recipient}, here are strong first use cases teams are already rolling out with Saint AGI. The key is to anchor them in work that already repeats every week.`,
+          intro: `${recipient}, here are strong first use cases teams are already rolling out with SaintClaw. The key is to anchor them in work that already repeats every week.`,
           bullets,
           ctaLabel: "See pricing and rollout ideas",
           ctaUrl: input.ctaUrl,
@@ -195,7 +195,7 @@ export function renderEmailTemplate(input: EmailTemplateInput): RenderedEmailTem
       };
     }
     case "owner-use-cases": {
-      const subject = `Owner brief. High-leverage Saint AGI use cases for ${input.orgName}`;
+      const subject = `Owner brief. High-leverage SaintClaw use cases for ${input.orgName}`;
       const bullets = [
         "Sales leaders can equip reps with research, outreach prep, and CRM hygiene.",
         "Support leads can cut first-response time while improving escalation context.",
@@ -209,7 +209,7 @@ export function renderEmailTemplate(input: EmailTemplateInput): RenderedEmailTem
           eyebrow: "Owner brief",
           title: `Practical use cases for workspace owners and admins`,
           intro:
-            "If you are deciding where to expand next, prioritize workflows where delay, inconsistency, or manual triage already create visible drag. That is where Saint AGI compounds quickly.",
+            "If you are deciding where to expand next, prioritize workflows where delay, inconsistency, or manual triage already create visible drag. That is where SaintClaw compounds quickly.",
           bullets,
           ctaLabel: "Open workspace settings",
           ctaUrl: input.ctaUrl,
@@ -223,7 +223,7 @@ export function renderEmailTemplate(input: EmailTemplateInput): RenderedEmailTem
     case "team-invite": {
       const billedLabel =
         typeof input.billedAmountCents === "number" ? formatCurrency(input.billedAmountCents / 100) : null;
-      const subject = `${input.inviterName || input.orgName} invited you to ${input.orgName} on Saint AGI`;
+      const subject = `${input.inviterName || input.orgName} invited you to ${input.orgName} on SaintClaw`;
       const bullets = [
         `You have been invited as ${input.inviteRoleLabel || "a teammate"} in ${input.orgName}.`,
         billedLabel ? `${input.orgName} was charged ${billedLabel} when this invite was sent.` : "This invite was sent from the workspace settings area.",
@@ -235,7 +235,7 @@ export function renderEmailTemplate(input: EmailTemplateInput): RenderedEmailTem
         html: renderShell({
           eyebrow: "Workspace invite",
           title: `You are invited to join ${input.orgName}`,
-          intro: `${input.inviterName || "A workspace admin"} wants you inside Saint AGI so you can collaborate in the same governed workspace.`,
+          intro: `${input.inviterName || "A workspace admin"} wants you inside SaintClaw so you can collaborate in the same governed workspace.`,
           bullets,
           ctaLabel: "Accept invite",
           ctaUrl: input.inviteUrl,

@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Saint AGI",
+  title: "SaintClaw",
   description: "Managed, secure, always-on AI agents for teams and professionals.",
 };
 

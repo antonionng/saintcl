@@ -27,7 +27,7 @@ export default async function HomePage() {
           <Link href="/" className="inline-flex h-10 items-center">
             <Image
               src={placeholderLogo}
-              alt="Saint AGI"
+              alt="SaintClaw"
               className="h-10 w-auto object-contain opacity-95"
               priority
             />

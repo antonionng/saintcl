@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { Readable } from "node:stream";
-import type { LookupFn, SsrFPolicy } from "openclaw/plugin-sdk/tlon";
+import type { LookupFn, SsrFPolicy } from "openclaw/plugin-sdk/ssrf-runtime";
 import { ensureUrbitChannelOpen, pokeUrbitChannel, scryUrbitPath } from "./channel-ops.js";
 import { getUrbitContext, normalizeUrbitCookie } from "./context.js";
 import { urbitFetch } from "./fetch.js";
@@ -78,6 +78,18 @@ export class UrbitSSEClient {
     this.fetchImpl = options.fetchImpl;
   }
 
+  private channelRequestContext() {
+    return {
+      baseUrl: this.url,
+      cookie: this.cookie,
+      ship: this.ship,
+      channelId: this.channelId,
+      ssrfPolicy: this.ssrfPolicy,
+      lookupFn: this.lookupFn,
+      fetchImpl: this.fetchImpl,
+    };
+  }
+
   async subscribe(params: {
     app: string;
     path: string;
@@ -115,20 +127,7 @@ export class UrbitSSEClient {
     app: string;
     path: string;
   }) {
-    const { response, release } = await urbitFetch({
-      baseUrl: this.url,
-      path: `/~/channel/${this.channelId}`,
-      init: {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: this.cookie,
-        },
-        body: JSON.stringify([subscription]),
-      },
-      ssrfPolicy: this.ssrfPolicy,
-      lookupFn: this.lookupFn,
-      fetchImpl: this.fetchImpl,
+    const { response, release } = await this.putChannelPayload([subscription], {
       timeoutMs: 30_000,
       auditContext: "tlon-urbit-subscribe",
     });
@@ -146,21 +145,10 @@ export class UrbitSSEClient {
   }
 
   async connect() {
-    await ensureUrbitChannelOpen(
-      {
-        baseUrl: this.url,
-        cookie: this.cookie,
-        ship: this.ship,
-        channelId: this.channelId,
-        ssrfPolicy: this.ssrfPolicy,
-        lookupFn: this.lookupFn,
-        fetchImpl: this.fetchImpl,
-      },
-      {
-        createBody: this.subscriptions,
-        createAuditContext: "tlon-urbit-channel-create",
-      },
-    );
+    await ensureUrbitChannelOpen(this.channelRequestContext(), {
+      createBody: this.subscriptions,
+      createAuditContext: "tlon-urbit-channel-create",
+    });
 
     await this.openStream();
     this.isConnected = true;
@@ -215,12 +203,15 @@ export class UrbitSSEClient {
     });
   }
 
-  async processStream(body: ReadableStream<Uint8Array> | Readable | null) {
+  async processStream(body: unknown) {
     if (!body) {
       return;
     }
-    // oxlint-disable-next-line typescript/no-explicit-any
-    const stream = body instanceof ReadableStream ? Readable.fromWeb(body as any) : body;
+    // Bridge DOM fetch stream types to Node's stream/web declaration on newer TS/node combos.
+    const stream =
+      body instanceof ReadableStream
+        ? Readable.fromWeb(body as never)
+        : (body as NodeJS.ReadableStream);
     let buffer = "";
 
     try {
@@ -315,18 +306,10 @@ export class UrbitSSEClient {
   }
 
   async poke(params: { app: string; mark: string; json: unknown }) {
-    return await pokeUrbitChannel(
-      {
-        baseUrl: this.url,
-        cookie: this.cookie,
-        ship: this.ship,
-        channelId: this.channelId,
-        ssrfPolicy: this.ssrfPolicy,
-        lookupFn: this.lookupFn,
-        fetchImpl: this.fetchImpl,
-      },
-      { ...params, auditContext: "tlon-urbit-poke" },
-    );
+    return await pokeUrbitChannel(this.channelRequestContext(), {
+      ...params,
+      auditContext: "tlon-urbit-poke",
+    });
   }
 
   async scry(path: string) {
@@ -359,20 +342,7 @@ export class UrbitSSEClient {
       "event-id": eventId,
     };
 
-    const { response, release } = await urbitFetch({
-      baseUrl: this.url,
-      path: `/~/channel/${this.channelId}`,
-      init: {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: this.cookie,
-        },
-        body: JSON.stringify([ackData]),
-      },
-      ssrfPolicy: this.ssrfPolicy,
-      lookupFn: this.lookupFn,
-      fetchImpl: this.fetchImpl,
+    const { response, release } = await this.putChannelPayload([ackData], {
       timeoutMs: 10_000,
       auditContext: "tlon-urbit-ack",
     });
@@ -445,20 +415,7 @@ export class UrbitSSEClient {
       }));
 
       {
-        const { response, release } = await urbitFetch({
-          baseUrl: this.url,
-          path: `/~/channel/${this.channelId}`,
-          init: {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Cookie: this.cookie,
-            },
-            body: JSON.stringify(unsubscribes),
-          },
-          ssrfPolicy: this.ssrfPolicy,
-          lookupFn: this.lookupFn,
-          fetchImpl: this.fetchImpl,
+        const { response, release } = await this.putChannelPayload(unsubscribes, {
           timeoutMs: 30_000,
           auditContext: "tlon-urbit-unsubscribe",
         });
@@ -500,5 +457,28 @@ export class UrbitSSEClient {
       this.streamRelease = null;
       await release();
     }
+  }
+
+  private async putChannelPayload(
+    payload: unknown,
+    params: { timeoutMs: number; auditContext: string },
+  ) {
+    return await urbitFetch({
+      baseUrl: this.url,
+      path: `/~/channel/${this.channelId}`,
+      init: {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: this.cookie,
+        },
+        body: JSON.stringify(payload),
+      },
+      ssrfPolicy: this.ssrfPolicy,
+      lookupFn: this.lookupFn,
+      fetchImpl: this.fetchImpl,
+      timeoutMs: params.timeoutMs,
+      auditContext: params.auditContext,
+    });
   }
 }

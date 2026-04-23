@@ -4,7 +4,6 @@ import { useState } from "react";
 import { AlertCircle, CheckCircle2, Loader2, Shield } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const SOURCE_OPTIONS = [
   { id: "clawhub", label: "ClawHub", description: "Official ClawHub skill registry" },
@@ -78,87 +77,108 @@ export function SkillPolicyForm({
   }
 
   return (
-    <Card className="mt-6">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Shield className="size-4" />
+    <div className="settings-panel mt-6 p-5 space-y-6">
+      <div className="space-y-1">
+        <p className="flex items-center gap-2 text-[length:var(--text-sm)] font-medium text-white">
+          <Shield className="h-3.5 w-3.5 text-white/55" />
           Skill installation policy
-        </CardTitle>
-        <CardDescription>
+        </p>
+        <p className="text-[length:var(--text-xs)] text-white/55">
           Control which skill sources and trust tiers agents in this organization can install from.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div>
-          <h4 className="mb-2 text-sm font-medium text-white">Allowed sources</h4>
-          <div className="space-y-2">
-            {SOURCE_OPTIONS.map((opt) => (
-              <label key={opt.id} className="flex items-start gap-3 rounded-lg border border-white/10 p-3 transition-colors hover:border-white/20">
-                <input
-                  type="checkbox"
-                  checked={sources.has(opt.id)}
-                  onChange={() => toggleSource(opt.id)}
-                  disabled={readOnly}
-                  className="mt-0.5"
-                />
-                <div>
-                  <p className="text-sm font-medium text-white">{opt.label}</p>
-                  <p className="text-xs text-zinc-400">{opt.description}</p>
-                </div>
-              </label>
-            ))}
-          </div>
+        </p>
+      </div>
+
+      <div>
+        <h4 className="mb-2 text-[length:var(--text-xs)] font-medium uppercase tracking-[0.08em] text-white/55">
+          Allowed sources
+        </h4>
+        <div className="border border-border rounded-md overflow-hidden">
+          {SOURCE_OPTIONS.map((opt, idx) => (
+            <label
+              key={opt.id}
+              className={`flex items-start gap-3 px-4 py-2.5 cursor-pointer hover:bg-white/[0.02] ${
+                idx < SOURCE_OPTIONS.length - 1 ? "border-b border-border-subtle" : ""
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={sources.has(opt.id)}
+                onChange={() => toggleSource(opt.id)}
+                disabled={readOnly}
+                className="mt-0.5"
+              />
+              <div>
+                <p className="text-[length:var(--text-sm)] font-medium text-white">{opt.label}</p>
+                <p className="text-[length:var(--text-xs)] text-white/55">{opt.description}</p>
+              </div>
+            </label>
+          ))}
         </div>
+      </div>
 
-        <div>
-          <h4 className="mb-2 text-sm font-medium text-white">Allowed trust tiers</h4>
-          <div className="space-y-2">
-            {TRUST_OPTIONS.map((opt) => (
-              <label key={opt.id} className="flex items-start gap-3 rounded-lg border border-white/10 p-3 transition-colors hover:border-white/20">
-                <input
-                  type="checkbox"
-                  checked={tiers.has(opt.id)}
-                  onChange={() => toggleTier(opt.id)}
-                  disabled={readOnly}
-                  className="mt-0.5"
-                />
-                <div>
-                  <p className="text-sm font-medium text-white">{opt.label}</p>
-                  <p className="text-xs text-zinc-400">{opt.description}</p>
-                </div>
-              </label>
-            ))}
-          </div>
+      <div>
+        <h4 className="mb-2 text-[length:var(--text-xs)] font-medium uppercase tracking-[0.08em] text-white/55">
+          Allowed trust tiers
+        </h4>
+        <div className="border border-border rounded-md overflow-hidden">
+          {TRUST_OPTIONS.map((opt, idx) => (
+            <label
+              key={opt.id}
+              className={`flex items-start gap-3 px-4 py-2.5 cursor-pointer hover:bg-white/[0.02] ${
+                idx < TRUST_OPTIONS.length - 1 ? "border-b border-border-subtle" : ""
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={tiers.has(opt.id)}
+                onChange={() => toggleTier(opt.id)}
+                disabled={readOnly}
+                className="mt-0.5"
+              />
+              <div>
+                <p className="text-[length:var(--text-sm)] font-medium text-white">{opt.label}</p>
+                <p className="text-[length:var(--text-xs)] text-white/55">{opt.description}</p>
+              </div>
+            </label>
+          ))}
         </div>
+      </div>
 
-        <label className="flex items-start gap-3 rounded-lg border border-white/10 p-3 transition-colors hover:border-white/20">
-          <input
-            type="checkbox"
-            checked={communityApproval}
-            onChange={(e) => setCommunityApproval(e.target.checked)}
-            disabled={readOnly}
-            className="mt-0.5"
-          />
-          <div>
-            <p className="text-sm font-medium text-white">Require admin approval for community skills</p>
-            <p className="text-xs text-zinc-400">When enabled, installing community-tier skills will require admin approval before activation.</p>
-          </div>
-        </label>
-
-        {result && (
-          <p className={`flex items-center gap-2 text-sm ${result.ok ? "text-emerald-400" : "text-red-400"}`}>
-            {result.ok ? <CheckCircle2 className="size-4" /> : <AlertCircle className="size-4" />}
-            {result.message}
+      <label className="flex items-start gap-3 border border-border rounded-md px-4 py-2.5 cursor-pointer hover:bg-white/[0.02]">
+        <input
+          type="checkbox"
+          checked={communityApproval}
+          onChange={(e) => setCommunityApproval(e.target.checked)}
+          disabled={readOnly}
+          className="mt-0.5"
+        />
+        <div>
+          <p className="text-[length:var(--text-sm)] font-medium text-white">
+            Require admin approval for community skills
           </p>
-        )}
+          <p className="text-[length:var(--text-xs)] text-white/55">
+            When enabled, installing community-tier skills will require admin approval before activation.
+          </p>
+        </div>
+      </label>
 
-        {!readOnly && (
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-            Save skill policy
-          </Button>
-        )}
-      </CardContent>
-    </Card>
+      {result && (
+        <p
+          className={`flex items-center gap-2 text-[length:var(--text-xs)] ${
+            result.ok ? "text-emerald-300" : "text-rose-300"
+          }`}
+        >
+          {result.ok ? <CheckCircle2 className="h-3.5 w-3.5" /> : <AlertCircle className="h-3.5 w-3.5" />}
+          {result.message}
+        </p>
+      )}
+
+      {!readOnly && (
+        <Button size="sm" onClick={handleSave} disabled={saving}>
+          {saving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+          Save skill policy
+        </Button>
+      )}
+    </div>
   );
 }

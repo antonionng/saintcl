@@ -8,12 +8,51 @@ import { resolveModelSelection } from "@/lib/openclaw/model-governance";
 import { writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { insertAgentMetadata, upsertAgentAssignment } from "@/lib/openclaw/runtime-store";
+import { createClient } from "@/lib/supabase/server";
+import { getAgentTemplate } from "@/lib/agent-templates";
+import { getBuiltInPersonaById } from "@/lib/personas";
+import { getPersonaForUseCase, getUseCase } from "@/lib/use-cases";
 
 function slugify(value: string) {
   return value
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
+}
+
+const FALLBACK_PERSONA =
+  "You are my work copilot. Help me move faster while respecting company mission, policy, and approval guardrails.\n\nKnowledge scope:\n- You can rely on company knowledge plus my personal knowledge when relevant.\n- Use memory search before guessing when a document-backed answer may exist.";
+
+async function resolveBootstrapTemplate(): Promise<{
+  agentName: string;
+  persona: string;
+  useCaseId: string | null;
+}> {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { agentName: "My Agent", persona: FALLBACK_PERSONA, useCaseId: null };
+    const { data } = await supabase.auth.getUser();
+    const meta = (data.user?.user_metadata ?? {}) as Record<string, unknown>;
+    const templateId = typeof meta.template_id === "string" ? meta.template_id : null;
+    const template = getAgentTemplate(templateId);
+    const useCaseId = typeof meta.use_case === "string" ? meta.use_case : null;
+    const useCase = getUseCase(useCaseId);
+
+    const personaSeed = template
+      ? getBuiltInPersonaById(template.personaId)
+      : getPersonaForUseCase(useCaseId);
+    const personaInstructions = personaSeed?.instructions?.trim();
+    const persona = personaInstructions
+      ? `${personaInstructions}\n\nKnowledge scope:\n- You can rely on company knowledge plus my personal knowledge when relevant.\n- Use memory search before guessing when a document-backed answer may exist.`
+      : FALLBACK_PERSONA;
+    return {
+      agentName: template?.agentName ?? useCase?.agentName ?? "My Agent",
+      persona,
+      useCaseId,
+    };
+  } catch {
+    return { agentName: "My Agent", persona: FALLBACK_PERSONA, useCaseId: null };
+  }
 }
 
 export async function POST() {
@@ -24,14 +63,14 @@ export async function POST() {
 
   if (!session.capabilities.canManageAgents) {
     return NextResponse.json(
-      { error: { message: "Agent provisioning requires admin access." } },
+      { error: { message: "Agent creation requires admin access." } },
       { status: 403 },
     );
   }
 
   if (!isOpenClawConfigured()) {
     return NextResponse.json(
-      { error: { message: "OpenClaw gateway is not configured for this environment." } },
+      { error: { message: "Agent runtime is not configured for this environment." } },
       { status: 503 },
     );
   }
@@ -42,11 +81,9 @@ export async function POST() {
     return NextResponse.json({ data: { created: false, reason: "already_bootstrapped" } });
   }
 
-  const agentName = "My Agent";
-  const slug = slugify(`${session.userId.slice(0, 8)}-my-agent`);
+  const { agentName, persona, useCaseId } = await resolveBootstrapTemplate();
+  const slug = slugify(`${session.userId.slice(0, 8)}-${agentName}`);
   const profile = await loadCurrentUserProfile();
-  const persona =
-    "You are my work copilot. Help me move faster while respecting company mission, policy, and approval guardrails.\n\nKnowledge scope:\n- You can rely on company knowledge plus my personal knowledge when relevant.\n- Use memory search before guessing when a document-backed answer may exist.";
 
   try {
     const { model, snapshot } = await resolveModelSelection({
@@ -110,6 +147,7 @@ export async function POST() {
         scope: "employee",
         assignee: session.userId,
         bootstrap: "auto",
+        useCase: useCaseId ?? undefined,
         terminal: {
           enabled: false,
         },

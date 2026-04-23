@@ -20,12 +20,11 @@ export const env = {
   stripeBusinessMonthlyPriceId: process.env.STRIPE_PRICE_BUSINESS_MONTHLY,
   stripeBusinessAnnualPriceId: process.env.STRIPE_PRICE_BUSINESS_ANNUAL,
   resendApiKey: process.env.RESEND_API_KEY,
-  emailFrom: process.env.EMAIL_FROM || "Saint AGI <hello@saintagi.com>",
+  emailFrom: process.env.EMAIL_FROM || "SaintClaw <hello@saintagi.com>",
   emailReplyTo: process.env.EMAIL_REPLY_TO || "hello@saintagi.com",
   emailTokenSecret: process.env.EMAIL_TOKEN_SECRET,
   emailCronSecret: process.env.EMAIL_CRON_SECRET,
   appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-  trainingUxUnifiedMode: (process.env.TRAINING_UX_UNIFIED || "on").toLowerCase(),
 };
 
 export function isSupabaseConfigured() {

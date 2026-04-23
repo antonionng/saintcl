@@ -4,7 +4,7 @@ import { LegalPage } from "@/components/legal/legal-page";
 import { legalDocuments } from "@/components/legal/content";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Saint AGI",
+  title: "Terms of Service | SaintClaw",
   description: legalDocuments.terms.description,
 };
 

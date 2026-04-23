@@ -15,7 +15,7 @@ export default async function InvitePage({
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-10 sm:px-6 lg:px-8">
       <PageHeader
         eyebrow="Workspace invite"
-        title="Accept your Saint AGI invite"
+        title="Accept your SaintClaw invite"
         description="Join the workspace with the same email address that received the invite."
       />
       {preview ? (

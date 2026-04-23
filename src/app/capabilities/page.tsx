@@ -13,9 +13,9 @@ import { Button } from "@/components/ui/button";
 import { getCurrentOrg, getCurrentUserProfile, getCurrentUserWorkspaces } from "@/lib/dal";
 
 export const metadata: Metadata = {
-  title: "Capabilities | Saint AGI",
+  title: "Capabilities | SaintClaw",
   description:
-    "Explore Saint AGI capabilities across autonomous execution, local-first runtime, multi-channel communication, tool automation, memory, and governance.",
+    "Explore SaintClaw capabilities across autonomous execution, local-first runtime, multi-channel communication, tool automation, memory, and governance.",
 };
 
 export default async function CapabilitiesPage() {
@@ -30,7 +30,7 @@ export default async function CapabilitiesPage() {
           <Link href="/" className="inline-flex h-10 items-center">
             <Image
               src={placeholderLogo}
-              alt="Saint AGI"
+              alt="SaintClaw"
               className="h-10 w-auto object-contain opacity-95"
               priority
             />

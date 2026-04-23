@@ -25,7 +25,7 @@ export default async function PricingPage() {
             <Link href="/" className="inline-flex h-10 items-center">
               <Image
                 src={placeholderLogo}
-                alt="Saint AGI"
+                alt="SaintClaw"
                 className="h-10 w-auto object-contain opacity-95"
                 priority
               />
@@ -80,7 +80,7 @@ export default async function PricingPage() {
       </div>
 
       <footer className="site-shell border-t border-white/8 py-8 text-sm text-zinc-500">
-        Saint AGI. The platform for company-wide AI adoption.
+        SaintClaw. The platform for company-wide AI adoption.
       </footer>
     </main>
   );

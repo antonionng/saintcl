@@ -51,8 +51,6 @@ const fallbackCapabilities = {
   canViewAllAgents: false,
   canManageConsole: false,
   canManageAdminTools: false,
-  canManageTraining: false,
-  canManagePlatformTraining: false,
 };
 
 export default async function SettingsPage({
@@ -342,31 +340,42 @@ async function SettingsTabContent({
             <CardTitle>Ledger history</CardTitle>
             <CardDescription>Immutable wallet events for top-ups, usage, and manual adjustments.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="p-0">
             {ledger.length === 0 ? (
-              <p className="text-sm text-zinc-500">No wallet entries yet.</p>
+              <p className="px-4 py-6 text-center text-[length:var(--text-sm)] text-white/55">
+                No wallet entries yet.
+              </p>
             ) : (
-              ledger.map((entry) => (
-                <div key={entry.id} className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium text-white">{entry.description}</p>
-                      <p className="mt-2 text-sm text-zinc-400">
+              <ul>
+                {ledger.map((entry) => (
+                  <li
+                    key={entry.id}
+                    className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-[length:var(--text-sm)] text-white">
+                        {entry.description}
+                      </p>
+                      <p className="mt-0.5 text-[length:var(--text-xs)] text-white/45">
                         {entry.source_type} · {new Date(entry.created_at).toLocaleString()}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className={entry.direction === "credit" ? "text-emerald-400" : "text-amber-300"}>
+                    <div className="text-right shrink-0">
+                      <p
+                        className={`text-[length:var(--text-sm)] ${
+                          entry.direction === "credit" ? "text-emerald-300" : "text-amber-300"
+                        }`}
+                      >
                         {entry.direction === "credit" ? "+" : "-"}
                         {formatCurrency(entry.amount_cents / 100)}
                       </p>
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-[length:var(--text-xs)] text-white/45">
                         Balance {formatCurrency((entry.balance_after_cents ?? 0) / 100)}
                       </p>
                     </div>
-                  </div>
-                </div>
-              ))
+                  </li>
+                ))}
+              </ul>
             )}
           </CardContent>
         </Card>
@@ -378,78 +387,77 @@ async function SettingsTabContent({
     const [channels, agents] = await Promise.all([getChannels(orgId), getAgents(orgId)]);
 
     return (
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <Card className="settings-panel">
-          <CardHeader>
-            <CardTitle>Connect channel</CardTitle>
-            <CardDescription>
-              Attach Telegram and Slack providers to a specific agent without leaving the workspace.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+      <div className="space-y-8">
+        <section>
+          <div className="flex flex-col gap-2 pb-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+            <div>
+              <h3 className="text-[length:var(--text-base)] font-medium text-white">
+                Connected channels
+              </h3>
+              <p className="mt-0.5 text-[length:var(--text-xs)] text-white/55">
+                Telegram and Slack channels routed to your agents.
+              </p>
+            </div>
             <SettingsConnectionsForm
               orgId={orgId}
               agents={agents.map((agent) => ({ id: agent.id, name: agent.name }))}
             />
-          </CardContent>
-        </Card>
-
-        <Card className="settings-panel">
-          <CardHeader>
-            <CardTitle>Active bindings</CardTitle>
-            <CardDescription>Channels already connected to agents in this tenant runtime.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
+          </div>
+          <div className="border border-border rounded-md overflow-hidden">
             {channels.length === 0 ? (
-              <p className="text-sm text-zinc-500">No channels connected yet.</p>
+              <p className="px-4 py-6 text-center text-[length:var(--text-sm)] text-white/55">
+                No channels connected yet.
+              </p>
             ) : (
-              channels.map((channel) => (
-                <div key={channel.id} className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium capitalize text-white">{channel.type}</p>
-                      <p className="mt-2 text-sm text-zinc-400">
-                        Agent: {(channel.agents as { name: string } | null)?.name ?? channel.agent_id}
+              <ul>
+                {channels.map((channel) => (
+                  <li
+                    key={channel.id}
+                    className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-[length:var(--text-sm)] font-medium capitalize text-white">
+                        {channel.type}
                       </p>
-                      <p className="text-xs text-zinc-500">
-                        Connected:{" "}
+                      <p className="mt-0.5 text-[length:var(--text-xs)] text-white/45">
+                        {(channel.agents as { name: string } | null)?.name ?? channel.agent_id}
                         {channel.connected_at
-                          ? new Date(channel.connected_at).toLocaleString()
-                          : "Pending provider handshake"}
+                          ? ` · connected ${new Date(channel.connected_at).toLocaleDateString()}`
+                          : " · pending"}
                       </p>
                     </div>
                     <Badge variant={channel.status === "connected" ? "success" : "warning"}>
                       {channel.status}
                     </Badge>
-                  </div>
-                </div>
-              ))
+                  </li>
+                ))}
+              </ul>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        <Card className="settings-panel xl:col-span-2">
-          <CardHeader>
-            <CardTitle>Integration flow</CardTitle>
-            <CardDescription>
+        <section>
+          <div className="pb-3">
+            <h3 className="text-[length:var(--text-base)] font-medium text-white">How it works</h3>
+            <p className="mt-0.5 text-[length:var(--text-xs)] text-white/55">
               Connections are validated, written to the tenant runtime, and recorded as billable usage events.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
+            </p>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
             <MiniProcessCard
               title="1. Collect credentials"
-              description="Capture bot tokens or workspace identifiers for the provider you are connecting."
+              description="Capture bot tokens or workspace identifiers for the provider."
             />
             <MiniProcessCard
               title="2. Persist tenant config"
-              description="Saint AGI stores the binding metadata and updates the tenant runtime with the active model policy."
+              description="SaintClaw stores the binding and updates the tenant runtime."
             />
             <MiniProcessCard
               title="3. Route traffic"
-              description="Inbound provider traffic is routed to the selected agent and begins showing up in runtime logs."
+              description="Inbound provider traffic is routed to the selected agent."
             />
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       </div>
     );
   }
@@ -483,114 +491,147 @@ async function SettingsTabContent({
   ]);
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="settings-panel">
-          <CardHeader>
-            <CardTitle>Repo allowlists</CardTitle>
-            <CardDescription>
+    <div className="space-y-8">
+      <section>
+        <div className="flex flex-col gap-2 pb-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+          <div>
+            <h3 className="text-[length:var(--text-base)] font-medium text-white">
+              Repo allowlists
+            </h3>
+            <p className="mt-0.5 text-[length:var(--text-xs)] text-white/55">
               Restrict which repos agents can clone before terminal workflows are approved.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {allowlists.length === 0 ? (
-              <p className="text-sm text-zinc-500">No allowlists configured yet.</p>
-            ) : (
-              allowlists.map((entry) => (
-                <div key={entry.id} className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
-                  <p className="font-medium text-white">{entry.pattern}</p>
-                  <p className="mt-2 text-sm text-zinc-400">
-                    Added {new Date(entry.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              ))
-            )}
-            <SettingsAllowlistForm />
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+          <SettingsAllowlistForm />
+        </div>
+        <div className="border border-border rounded-md overflow-hidden">
+          {allowlists.length === 0 ? (
+            <p className="px-4 py-6 text-center text-[length:var(--text-sm)] text-white/55">
+              No allowlists configured yet.
+            </p>
+          ) : (
+            <ul>
+              {allowlists.map((entry) => (
+                <li
+                  key={entry.id}
+                  className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-[length:var(--text-sm)] text-white">
+                      {entry.pattern}
+                    </p>
+                    <p className="mt-0.5 text-[length:var(--text-xs)] text-white/45">
+                      Added {new Date(entry.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
 
-        <Card className="settings-panel">
-          <CardHeader>
-            <CardTitle>Terminal policy</CardTitle>
-            <CardDescription>High-risk command execution remains admin-only and repo-scoped.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm leading-7 text-zinc-400">
-            <div className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
-              <div className="flex items-center gap-3 text-white">
-                <ShieldCheck className="size-4 text-emerald-400" />
-                Non-main sandbox required
-              </div>
+      <section>
+        <div className="pb-3">
+          <h3 className="text-[length:var(--text-base)] font-medium text-white">Terminal policy</h3>
+          <p className="mt-0.5 text-[length:var(--text-xs)] text-white/55">
+            High-risk command execution remains admin-only and repo-scoped.
+          </p>
+        </div>
+        <div className="border border-border rounded-md divide-y divide-border-subtle">
+          <div className="flex items-center gap-3 px-4 py-2.5 text-[length:var(--text-sm)] text-white">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />
+            Non-main sandbox required
+          </div>
+          <div className="flex items-center gap-3 px-4 py-2.5 text-[length:var(--text-sm)] text-white">
+            <Cable className="h-3.5 w-3.5 text-white/70" />
+            Commands require explicit admin approval
+          </div>
+          {policy?.mission ? (
+            <div className="px-4 py-2.5">
+              <p className="app-kicker">Company mission</p>
+              <p className="mt-1 text-[length:var(--text-sm)] text-white">{policy.mission}</p>
             </div>
-            <div className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
-              <div className="flex items-center gap-3 text-white">
-                <Cable className="size-4 text-white" />
-                Commands require explicit admin approval
-              </div>
-            </div>
-            {policy?.mission ? (
-              <div className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
-                <p className="app-kicker">Company mission</p>
-                <p className="mt-2 text-white">{policy.mission}</p>
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
-      </div>
+          ) : null}
+        </div>
+      </section>
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <Card className="settings-panel">
-          <CardHeader>
-            <CardTitle>Approval queue</CardTitle>
-            <CardDescription>Recent terminal approvals visible from the settings hub.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
+      <div className="grid gap-8 xl:grid-cols-2">
+        <section>
+          <div className="pb-3">
+            <h3 className="text-[length:var(--text-base)] font-medium text-white">Approval queue</h3>
+            <p className="mt-0.5 text-[length:var(--text-xs)] text-white/55">
+              Recent terminal approvals visible from the settings hub.
+            </p>
+          </div>
+          <div className="border border-border rounded-md overflow-hidden">
             {approvals.length === 0 ? (
-              <p className="text-sm text-zinc-500">No approvals pending or recorded yet.</p>
+              <p className="px-4 py-6 text-center text-[length:var(--text-sm)] text-white/55">
+                No approvals pending or recorded yet.
+              </p>
             ) : (
-              approvals.slice(0, 8).map((approval) => (
-                <div key={approval.id} className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium text-white">{approval.command}</p>
-                      <p className="mt-2 text-sm text-zinc-400">
+              <ul>
+                {approvals.slice(0, 8).map((approval) => (
+                  <li
+                    key={approval.id}
+                    className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-[length:var(--text-sm)] text-white">
+                        {approval.command}
+                      </p>
+                      <p className="mt-0.5 text-[length:var(--text-xs)] text-white/45">
                         {new Date(approval.created_at).toLocaleString()}
                       </p>
                     </div>
                     <Badge variant={approval.status === "approved" ? "success" : "warning"}>
                       {approval.status}
                     </Badge>
-                  </div>
-                </div>
-              ))
+                  </li>
+                ))}
+              </ul>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        <Card className="settings-panel">
-          <CardHeader>
-            <CardTitle>Recent runs</CardTitle>
-            <CardDescription>Audited terminal executions with short output excerpts.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <section>
+          <div className="pb-3">
+            <h3 className="text-[length:var(--text-base)] font-medium text-white">Recent runs</h3>
+            <p className="mt-0.5 text-[length:var(--text-xs)] text-white/55">
+              Audited terminal executions with short output excerpts.
+            </p>
+          </div>
+          <div className="border border-border rounded-md overflow-hidden">
             {runs.length === 0 ? (
-              <p className="text-sm text-zinc-500">No terminal runs recorded yet.</p>
+              <p className="px-4 py-6 text-center text-[length:var(--text-sm)] text-white/55">
+                No terminal runs recorded yet.
+              </p>
             ) : (
-              runs.slice(0, 8).map((run) => (
-                <div key={run.id} className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="font-medium text-white">{run.command}</p>
-                    <Badge variant={run.exit_code === 0 ? "success" : "warning"}>
-                      exit {run.exit_code}
-                    </Badge>
-                  </div>
-                  {run.stdout_excerpt ? (
-                    <p className="mt-3 text-sm leading-7 text-zinc-400">{run.stdout_excerpt}</p>
-                  ) : null}
-                </div>
-              ))
+              <ul>
+                {runs.slice(0, 8).map((run) => (
+                  <li
+                    key={run.id}
+                    className="border-b border-border-subtle px-4 py-2.5 last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="truncate text-[length:var(--text-sm)] text-white">
+                        {run.command}
+                      </p>
+                      <Badge variant={run.exit_code === 0 ? "success" : "warning"}>
+                        exit {run.exit_code}
+                      </Badge>
+                    </div>
+                    {run.stdout_excerpt ? (
+                      <p className="mt-1 text-[length:var(--text-xs)] text-white/55">
+                        {run.stdout_excerpt}
+                      </p>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -608,20 +649,18 @@ function MetricCard({
   detail: string;
 }) {
   return (
-    <Card className="settings-panel">
-      <CardHeader className="space-y-2">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg border border-white/8 bg-white/[0.04] p-2">
-            <Icon className="size-4 text-white" />
-          </div>
-          <CardTitle>{title}</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <div className="text-2xl font-semibold tracking-[-0.04em] text-white">{value}</div>
-        <p className="text-sm leading-6 text-zinc-400">{detail}</p>
-      </CardContent>
-    </Card>
+    <div className="settings-panel p-4">
+      <div className="flex items-center gap-2">
+        <Icon className="h-3.5 w-3.5 text-white/60" />
+        <p className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/55">
+          {title}
+        </p>
+      </div>
+      <div className="mt-2 text-[length:var(--text-xl)] font-medium tracking-[-0.01em] text-white">
+        {value}
+      </div>
+      <p className="mt-1 text-[length:var(--text-xs)] text-white/55">{detail}</p>
+    </div>
   );
 }
 
@@ -633,9 +672,11 @@ function StatusTile({
   value: string;
 }) {
   return (
-    <div className="rounded-xl border border-white/8 bg-white/[0.02] p-4">
-      <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">{label}</p>
-      <p className="mt-3 text-sm font-medium text-white">{value}</p>
+    <div className="border border-border-subtle rounded-md p-3">
+      <p className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/55">
+        {label}
+      </p>
+      <p className="mt-1.5 text-[length:var(--text-sm)] font-medium text-white">{value}</p>
     </div>
   );
 }
@@ -648,9 +689,9 @@ function MiniProcessCard({
   description: string;
 }) {
   return (
-    <div className="rounded-xl border border-white/8 bg-white/[0.02] p-4">
-      <p className="text-sm font-medium text-white">{title}</p>
-      <p className="mt-3 text-sm leading-7 text-zinc-400">{description}</p>
+    <div className="border border-border-subtle rounded-md p-4">
+      <p className="text-[length:var(--text-sm)] font-medium text-white">{title}</p>
+      <p className="mt-1.5 text-[length:var(--text-xs)] text-white/55">{description}</p>
     </div>
   );
 }

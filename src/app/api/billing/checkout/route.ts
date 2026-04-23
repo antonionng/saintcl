@@ -148,7 +148,7 @@ export async function POST(request: Request) {
       {
         price_data: {
           currency: "gbp",
-          product_data: { name: "Saint AGI Wallet Top-up" },
+          product_data: { name: "SaintClaw Wallet Top-up" },
           unit_amount: payload.amountCents,
         },
         quantity: 1,

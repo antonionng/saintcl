@@ -69,7 +69,7 @@ async function getMembershipAudience(limit = 100) {
 function getOrgData(row: MembershipAudienceRow) {
   const org = Array.isArray(row.orgs) ? row.orgs[0] : row.orgs;
   return {
-    name: org?.name ?? "Saint AGI workspace",
+    name: org?.name ?? "SaintClaw workspace",
     website: org?.website ?? null,
   };
 }

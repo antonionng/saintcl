@@ -16,11 +16,11 @@ export function Logo({
     <Link href="/" className={cn("inline-flex items-center gap-3 self-start", className)}>
       <Image
         src={placeholderLogo}
-        alt="Saint AGI"
+        alt="SaintClaw"
         className="h-9 w-auto object-contain opacity-95"
         priority
       />
-      {showWordmark ? <span className="text-sm font-medium tracking-[-0.02em] text-white/95">Saint AGI</span> : null}
+      {showWordmark ? <span className="text-sm font-medium tracking-[-0.02em] text-white/95">SaintClaw</span> : null}
     </Link>
   );
 }

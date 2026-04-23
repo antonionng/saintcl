@@ -7,9 +7,20 @@ import { Suspense, useState } from "react";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { USE_CASES, type UseCaseId } from "@/lib/use-cases";
 import { isSupabaseConfigured } from "@/lib/env";
 import { getPlanDisplayName, getPlanIntervalLabel, normalizePlanTier } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
+
+type Step = "account" | "use-case" | "team-size";
+
+const TEAM_SIZES = [
+  { id: "solo", label: "Just me", hint: "Solo founder or operator" },
+  { id: "2-10", label: "2 to 10", hint: "Small team or startup" },
+  { id: "10-50", label: "10 to 50", hint: "Growing company" },
+  { id: "50+", label: "50+", hint: "Established business" },
+] as const;
 
 function SignupPageContent() {
   const router = useRouter();
@@ -17,28 +28,56 @@ function SignupPageContent() {
   const selectedPlan = normalizePlanTier(searchParams.get("plan"));
   const selectedInterval = searchParams.get("interval") === "annual" ? "annual" : "monthly";
   const nextPath = searchParams.get("next");
-  const isAcademyFlow = Boolean(nextPath && nextPath.startsWith("/academy/"));
+  const templateId = searchParams.get("template");
+  const [step, setStep] = useState<Step>("account");
   const [form, setForm] = useState({
+    fullName: "",
     orgName: "",
     email: "",
     password: "",
   });
+  const [useCase, setUseCase] = useState<UseCaseId | null>(null);
+  const [teamSize, setTeamSize] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  function goNext() {
+    setError(null);
+    if (step === "account") {
+      if (!form.email || !form.password || !form.orgName) {
+        setError("Add your name, organization, email, and password to continue.");
+        return;
+      }
+      setStep("use-case");
+      return;
+    }
+    if (step === "use-case") {
+      if (!useCase) {
+        setError("Pick the role you want your first agent to fill.");
+        return;
+      }
+      setStep("team-size");
+      return;
+    }
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (step !== "team-size") {
+      goNext();
+      return;
+    }
     setError(null);
     setLoading(true);
 
     if (!isSupabaseConfigured()) {
-      router.push("/dashboard");
+      router.push("/welcome");
       return;
     }
 
     const supabase = createClient();
     if (!supabase) {
-      setError("Supabase client is not configured.");
+      setError("Account services are not configured.");
       setLoading(false);
       return;
     }
@@ -47,16 +86,16 @@ function SignupPageContent() {
       email: form.email,
       password: form.password,
       options: {
-        data: isAcademyFlow
-          ? {
-              academy_invite_flow: true,
-            }
-          : {
-              org_name: form.orgName,
-              trial_plan: selectedPlan,
-              billing_interval: selectedInterval,
-            },
-        emailRedirectTo: `${window.location.origin}/callback${nextPath && nextPath.startsWith("/") ? `?next=${encodeURIComponent(nextPath)}` : ""}`,
+        data: {
+          org_name: form.orgName,
+          full_name: form.fullName,
+          use_case: useCase ?? undefined,
+          team_size: teamSize ?? undefined,
+          template_id: templateId ?? undefined,
+          trial_plan: selectedPlan,
+          billing_interval: selectedInterval,
+        },
+        emailRedirectTo: `${window.location.origin}/callback${nextPath && nextPath.startsWith("/") ? `?next=${encodeURIComponent(nextPath)}` : "?next=%2Fwelcome"}`,
       },
     });
 
@@ -66,18 +105,28 @@ function SignupPageContent() {
       return;
     }
 
-    router.push(isAcademyFlow && nextPath ? nextPath : "/auth/landing");
+    router.push("/auth/landing");
     router.refresh();
   }
 
+  const stepIndex = step === "account" ? 0 : step === "use-case" ? 1 : 2;
+  const stepTitle =
+    step === "account"
+      ? "Create your account"
+      : step === "use-case"
+        ? "What should your first agent do?"
+        : "How big is your team?";
+  const stepDescription =
+    step === "account"
+      ? `Start a 14-day ${getPlanDisplayName(selectedPlan)} trial. No credit card required.`
+      : step === "use-case"
+        ? "We'll set up your first agent based on this. You can change it anytime."
+        : "Helps us tune defaults like billing and seat suggestions.";
+
   return (
     <AuthShell
-      title={isAcademyFlow ? "Create training account" : "Create workspace"}
-      description={
-        isAcademyFlow
-          ? "Create your Saint account to join the academy and return over the full delivery programme."
-          : `Start a 14-day ${getPlanDisplayName(selectedPlan)} trial billed ${getPlanIntervalLabel(selectedInterval).toLowerCase()} if you upgrade.`
-      }
+      title={stepTitle}
+      description={stepDescription}
       footer={
         <>
           Already have access?{" "}
@@ -90,54 +139,133 @@ function SignupPageContent() {
         </>
       }
     >
+      <div className="mb-5 flex items-center gap-2">
+        {[0, 1, 2].map((idx) => (
+          <span
+            key={idx}
+            className={cn(
+              "h-1 flex-1 rounded-full transition-colors",
+              idx <= stepIndex ? "bg-white" : "bg-white/10",
+            )}
+          />
+        ))}
+      </div>
+
       <form className="space-y-4" onSubmit={handleSubmit}>
-        {!isAcademyFlow ? (
+        {step === "account" ? (
           <>
-            <div className="rounded-[1.35rem] border border-white/8 bg-white/[0.03] p-4 text-sm leading-6 text-zinc-300">
-              <p className="text-white">
-                Selected plan: {getPlanDisplayName(selectedPlan)} ({getPlanIntervalLabel(selectedInterval)})
-              </p>
-              <p className="mt-2 text-zinc-400">
-                No credit card is required to start. Your workspace begins on a 14-day trial with one agent.
-              </p>
+            <div className="space-y-2">
+              <label className="app-field-label">Your name</label>
+              <Input
+                value={form.fullName}
+                onChange={(event) => setForm((current) => ({ ...current, fullName: event.target.value }))}
+                placeholder="Jane Doe"
+                autoComplete="name"
+              />
             </div>
             <div className="space-y-2">
-              <label className="app-field-label">Organization name</label>
+              <label className="app-field-label">Company or organization</label>
               <Input
                 value={form.orgName}
                 onChange={(event) => setForm((current) => ({ ...current, orgName: event.target.value }))}
-                placeholder="Organization name"
+                placeholder="Acme Inc"
+                autoComplete="organization"
               />
             </div>
+            <div className="space-y-2">
+              <label className="app-field-label">Work email</label>
+              <Input
+                value={form.email}
+                onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+                type="email"
+                placeholder="you@company.com"
+                autoComplete="email"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="app-field-label">Password</label>
+              <Input
+                value={form.password}
+                onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
+                type="password"
+                placeholder="Choose a password"
+                autoComplete="new-password"
+              />
+            </div>
+            <p className="text-xs leading-6 text-zinc-500">
+              Selected plan: {getPlanDisplayName(selectedPlan)} ({getPlanIntervalLabel(selectedInterval)}). 14-day trial,
+              no credit card.
+            </p>
           </>
         ) : null}
-        <div className="space-y-2">
-          <label className="app-field-label">Email</label>
-          <Input
-            value={form.email}
-            onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-            type="email"
-            placeholder="Email"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="app-field-label">Password</label>
-          <Input
-            value={form.password}
-            onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
-            type="password"
-            placeholder="Password"
-          />
-        </div>
-        {!isSupabaseConfigured() ? (
+
+        {step === "use-case" ? (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {USE_CASES.map((option) => (
+              <button
+                type="button"
+                key={option.id}
+                onClick={() => setUseCase(option.id)}
+                className={cn(
+                  "group rounded-lg border p-4 text-left transition-colors",
+                  useCase === option.id
+                    ? "border-white bg-white/[0.05]"
+                    : "border-border-subtle bg-surface-1 hover:border-border hover:bg-surface-2",
+                )}
+              >
+                <p className="text-sm font-medium text-white">{option.label}</p>
+                <p className="mt-1 text-xs leading-5 text-zinc-400">{option.tagline}</p>
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        {step === "team-size" ? (
+          <div className="grid grid-cols-2 gap-3">
+            {TEAM_SIZES.map((option) => (
+              <button
+                type="button"
+                key={option.id}
+                onClick={() => setTeamSize(option.id)}
+                className={cn(
+                  "rounded-lg border p-4 text-left transition-colors",
+                  teamSize === option.id
+                    ? "border-white bg-white/[0.05]"
+                    : "border-border-subtle bg-surface-1 hover:border-border hover:bg-surface-2",
+                )}
+              >
+                <p className="text-sm font-medium text-white">{option.label}</p>
+                <p className="mt-1 text-xs leading-5 text-zinc-400">{option.hint}</p>
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        {!isSupabaseConfigured() && step === "team-size" ? (
           <p className="text-sm leading-6 text-zinc-500">
-            Supabase keys are not set. Submitting will open the dashboard in demo mode.
+            Account services are not configured. Submitting will open the dashboard in demo mode.
           </p>
         ) : null}
         {error ? <p className="text-sm text-red-400">{error}</p> : null}
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? (isAcademyFlow ? "Creating account..." : "Creating workspace...") : isAcademyFlow ? "Create account" : "Create workspace"}
-        </Button>
+
+        <div className="flex items-center gap-3 pt-1">
+          {step !== "account" ? (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setStep(step === "team-size" ? "use-case" : "account")}
+            >
+              Back
+            </Button>
+          ) : null}
+          <Button type="submit" className="flex-1" disabled={loading}>
+            {step === "team-size"
+              ? loading
+                ? "Setting up your workspace..."
+                : "Create workspace"
+              : "Continue"}
+          </Button>
+        </div>
       </form>
     </AuthShell>
   );

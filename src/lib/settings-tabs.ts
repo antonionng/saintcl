@@ -69,7 +69,7 @@ export const settingsTabs: Array<{
     id: "email",
     label: "Email",
     heading: "Email preferences",
-    description: "Manage weekly, welcome, and role-based Saint AGI emails for this workspace.",
+    description: "Manage weekly, welcome, and role-based SaintClaw emails for this workspace.",
     section: "operations",
   },
   {

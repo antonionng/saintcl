@@ -1,29 +1,60 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import {
-  getRuntimeConfigSnapshot,
   getRuntimeConfigSourceSnapshot,
+  projectConfigOntoRuntimeSourceSnapshot,
   type OpenClawConfig,
   loadConfig,
 } from "../config/config.js";
 import { createConfigRuntimeEnv } from "../config/env-vars.js";
-import { isRecord } from "../utils.js";
 import { resolveOpenClawAgentDir } from "./agent-paths.js";
-import {
-  mergeProviders,
-  mergeWithExistingProviderSecrets,
-  type ExistingProviderConfig,
-} from "./models-config.merge.js";
-import {
-  normalizeProviders,
-  type ProviderConfig,
-  resolveImplicitProviders,
-} from "./models-config.providers.js";
+import { MODELS_JSON_STATE } from "./models-config-state.js";
+import { planOpenClawModelsJson } from "./models-config.plan.js";
 
-type ModelsConfig = NonNullable<OpenClawConfig["models"]>;
+export { resetModelsJsonReadyCacheForTest } from "./models-config-state.js";
 
-const DEFAULT_MODE: NonNullable<ModelsConfig["mode"]> = "merge";
-const MODELS_JSON_WRITE_LOCKS = new Map<string, Promise<void>>();
+async function readFileMtimeMs(pathname: string): Promise<number | null> {
+  try {
+    const stat = await fs.stat(pathname);
+    return Number.isFinite(stat.mtimeMs) ? stat.mtimeMs : null;
+  } catch {
+    return null;
+  }
+}
+
+function stableStringify(value: unknown): string {
+  if (value === null || typeof value !== "object") {
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map((entry) => stableStringify(entry)).join(",")}]`;
+  }
+  const entries = Object.entries(value as Record<string, unknown>).toSorted(([a], [b]) =>
+    a.localeCompare(b),
+  );
+  return `{${entries
+    .map(([key, entry]) => `${JSON.stringify(key)}:${stableStringify(entry)}`)
+    .join(",")}}`;
+}
+
+async function buildModelsJsonFingerprint(params: {
+  config: OpenClawConfig;
+  sourceConfigForSecrets: OpenClawConfig;
+  agentDir: string;
+}): Promise<string> {
+  const authProfilesMtimeMs = await readFileMtimeMs(
+    path.join(params.agentDir, "auth-profiles.json"),
+  );
+  const modelsFileMtimeMs = await readFileMtimeMs(path.join(params.agentDir, "models.json"));
+  const envShape = createConfigRuntimeEnv(params.config, {});
+  return stableStringify({
+    config: params.config,
+    sourceConfigForSecrets: params.sourceConfigForSecrets,
+    envShape,
+    authProfilesMtimeMs,
+    modelsFileMtimeMs,
+  });
+}
 
 async function readExistingModelsFile(pathname: string): Promise<{
   raw: string;
@@ -43,94 +74,63 @@ async function readExistingModelsFile(pathname: string): Promise<{
   }
 }
 
-async function resolveProvidersForModelsJson(params: {
-  cfg: OpenClawConfig;
-  agentDir: string;
-  env: NodeJS.ProcessEnv;
-}): Promise<Record<string, ProviderConfig>> {
-  const { cfg, agentDir, env } = params;
-  const explicitProviders = cfg.models?.providers ?? {};
-  const implicitProviders = await resolveImplicitProviders({
-    agentDir,
-    config: cfg,
-    env,
-    explicitProviders,
-  });
-  const providers: Record<string, ProviderConfig> = mergeProviders({
-    implicit: implicitProviders,
-    explicit: explicitProviders,
-  });
-  return providers;
-}
-
-async function resolveProvidersForMode(params: {
-  mode: NonNullable<ModelsConfig["mode"]>;
-  existingParsed: unknown;
-  providers: Record<string, ProviderConfig>;
-  secretRefManagedProviders: ReadonlySet<string>;
-  explicitBaseUrlProviders: ReadonlySet<string>;
-}): Promise<Record<string, ProviderConfig>> {
-  if (params.mode !== "merge") {
-    return params.providers;
-  }
-  const existing = params.existingParsed;
-  if (!isRecord(existing) || !isRecord(existing.providers)) {
-    return params.providers;
-  }
-  const existingProviders = existing.providers as Record<
-    string,
-    NonNullable<ModelsConfig["providers"]>[string]
-  >;
-  return mergeWithExistingProviderSecrets({
-    nextProviders: params.providers,
-    existingProviders: existingProviders as Record<string, ExistingProviderConfig>,
-    secretRefManagedProviders: params.secretRefManagedProviders,
-    explicitBaseUrlProviders: params.explicitBaseUrlProviders,
-  });
-}
-
-async function ensureModelsFileMode(pathname: string): Promise<void> {
+export async function ensureModelsFileModeForModelsJson(pathname: string): Promise<void> {
   await fs.chmod(pathname, 0o600).catch(() => {
     // best-effort
   });
 }
 
-async function writeModelsFileAtomic(targetPath: string, contents: string): Promise<void> {
+export async function writeModelsFileAtomicForModelsJson(
+  targetPath: string,
+  contents: string,
+): Promise<void> {
   const tempPath = `${targetPath}.${process.pid}.${Date.now()}.tmp`;
   await fs.writeFile(tempPath, contents, { mode: 0o600 });
   await fs.rename(tempPath, targetPath);
 }
 
-function resolveModelsConfigInput(config?: OpenClawConfig): OpenClawConfig {
+function resolveModelsConfigInput(config?: OpenClawConfig): {
+  config: OpenClawConfig;
+  sourceConfigForSecrets: OpenClawConfig;
+} {
   const runtimeSource = getRuntimeConfigSourceSnapshot();
-  if (!runtimeSource) {
-    return config ?? loadConfig();
-  }
   if (!config) {
-    return runtimeSource;
+    const loaded = loadConfig();
+    return {
+      config: runtimeSource ?? loaded,
+      sourceConfigForSecrets: runtimeSource ?? loaded,
+    };
   }
-  const runtimeResolved = getRuntimeConfigSnapshot();
-  if (runtimeResolved && config === runtimeResolved) {
-    return runtimeSource;
+  if (!runtimeSource) {
+    return {
+      config,
+      sourceConfigForSecrets: config,
+    };
   }
-  return config;
+  const projected = projectConfigOntoRuntimeSourceSnapshot(config);
+  return {
+    config: projected,
+    // If projection is skipped (for example incompatible top-level shape),
+    // keep managed secret persistence anchored to the active source snapshot.
+    sourceConfigForSecrets: projected === config ? runtimeSource : projected,
+  };
 }
 
 async function withModelsJsonWriteLock<T>(targetPath: string, run: () => Promise<T>): Promise<T> {
-  const prior = MODELS_JSON_WRITE_LOCKS.get(targetPath) ?? Promise.resolve();
+  const prior = MODELS_JSON_STATE.writeLocks.get(targetPath) ?? Promise.resolve();
   let release: () => void = () => {};
   const gate = new Promise<void>((resolve) => {
     release = resolve;
   });
   const pending = prior.then(() => gate);
-  MODELS_JSON_WRITE_LOCKS.set(targetPath, pending);
+  MODELS_JSON_STATE.writeLocks.set(targetPath, pending);
   try {
     await prior;
     return await run();
   } finally {
     release();
-    if (MODELS_JSON_WRITE_LOCKS.get(targetPath) === pending) {
-      MODELS_JSON_WRITE_LOCKS.delete(targetPath);
+    if (MODELS_JSON_STATE.writeLocks.get(targetPath) === pending) {
+      MODELS_JSON_STATE.writeLocks.delete(targetPath);
     }
   }
 }
@@ -139,59 +139,60 @@ export async function ensureOpenClawModelsJson(
   config?: OpenClawConfig,
   agentDirOverride?: string,
 ): Promise<{ agentDir: string; wrote: boolean }> {
-  const cfg = resolveModelsConfigInput(config);
+  const resolved = resolveModelsConfigInput(config);
+  const cfg = resolved.config;
   const agentDir = agentDirOverride?.trim() ? agentDirOverride.trim() : resolveOpenClawAgentDir();
   const targetPath = path.join(agentDir, "models.json");
+  const fingerprint = await buildModelsJsonFingerprint({
+    config: cfg,
+    sourceConfigForSecrets: resolved.sourceConfigForSecrets,
+    agentDir,
+  });
+  const cached = MODELS_JSON_STATE.readyCache.get(targetPath);
+  if (cached) {
+    const settled = await cached;
+    if (settled.fingerprint === fingerprint) {
+      await ensureModelsFileModeForModelsJson(targetPath);
+      return settled.result;
+    }
+  }
 
-  return await withModelsJsonWriteLock(targetPath, async () => {
+  const pending = withModelsJsonWriteLock(targetPath, async () => {
     // Ensure config env vars (e.g. AWS_PROFILE, AWS_ACCESS_KEY_ID) are
     // are available to provider discovery without mutating process.env.
     const env = createConfigRuntimeEnv(cfg);
+    const existingModelsFile = await readExistingModelsFile(targetPath);
+    const plan = await planOpenClawModelsJson({
+      cfg,
+      sourceConfigForSecrets: resolved.sourceConfigForSecrets,
+      agentDir,
+      env,
+      existingRaw: existingModelsFile.raw,
+      existingParsed: existingModelsFile.parsed,
+    });
 
-    const providers = await resolveProvidersForModelsJson({ cfg, agentDir, env });
-
-    if (Object.keys(providers).length === 0) {
-      return { agentDir, wrote: false };
+    if (plan.action === "skip") {
+      return { fingerprint, result: { agentDir, wrote: false } };
     }
 
-    const mode = cfg.models?.mode ?? DEFAULT_MODE;
-    const secretRefManagedProviders = new Set<string>();
-    const explicitBaseUrlProviders = new Set(
-      Object.entries(cfg.models?.providers ?? {})
-        .map(([key, provider]) => [key.trim(), provider] as const)
-        .filter(
-          ([key, provider]) =>
-            Boolean(key) && typeof provider?.baseUrl === "string" && provider.baseUrl.trim(),
-        )
-        .map(([key]) => key),
-    );
-
-    const normalizedProviders =
-      normalizeProviders({
-        providers,
-        agentDir,
-        env,
-        secretDefaults: cfg.secrets?.defaults,
-        secretRefManagedProviders,
-      }) ?? providers;
-    const existingModelsFile = await readExistingModelsFile(targetPath);
-    const mergedProviders = await resolveProvidersForMode({
-      mode,
-      existingParsed: existingModelsFile.parsed,
-      providers: normalizedProviders,
-      secretRefManagedProviders,
-      explicitBaseUrlProviders,
-    });
-    const next = `${JSON.stringify({ providers: mergedProviders }, null, 2)}\n`;
-
-    if (existingModelsFile.raw === next) {
-      await ensureModelsFileMode(targetPath);
-      return { agentDir, wrote: false };
+    if (plan.action === "noop") {
+      await ensureModelsFileModeForModelsJson(targetPath);
+      return { fingerprint, result: { agentDir, wrote: false } };
     }
 
     await fs.mkdir(agentDir, { recursive: true, mode: 0o700 });
-    await writeModelsFileAtomic(targetPath, next);
-    await ensureModelsFileMode(targetPath);
-    return { agentDir, wrote: true };
+    await writeModelsFileAtomicForModelsJson(targetPath, plan.contents);
+    await ensureModelsFileModeForModelsJson(targetPath);
+    return { fingerprint, result: { agentDir, wrote: true } };
   });
+  MODELS_JSON_STATE.readyCache.set(targetPath, pending);
+  try {
+    const settled = await pending;
+    return settled.result;
+  } catch (error) {
+    if (MODELS_JSON_STATE.readyCache.get(targetPath) === pending) {
+      MODELS_JSON_STATE.readyCache.delete(targetPath);
+    }
+    throw error;
+  }
 }

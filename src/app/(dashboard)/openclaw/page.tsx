@@ -61,7 +61,7 @@ export default async function OpenClawPage() {
     return (
       <div className="space-y-8">
         <div className="space-y-2">
-          <p className="app-kicker">Saint AGI</p>
+          <p className="app-kicker">SaintClaw</p>
           <h1 className="text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">Console</h1>
           <p className="max-w-2xl text-sm leading-7 text-zinc-400">
             Advanced runtime controls stay reserved for workspace admins.
@@ -91,7 +91,7 @@ export default async function OpenClawPage() {
       <div id="console" className="min-h-screen overflow-hidden">
         <iframe
           src={embeddedConsoleUrl}
-          title="Saint AGI Console"
+          title="SaintClaw Console"
           className="block h-screen min-h-screen w-full bg-[#0b0b12]"
         />
       </div>

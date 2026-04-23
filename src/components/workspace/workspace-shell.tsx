@@ -247,7 +247,7 @@ export function WorkspaceShell({
       {ready && !onboardingActive && hasProvisionedAgent && embeddedConsoleUrl ? (
         <iframe
           src={embeddedConsoleUrl}
-          title="Saint AGI Workspace"
+          title="SaintClaw Workspace"
           className="min-h-screen w-full border-0 bg-[#05060a]"
         />
       ) : (

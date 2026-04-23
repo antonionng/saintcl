@@ -121,13 +121,13 @@ export function getPreferredUserDisplayName({
     }
   }
 
-  return "Saint AGI";
+  return "SaintClaw";
 }
 
 export function getUserAvatarInitials({
   displayName,
   email,
-  fallbackLabel = "Saint AGI",
+  fallbackLabel = "SaintClaw",
 }: {
   displayName?: string | null;
   email?: string | null;

@@ -9,11 +9,10 @@ export default async function KnowledgePage() {
   const teams = session?.org.id ? await getTeams(session.org.id) : [];
 
   return (
-    <div className="space-y-phi-13">
+    <div className="space-y-8">
       <PageHeader
-        eyebrow="Knowledge"
-        title="Knowledge operations"
-        description="Manage company, team, and personal knowledge with automatic scope-aware retrieval for your agents."
+        title="Knowledge"
+        description="Documents and collections retrieved by your agents."
       />
       {session ? (
         <>

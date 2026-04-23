@@ -9,8 +9,6 @@ export function getRoleCapabilities(role: OrgRole, options?: { isSuperAdmin?: bo
     canViewAllAgents: isAdmin,
     canManageConsole: isAdmin,
     canManageAdminTools: isAdmin,
-    canManageTraining: isAdmin,
-    canManagePlatformTraining: Boolean(options?.isSuperAdmin),
   };
 }
 

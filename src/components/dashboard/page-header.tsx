@@ -9,20 +9,31 @@ export function PageHeader({
 }: {
   eyebrow?: string;
   title: string;
-  description: string;
+  description?: string;
   action?: React.ReactNode;
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col gap-phi-5 pb-phi-8 lg:flex-row lg:items-end lg:justify-between", className)}>
-      <div className="max-w-2xl">
+    <div
+      className={cn(
+        "flex flex-col gap-3 pb-6 sm:flex-row sm:items-start sm:justify-between sm:gap-6",
+        className,
+      )}
+    >
+      <div className="min-w-0 flex-1">
         {eyebrow ? (
-          <p className="app-kicker mb-phi-2">{eyebrow}</p>
+          <p className="app-kicker mb-1.5">{eyebrow}</p>
         ) : null}
-        <h1 className="app-title text-[length:var(--text-xl)] font-semibold tracking-[-0.03em] text-white sm:text-[length:var(--text-2xl)]">{title}</h1>
-        <p className="app-copy mt-phi-3 text-[length:var(--text-sm)] sm:text-[length:var(--text-base)]">{description}</p>
+        <h1 className="text-[length:var(--text-2xl)] font-medium tracking-[-0.02em] text-white">
+          {title}
+        </h1>
+        {description ? (
+          <p className="mt-1 text-[length:var(--text-sm)] text-muted-foreground">
+            {description}
+          </p>
+        ) : null}
       </div>
-      {action ? <div className="shrink-0 self-start lg:self-auto">{action}</div> : null}
+      {action ? <div className="shrink-0">{action}</div> : null}
     </div>
   );
 }

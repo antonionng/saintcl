@@ -7,16 +7,16 @@ import {
   Activity,
   AlertTriangle,
   Bot,
-  Cable,
   ChevronLeft,
   ChevronRight,
   Command,
   Database,
   LayoutDashboard,
   type LucideIcon,
-  Puzzle,
   Settings,
+  Store,
   UserCircle2,
+  UserPlus,
 } from "lucide-react";
 
 import { SidebarAccount } from "@/components/dashboard/sidebar-account";
@@ -30,7 +30,7 @@ type NavigationItem = {
   href: string;
   label: string;
   icon: LucideIcon;
-  requires?: "canManageConsole" | "canManagePlatformTraining";
+  requires?: "canManageConsole";
 };
 
 type NavigationSection = {
@@ -66,8 +66,6 @@ export function DashboardSidebar({
       canViewAllAgents: boolean;
       canManageConsole: boolean;
       canManageAdminTools: boolean;
-      canManageTraining: boolean;
-      canManagePlatformTraining: boolean;
     };
   };
   collapsed?: boolean;
@@ -106,9 +104,9 @@ export function DashboardSidebar({
   const agentNavLabel = hasSingleVisibleAgent ? "My agent" : "My agents";
 
   const statusLines: string[] = [];
-  if (!platformStatus.supabase) statusLines.push("Supabase not configured");
-  if (!platformStatus.openclaw) statusLines.push("Runtime gateway not connected");
-  if (statusLines.length === 0) statusLines.push("All services connected");
+  if (!platformStatus.supabase) statusLines.push("Account services unavailable");
+  if (!platformStatus.openclaw) statusLines.push("Agent runtime unavailable");
+  if (statusLines.length === 0) statusLines.push("All systems online");
   const orgInitials =
     orgLabel
       .split(/\s+/)
@@ -173,8 +171,7 @@ export function DashboardSidebar({
       items: fleetItems,
     },
   ].filter((group) => group.items.length > 0);
-  const isChannelsRoute = pathname === "/channels" || pathname.startsWith("/channels/");
-  const isSkillsRoute = pathname === "/skills" || pathname.startsWith("/skills/");
+  const isAppsRoute = pathname === "/apps" || pathname.startsWith("/apps/");
 
   const navigationSections: NavigationSection[] = [
     {
@@ -183,9 +180,8 @@ export function DashboardSidebar({
         { href: "/openclaw", label: agentNavLabel, icon: Bot, requires: "canManageConsole" },
         { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
         { href: "/agents", label: "Agents", icon: Command },
-        { href: "/channels", label: "Channels", icon: Cable },
-        { href: "/skills", label: "Skills", icon: Puzzle },
-        { href: "/observability", label: "Observability", icon: Activity },
+        { href: "/apps", label: "Apps", icon: Store },
+        { href: "/observability", label: "Activity", icon: Activity },
         { href: "/knowledge", label: "Knowledge", icon: Database },
         { href: "/account", label: "Account", icon: UserCircle2 },
       ],
@@ -241,60 +237,35 @@ export function DashboardSidebar({
         ],
       },
     ],
-    channels: [
+    apps: [
       {
-        id: "channels-setup",
-        label: "Setup",
+        id: "apps-browse",
+        label: "Browse",
         items: [
           {
-            href: "/channels",
-            label: "All channels",
-            active: pathname === "/channels" && !hash,
+            href: "/apps",
+            label: "All apps",
+            active: pathname === "/apps" && !searchParams.get("category"),
           },
           {
-            href: "/channels#connect",
-            label: "Connect new",
-            active: hash === "#connect",
-          },
-        ],
-      },
-      {
-        id: "channels-health",
-        label: "Health",
-        items: [
-          {
-            href: "/channels#status",
-            label: "Status",
-            active: hash === "#status",
-          },
-        ],
-      },
-    ],
-    skills: [
-      {
-        id: "skills-library",
-        label: "Library",
-        items: [
-          {
-            href: "/skills",
-            label: "Browse skills",
-            active: pathname === "/skills" && !hash,
+            href: "/apps?category=channel",
+            label: "Channels",
+            active: searchParams.get("category") === "channel",
           },
           {
-            href: "/skills#installed",
-            label: "Installed",
-            active: hash === "#installed",
+            href: "/apps?category=skill",
+            label: "Skills",
+            active: searchParams.get("category") === "skill",
           },
-        ],
-      },
-      {
-        id: "skills-manage",
-        label: "Manage",
-        items: [
           {
-            href: "/skills#updates",
-            label: "Updates",
-            active: hash === "#updates",
+            href: "/apps?category=search",
+            label: "Search",
+            active: searchParams.get("category") === "search",
+          },
+          {
+            href: "/apps?category=model",
+            label: "Models",
+            active: searchParams.get("category") === "model",
           },
         ],
       },
@@ -395,9 +366,27 @@ export function DashboardSidebar({
               </div>
             </div>
           </div>
+          {platformStatus.capabilities.canManageBilling ? (
+            <Link
+              href="/settings?tab=members"
+              className={cn(
+                "flex items-center justify-center gap-phi-2 rounded-md border border-border-subtle bg-surface-1 px-phi-3 py-phi-2 text-[length:var(--text-sm)] text-zinc-300 transition-colors hover:bg-surface-2 hover:text-white",
+                collapsed && "lg:size-10 lg:p-0",
+              )}
+              title="Invite teammates"
+            >
+              <UserPlus className="size-4" />
+              <span className={cn(collapsed && "lg:hidden")}>Invite teammates</span>
+            </Link>
+          ) : null}
         </div>
 
-        <nav className={cn("mt-phi-8 overflow-x-auto lg:flex-1 lg:overflow-visible", collapsed && "lg:mt-phi-5 lg:w-full")}>
+        <nav
+          className={cn(
+            "mt-phi-8 overflow-x-auto lg:min-h-0 lg:flex-1 lg:overflow-x-visible lg:overflow-y-auto lg:[scrollbar-width:thin]",
+            collapsed && "lg:mt-phi-5 lg:w-full",
+          )}
+        >
           <div
             className={cn(
               "flex gap-phi-2 pb-1 lg:flex-col lg:gap-phi-8",
@@ -436,11 +425,9 @@ export function DashboardSidebar({
                           ? contextualGroups.settings
                           : item.href === "/agents" && isAgentsRoute
                             ? contextualGroups.agents
-                            : item.href === "/channels" && isChannelsRoute
-                              ? contextualGroups.channels
-                              : item.href === "/skills" && isSkillsRoute
-                                ? contextualGroups.skills
-                                : item.href === "/knowledge" && isKnowledgeRoute
+                            : item.href === "/apps" && isAppsRoute
+                              ? contextualGroups.apps
+                              : item.href === "/knowledge" && isKnowledgeRoute
                                   ? contextualGroups.knowledge
                                   : item.href === "/account" && isAccountRoute
                                     ? contextualGroups.account
@@ -506,11 +493,12 @@ export function DashboardSidebar({
               "flex items-center gap-phi-3 px-phi-3",
               collapsed && "lg:flex-col lg:items-center lg:gap-phi-2 lg:px-0",
             )}
-            title={collapsed ? statusLines.join(". ") : statusLines.join(". ")}
+            title={statusLines.join(". ")}
+            aria-label={statusLines.join(". ")}
           >
             <span className={cn("size-2 shrink-0 rounded-full", statusColor)} />
             <span className={cn("text-[length:var(--text-xs)] text-zinc-500", collapsed && "lg:hidden")}>
-              {allConnected ? "All systems online" : statusLines.join(". ")}
+              {allConnected ? "All systems online" : "Service issue"}
             </span>
           </div>
 

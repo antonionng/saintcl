@@ -3,12 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ArrowRight,
   Building2,
   FileText,
-  FolderOpen,
-  type LucideIcon,
-  Loader2,
+  FolderPlus,
+  Plus,
   Search,
   Upload,
   User2,
@@ -17,18 +15,22 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Wizard } from "@/components/ui/wizard";
 import type { KnowledgeDocument, TeamRecord } from "@/types";
 
 type ScopeType = "org" | "team" | "user";
 type LibraryFilter = "all" | ScopeType;
-type DashboardTab = "documents" | "upload" | "collections";
-const SCOPE_ICONS = {
-  org: Building2,
-  team: Users,
-  user: User2,
-} satisfies Record<ScopeType, LucideIcon>;
 
 function scopeLabel(scope: ScopeType) {
   return scope === "org" ? "Company" : scope === "team" ? "Team" : "Personal";
@@ -47,149 +49,72 @@ function getFileExtension(filename: string) {
   return parts.length > 1 ? parts.at(-1)?.toUpperCase() ?? "FILE" : "FILE";
 }
 
-function scopeDescription(scope: ScopeType) {
-  if (scope === "org") {
-    return "Shared reference for every company-assigned agent.";
-  }
-  if (scope === "team") {
-    return "Shared operating context for a specific team.";
-  }
-  return "Private working material for your assigned agents.";
-}
-
-function MetricCard({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: string;
-  hint: string;
-}) {
+function StatTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-border-subtle bg-surface-2 px-phi-5 py-phi-5">
-      <p className="text-[length:var(--text-xs)] font-medium uppercase tracking-[0.08em] text-zinc-500">{label}</p>
-      <p className="mt-phi-3 text-[length:var(--text-2xl)] font-semibold tracking-[-0.03em] text-white">{value}</p>
-      <p className="mt-phi-2 text-[length:var(--text-sm)] text-zinc-400">{hint}</p>
+    <div className="flex flex-col gap-1 border-r border-border-subtle px-5 py-4 last:border-r-0">
+      <span className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/45">
+        {label}
+      </span>
+      <span className="text-[length:var(--text-xl)] font-medium tracking-[-0.01em] text-white">
+        {value}
+      </span>
     </div>
   );
 }
 
-function ScopeSelectorCard({
-  scope,
-  active,
-  disabled,
-  count,
-  onSelect,
-}: {
-  scope: ScopeType;
-  active: boolean;
-  disabled?: boolean;
-  count: number;
-  onSelect: (scope: ScopeType) => void;
-}) {
-  const Icon = SCOPE_ICONS[scope];
-
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={() => onSelect(scope)}
-      className={[
-        "rounded-lg border p-phi-5 text-left transition-colors",
-        active ? "border-border-strong bg-surface-3" : "border-border-subtle bg-surface-2",
-        disabled ? "cursor-not-allowed opacity-50" : "hover:border-border",
-      ].join(" ")}
-    >
-      <div className="flex items-start justify-between gap-phi-3">
-        <div className="rounded-md border border-border bg-surface-2 p-phi-2">
-          <Icon className="size-4 text-white" />
-        </div>
-        <Badge variant="default">{count}</Badge>
-      </div>
-      <p className="mt-phi-5 text-[length:var(--text-sm)] font-medium text-white">{scopeLabel(scope)}</p>
-      <p className="mt-phi-1 text-[length:var(--text-xs)] leading-relaxed text-zinc-500">{scopeDescription(scope)}</p>
-    </button>
-  );
-}
-
-function DashboardTabButton({
+function FilterChip({
   active,
   onClick,
   children,
+  count,
 }: {
   active: boolean;
   onClick: () => void;
-  children: string;
+  children: React.ReactNode;
+  count?: number;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={[
-        "rounded-sm border px-phi-3 py-phi-2 text-[length:var(--text-sm)] transition-colors",
+        "inline-flex items-center gap-2 rounded-sm border px-2.5 py-1 text-[length:var(--text-xs)] font-medium transition-colors",
         active
-          ? "border-border-strong bg-surface-3 text-white"
-          : "border-border-subtle bg-surface-1 text-zinc-400 hover:border-border hover:text-white",
+          ? "border-white text-white"
+          : "border-border text-white/55 hover:text-white hover:border-border-strong",
       ].join(" ")}
     >
       {children}
+      {typeof count === "number" ? (
+        <span className={active ? "text-white/70" : "text-white/35"}>{count}</span>
+      ) : null}
     </button>
   );
 }
 
-function EmptyLibraryState({
+function PickerCard({
+  icon: Icon,
   title,
   description,
+  onClick,
 }: {
+  icon: typeof Upload;
   title: string;
   description: string;
+  onClick: () => void;
 }) {
   return (
-    <div className="rounded-lg border border-dashed border-border px-phi-8 py-phi-13 text-center">
-      <div className="mx-auto flex size-11 items-center justify-center rounded-md border border-border-subtle bg-surface-2">
-        <FileText className="size-5 text-zinc-300" />
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex flex-col gap-2 rounded-sm border border-border bg-transparent p-4 text-left transition-colors hover:border-border-strong hover:bg-white/[0.03]"
+    >
+      <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-border-subtle">
+        <Icon className="h-4 w-4 text-white" />
       </div>
-      <p className="mt-phi-5 text-[length:var(--text-base)] font-medium text-white">{title}</p>
-      <p className="mx-auto mt-phi-2 max-w-md text-[length:var(--text-sm)] leading-relaxed text-zinc-500">{description}</p>
-    </div>
-  );
-}
-
-function DocumentRow({
-  doc,
-  teamName,
-}: {
-  doc: KnowledgeDocument;
-  teamName?: string;
-}) {
-  const scope = scopeLabel(doc.scopeType);
-  const extension = getFileExtension(doc.filename);
-
-  return (
-    <div className="rounded-lg border border-border-subtle bg-surface-1 p-phi-5 transition-colors hover:border-border hover:bg-surface-2">
-      <div className="flex flex-col gap-phi-5 lg:flex-row lg:items-center">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start gap-phi-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border-subtle bg-surface-2 text-[length:var(--text-xs)] font-semibold tracking-[0.08em] text-zinc-300">
-              {extension}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-[length:var(--text-sm)] font-medium text-white sm:text-[length:var(--text-base)]">{doc.filename}</p>
-              <div className="mt-phi-2 flex flex-wrap items-center gap-phi-2">
-                <Badge variant="default">{scope}</Badge>
-                {teamName ? <Badge variant="default">{teamName}</Badge> : null}
-                <span className="text-[length:var(--text-xs)] text-zinc-500">{doc.chunkCount} chunks</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-phi-3 lg:justify-end">
-          <p className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-zinc-500">{formatDate(doc.updatedAt)}</p>
-          <Badge variant={doc.status === "indexed" ? "success" : "warning"}>{doc.status}</Badge>
-        </div>
-      </div>
-    </div>
+      <p className="mt-1 text-[length:var(--text-sm)] font-medium text-white">{title}</p>
+      <p className="text-[length:var(--text-xs)] text-white/55">{description}</p>
+    </button>
   );
 }
 
@@ -205,502 +130,617 @@ export function KnowledgeDashboard({
   currentUserId: string;
 }) {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [scopeType, setScopeType] = useState<ScopeType>(canManageShared ? "org" : "user");
-  const [activeTab, setActiveTab] = useState<DashboardTab>("documents");
-  const [teamId, setTeamId] = useState(teams[0]?.id ?? "");
   const [teamRecords, setTeamRecords] = useState(teams);
   const [libraryFilter, setLibraryFilter] = useState<LibraryFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [teamName, setTeamName] = useState("");
-  const [teamDescription, setTeamDescription] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const [creatingTeam, setCreatingTeam] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [collectionOpen, setCollectionOpen] = useState(false);
 
   useEffect(() => {
     setTeamRecords(teams);
   }, [teams]);
 
-  useEffect(() => {
-    if (teamRecords.length === 0) {
-      if (teamId) {
-        setTeamId("");
-      }
-      return;
-    }
+  const companyDocs = useMemo(() => docs.filter((d) => d.scopeType === "org"), [docs]);
+  const personalDocs = useMemo(
+    () => docs.filter((d) => d.scopeType === "user" && d.userId === currentUserId),
+    [docs, currentUserId],
+  );
+  const teamDocs = useMemo(() => docs.filter((d) => d.scopeType === "team"), [docs]);
+  const indexedCount = useMemo(() => docs.filter((d) => d.status === "indexed").length, [docs]);
 
-    if (!teamId || !teamRecords.some((team) => team.id === teamId)) {
-      setTeamId(teamRecords[0]?.id ?? "");
-    }
-  }, [teamId, teamRecords]);
-
-  const companyDocs = useMemo(() => docs.filter((doc) => doc.scopeType === "org"), [docs]);
-  const personalDocs = useMemo(() => docs.filter((doc) => doc.scopeType === "user" && doc.userId === currentUserId), [docs, currentUserId]);
-  const indexedCount = useMemo(() => docs.filter((doc) => doc.status === "indexed").length, [docs]);
-  const processingCount = docs.length - indexedCount;
-  const teamLookup = useMemo(() => new Map(teamRecords.map((team) => [team.id, team])), [teamRecords]);
-  const teamDocsByTeam = useMemo(
-    () =>
-      teamRecords.map((team) => ({
-        team,
-        docs: docs.filter((doc) => doc.scopeType === "team" && doc.teamId === team.id),
-      })),
-    [docs, teamRecords],
+  const teamLookup = useMemo(
+    () => new Map(teamRecords.map((team) => [team.id, team])),
+    [teamRecords],
   );
   const sortedDocs = useMemo(
     () => [...docs].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()),
     [docs],
   );
   const visibleDocs = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-
+    const q = searchQuery.trim().toLowerCase();
     return sortedDocs.filter((doc) => {
-      const matchesFilter = libraryFilter === "all" ? true : doc.scopeType === libraryFilter;
-      if (!matchesFilter) {
-        return false;
-      }
-
-      if (!normalizedQuery) {
-        return true;
-      }
-
+      if (libraryFilter !== "all" && doc.scopeType !== libraryFilter) return false;
+      if (!q) return true;
       const teamName = doc.teamId ? teamLookup.get(doc.teamId)?.name ?? "" : "";
       return [doc.filename, scopeLabel(doc.scopeType), teamName]
         .join(" ")
         .toLowerCase()
-        .includes(normalizedQuery);
+        .includes(q);
     });
   }, [libraryFilter, searchQuery, sortedDocs, teamLookup]);
 
-  async function uploadDocument() {
-    if (!selectedFile) {
-      return;
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 pb-2 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+        <div>
+          <h2 className="text-[length:var(--text-xl)] font-medium tracking-[-0.02em] text-white">
+            Library
+          </h2>
+          <p className="mt-1 text-[length:var(--text-sm)] text-muted-foreground">
+            Documents and collections available to your agents.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search"
+              className="h-9 w-56 pl-8"
+            />
+          </div>
+          <Button onClick={() => setPickerOpen(true)} size="default">
+            <Plus className="h-4 w-4" />
+            <span>Add</span>
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex divide-x divide-border-subtle border border-border rounded-md overflow-hidden">
+        <StatTile label="Documents" value={String(docs.length)} />
+        <StatTile label="Indexed" value={String(indexedCount)} />
+        <StatTile label="Company" value={String(companyDocs.length)} />
+        <StatTile label="Team" value={String(teamDocs.length)} />
+        <StatTile label="Personal" value={String(personalDocs.length)} />
+        <StatTile label="Collections" value={String(teamRecords.length + 2)} />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <FilterChip
+          active={libraryFilter === "all"}
+          onClick={() => setLibraryFilter("all")}
+          count={docs.length}
+        >
+          All
+        </FilterChip>
+        <FilterChip
+          active={libraryFilter === "org"}
+          onClick={() => setLibraryFilter("org")}
+          count={companyDocs.length}
+        >
+          Company
+        </FilterChip>
+        <FilterChip
+          active={libraryFilter === "team"}
+          onClick={() => setLibraryFilter("team")}
+          count={teamDocs.length}
+        >
+          Team
+        </FilterChip>
+        <FilterChip
+          active={libraryFilter === "user"}
+          onClick={() => setLibraryFilter("user")}
+          count={personalDocs.length}
+        >
+          Personal
+        </FilterChip>
+      </div>
+
+      <div className="border border-border rounded-md overflow-hidden">
+        {visibleDocs.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 px-5 py-16 text-center">
+            <div className="flex h-9 w-9 items-center justify-center rounded-sm border border-border-subtle">
+              <FileText className="h-4 w-4 text-white/60" />
+            </div>
+            <p className="text-[length:var(--text-sm)] font-medium text-white">No documents</p>
+            <p className="max-w-sm text-[length:var(--text-xs)] text-white/50">
+              {searchQuery
+                ? "Nothing matches your search. Try a different term or clear the filter."
+                : "Click Add to upload a document or create a new collection."}
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-2"
+              onClick={() => setPickerOpen(true)}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add</span>
+            </Button>
+          </div>
+        ) : (
+          <ul>
+            {visibleDocs.map((doc) => {
+              const ext = getFileExtension(doc.filename);
+              const teamName = doc.teamId ? teamLookup.get(doc.teamId)?.name : null;
+              return (
+                <li
+                  key={doc.id}
+                  className="flex items-center gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0 hover:bg-white/[0.02] transition-colors"
+                >
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-border-subtle text-[10px] font-semibold tracking-[0.06em] text-white/70">
+                    {ext}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[length:var(--text-sm)] text-white">
+                      {doc.filename}
+                    </p>
+                    <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[length:var(--text-xs)] text-white/45">
+                      <span>{scopeLabel(doc.scopeType)}</span>
+                      {teamName ? (
+                        <>
+                          <span>&middot;</span>
+                          <span>{teamName}</span>
+                        </>
+                      ) : null}
+                      <span>&middot;</span>
+                      <span>{doc.chunkCount} chunks</span>
+                      <span>&middot;</span>
+                      <span>{formatDate(doc.updatedAt)}</span>
+                    </div>
+                  </div>
+                  <Badge variant={doc.status === "indexed" ? "success" : "warning"}>
+                    {doc.status}
+                  </Badge>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+
+      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle>Add to library</DialogTitle>
+            <DialogDescription>Choose what to add.</DialogDescription>
+          </DialogHeader>
+          <DialogBody>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <PickerCard
+                icon={Upload}
+                title="Upload document"
+                description="Add a TXT, MD, CSV, or JSON file to a scope."
+                onClick={() => {
+                  setPickerOpen(false);
+                  setUploadOpen(true);
+                }}
+              />
+              <PickerCard
+                icon={FolderPlus}
+                title="New collection"
+                description="Create a team collection for shared documents."
+                onClick={() => {
+                  setPickerOpen(false);
+                  setCollectionOpen(true);
+                }}
+              />
+            </div>
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
+
+      <UploadWizard
+        open={uploadOpen}
+        onOpenChange={setUploadOpen}
+        canManageShared={canManageShared}
+        teams={teamRecords}
+        onUploaded={() => {
+          setUploadOpen(false);
+          router.refresh();
+        }}
+      />
+
+      <CollectionWizard
+        open={collectionOpen}
+        onOpenChange={setCollectionOpen}
+        canManageShared={canManageShared}
+        onCreated={(team) => {
+          setTeamRecords((cur) =>
+            [...cur, team].sort((a, b) => a.name.localeCompare(b.name)),
+          );
+          setCollectionOpen(false);
+          router.refresh();
+        }}
+      />
+    </div>
+  );
+}
+
+function UploadWizard({
+  open,
+  onOpenChange,
+  canManageShared,
+  teams,
+  onUploaded,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  canManageShared: boolean;
+  teams: TeamRecord[];
+  onUploaded: () => void;
+}) {
+  const [step, setStep] = useState(0);
+  const [scopeType, setScopeType] = useState<ScopeType>(canManageShared ? "org" : "user");
+  const [teamId, setTeamId] = useState(teams[0]?.id ?? "");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) {
+      setStep(0);
+      setSelectedFile(null);
+      setError(null);
+      setSubmitting(false);
+      setScopeType(canManageShared ? "org" : "user");
+      setTeamId(teams[0]?.id ?? "");
     }
+  }, [open, canManageShared, teams]);
 
-    setUploading(true);
+  async function submit() {
+    if (!selectedFile) return;
+    setSubmitting(true);
     setError(null);
-    setSuccess(null);
-
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
       formData.append("scopeType", scopeType);
-      if (scopeType === "team") {
-        formData.append("teamId", teamId);
-      }
-
-      const response = await fetch("/api/knowledge/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const payload = (await response.json()) as { error?: { message?: string } };
-      if (!response.ok) {
-        throw new Error(payload.error?.message || "Unable to upload knowledge.");
-      }
-
-      setSelectedFile(null);
-      setSuccess(`${scopeLabel(scopeType)} knowledge uploaded.`);
-      router.refresh();
-    } catch (uploadError) {
-      setError(uploadError instanceof Error ? uploadError.message : "Unable to upload knowledge.");
+      if (scopeType === "team") formData.append("teamId", teamId);
+      const res = await fetch("/api/knowledge/upload", { method: "POST", body: formData });
+      const data = (await res.json()) as { error?: { message?: string } };
+      if (!res.ok) throw new Error(data.error?.message || "Unable to upload knowledge.");
+      onUploaded();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to upload knowledge.");
     } finally {
-      setUploading(false);
+      setSubmitting(false);
     }
   }
 
-  async function createNewTeam() {
-    if (!teamName.trim()) {
-      return;
+  const canProceed =
+    step === 0
+      ? scopeType !== "team" || Boolean(teamId)
+      : step === 1
+        ? Boolean(selectedFile)
+        : true;
+
+  return (
+    <Wizard
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Upload document"
+      description="Pick a scope, choose a file, and confirm."
+      steps={["Scope", "File", "Review"]}
+      step={step}
+      onStepChange={setStep}
+      finalLabel="Upload"
+      onFinalClick={submit}
+      finalLoading={submitting}
+      finalDisabled={!selectedFile}
+      nextDisabled={!canProceed}
+    >
+      <Wizard.Step>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="text-[length:var(--text-sm)] font-medium text-white">
+            Where should this go?
+          </legend>
+          <p className="text-[length:var(--text-xs)] text-white/55">
+            Scope controls which agents can use this document for retrieval.
+          </p>
+        </fieldset>
+        <div className="grid grid-cols-1 gap-2">
+          <ScopeRadio
+            icon={Building2}
+            label="Company"
+            description="Available to every company-assigned agent."
+            checked={scopeType === "org"}
+            onChange={() => setScopeType("org")}
+            disabled={!canManageShared}
+          />
+          <ScopeRadio
+            icon={Users}
+            label="Team"
+            description="Visible only to agents assigned to a team."
+            checked={scopeType === "team"}
+            onChange={() => setScopeType("team")}
+            disabled={!canManageShared || teams.length === 0}
+          />
+          <ScopeRadio
+            icon={User2}
+            label="Personal"
+            description="Private working material for your own agents."
+            checked={scopeType === "user"}
+            onChange={() => setScopeType("user")}
+          />
+        </div>
+        {scopeType === "team" ? (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[length:var(--text-xs)] font-medium text-white/70">
+              Team
+            </label>
+            <select
+              value={teamId}
+              onChange={(e) => setTeamId(e.target.value)}
+              className="flex h-9 w-full rounded-sm border border-border bg-transparent px-3 py-2 text-[length:var(--text-sm)] text-white"
+            >
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name}
+                </option>
+              ))}
+            </select>
+            {teams.length === 0 ? (
+              <p className="text-[length:var(--text-xs)] text-amber-300">
+                Create a collection first to upload team documents.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </Wizard.Step>
+
+      <Wizard.Step>
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          className="flex flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-border bg-transparent px-5 py-10 text-center transition-colors hover:border-border-strong"
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-sm border border-border-subtle">
+            <Upload className="h-4 w-4 text-white" />
+          </div>
+          <p className="text-[length:var(--text-sm)] font-medium text-white">
+            {selectedFile ? selectedFile.name : "Choose a file"}
+          </p>
+          <p className="text-[length:var(--text-xs)] text-white/45">
+            TXT, MD, CSV, or JSON
+          </p>
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          className="hidden"
+          accept=".txt,.md,.markdown,.csv,.json,text/plain,text/markdown,text/csv,application/json"
+          onChange={(e) => {
+            setSelectedFile(e.target.files?.[0] ?? null);
+            e.currentTarget.value = "";
+          }}
+        />
+        {selectedFile ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedFile(null)}
+            className="self-start"
+          >
+            Remove
+          </Button>
+        ) : null}
+      </Wizard.Step>
+
+      <Wizard.Step>
+        <ReviewRow label="Scope" value={scopeLabel(scopeType)} />
+        {scopeType === "team" ? (
+          <ReviewRow
+            label="Team"
+            value={teams.find((t) => t.id === teamId)?.name ?? "-"}
+          />
+        ) : null}
+        <ReviewRow
+          label="File"
+          value={selectedFile ? selectedFile.name : "-"}
+        />
+        {selectedFile ? (
+          <ReviewRow
+            label="Size"
+            value={`${(selectedFile.size / 1024).toFixed(1)} KB`}
+          />
+        ) : null}
+        {error ? (
+          <p className="rounded-sm border border-rose-500/30 px-3 py-2 text-[length:var(--text-xs)] text-rose-300">
+            {error}
+          </p>
+        ) : null}
+      </Wizard.Step>
+    </Wizard>
+  );
+}
+
+function CollectionWizard({
+  open,
+  onOpenChange,
+  canManageShared,
+  onCreated,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  canManageShared: boolean;
+  onCreated: (team: TeamRecord) => void;
+}) {
+  const [step, setStep] = useState(0);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) {
+      setStep(0);
+      setName("");
+      setDescription("");
+      setError(null);
+      setSubmitting(false);
     }
+  }, [open]);
 
-    setCreatingTeam(true);
+  async function submit() {
+    if (!name.trim()) return;
+    setSubmitting(true);
     setError(null);
-    setSuccess(null);
-
     try {
-      const response = await fetch("/api/teams", {
+      const res = await fetch("/api/teams", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: teamName.trim(),
-          description: teamDescription.trim(),
-        }),
+        body: JSON.stringify({ name: name.trim(), description: description.trim() }),
       });
-      const payload = (await response.json()) as { data?: TeamRecord; error?: { message?: string } };
-      if (!response.ok || !payload.data) {
-        throw new Error(payload.error?.message || "Unable to create team.");
+      const data = (await res.json()) as {
+        data?: TeamRecord;
+        error?: { message?: string };
+      };
+      if (!res.ok || !data.data) {
+        throw new Error(data.error?.message || "Unable to create collection.");
       }
-
-      const createdTeam = payload.data;
-      setTeamRecords((current) =>
-        [...current, createdTeam].sort((left, right) => left.name.localeCompare(right.name)),
-      );
-      setTeamId(createdTeam.id);
-      setTeamName("");
-      setTeamDescription("");
-      setSuccess("Team created. It is ready in Upload.");
-      router.refresh();
-    } catch (teamError) {
-      setError(teamError instanceof Error ? teamError.message : "Unable to create team.");
+      onCreated(data.data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to create collection.");
     } finally {
-      setCreatingTeam(false);
+      setSubmitting(false);
     }
+  }
+
+  if (!canManageShared) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent size="sm">
+          <DialogHeader>
+            <DialogTitle>Permission needed</DialogTitle>
+            <DialogDescription>
+              You don&apos;t have permission to create collections in this workspace.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button size="sm" onClick={() => onOpenChange(false)}>
+              Got it
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   return (
-    <div className="space-y-phi-8">
-      <section className="grid gap-phi-5 xl:grid-cols-[1.618fr_repeat(3,minmax(0,1fr))]">
-        <Card className="overflow-hidden">
-          <CardContent className="p-phi-8">
-            <div className="flex flex-col gap-phi-5 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-2xl">
-                <p className="text-[length:var(--text-xs)] font-medium uppercase tracking-[0.08em] text-zinc-500">Knowledge library</p>
-                <h2 className="mt-phi-3 text-[length:var(--text-xl)] font-semibold tracking-[-0.03em] text-white sm:text-[length:var(--text-2xl)]">
-                  Organize reference material like a shared document system
-                </h2>
-                <p className="mt-phi-3 max-w-xl text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
-                  Upload documents by scope, keep team collections separated, and browse the full library with searchable
-                  metadata your agents can use at retrieval time.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-phi-2">
-                <Badge variant="default">{companyDocs.length} company</Badge>
-                <Badge variant="default">{teamDocsByTeam.reduce((total, entry) => total + entry.docs.length, 0)} team</Badge>
-                <Badge variant="default">{personalDocs.length} personal</Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <MetricCard label="Documents" value={String(docs.length)} hint="Files indexed across all scopes" />
-        <MetricCard label="Ready" value={String(indexedCount)} hint="Available for retrieval" />
-        <MetricCard label="Collections" value={String(teamRecords.length + 2)} hint="Company, teams, and personal" />
-      </section>
-
-      <Card>
-        <CardHeader className="gap-phi-5">
-          <div className="flex flex-col gap-phi-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <CardTitle>Knowledge workspace</CardTitle>
-              <CardDescription>Use tabs to upload documents, browse your library, and review collection coverage.</CardDescription>
-            </div>
-            {activeTab === "documents" ? (
-              <div className="relative w-full max-w-sm">
-                <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-zinc-500" />
-                <Input
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Search documents"
-                  className="pl-10"
-                />
-              </div>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap gap-phi-2">
-            <DashboardTabButton active={activeTab === "documents"} onClick={() => setActiveTab("documents")}>
-              Documents
-            </DashboardTabButton>
-            <DashboardTabButton active={activeTab === "upload"} onClick={() => setActiveTab("upload")}>
-              Upload
-            </DashboardTabButton>
-            <DashboardTabButton active={activeTab === "collections"} onClick={() => setActiveTab("collections")}>
-              Collections
-            </DashboardTabButton>
-          </div>
-        </CardHeader>
-
-        {activeTab === "documents" ? (
-          <CardContent className="space-y-phi-5">
-            <div className="flex flex-wrap gap-phi-2">
-              {(["all", "org", "team", "user"] as LibraryFilter[]).map((filter) => (
-                <button
-                  key={filter}
-                  type="button"
-                  onClick={() => setLibraryFilter(filter)}
-                  className={[
-                    "rounded-sm border px-phi-3 py-phi-2 text-[length:var(--text-sm)] transition-colors",
-                    libraryFilter === filter
-                      ? "border-border-strong bg-surface-3 text-white"
-                      : "border-border-subtle bg-surface-1 text-zinc-400 hover:border-border hover:text-white",
-                  ].join(" ")}
-                >
-                  {filter === "all" ? "All files" : scopeLabel(filter)}
-                </button>
-              ))}
-            </div>
-            {visibleDocs.length === 0 ? (
-              <EmptyLibraryState
-                title="No matching documents"
-                description="Try a different search term or switch libraries to find the documents you need."
-              />
-            ) : (
-              visibleDocs.map((doc) => (
-                <DocumentRow key={doc.id} doc={doc} teamName={doc.teamId ? teamLookup.get(doc.teamId)?.name : undefined} />
-              ))
-            )}
-          </CardContent>
+    <Wizard
+      open={open}
+      onOpenChange={onOpenChange}
+      title="New collection"
+      description="Group team documents under a shared label."
+      steps={["Details", "Review"]}
+      step={step}
+      onStepChange={setStep}
+      finalLabel="Create"
+      onFinalClick={submit}
+      finalLoading={submitting}
+      finalDisabled={!name.trim()}
+      nextDisabled={!name.trim()}
+    >
+      <Wizard.Step>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[length:var(--text-xs)] font-medium text-white/70">
+            Name
+          </label>
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Engineering"
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[length:var(--text-xs)] font-medium text-white/70">
+            Description
+          </label>
+          <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="What this collection covers"
+          />
+        </div>
+      </Wizard.Step>
+      <Wizard.Step>
+        <ReviewRow label="Name" value={name || "-"} />
+        <ReviewRow
+          label="Description"
+          value={description || "(none)"}
+        />
+        {error ? (
+          <p className="rounded-sm border border-rose-500/30 px-3 py-2 text-[length:var(--text-xs)] text-rose-300">
+            {error}
+          </p>
         ) : null}
+      </Wizard.Step>
+    </Wizard>
+  );
+}
 
-        {activeTab === "upload" ? (
-          <CardContent className="space-y-phi-5">
-            <div className="grid gap-phi-5 lg:grid-cols-3">
-              {(["org", "team", "user"] as ScopeType[]).map((option) => (
-                <ScopeSelectorCard
-                  key={option}
-                  scope={option}
-                  active={scopeType === option}
-                  disabled={!canManageShared && option !== "user"}
-                  count={
-                    option === "org"
-                      ? companyDocs.length
-                      : option === "team"
-                        ? teamDocsByTeam.reduce((total, entry) => total + entry.docs.length, 0)
-                        : personalDocs.length
-                  }
-                  onSelect={setScopeType}
-                />
-              ))}
-            </div>
+function ScopeRadio({
+  icon: Icon,
+  label,
+  description,
+  checked,
+  onChange,
+  disabled,
+}: {
+  icon: typeof Upload;
+  label: string;
+  description: string;
+  checked: boolean;
+  onChange: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onChange}
+      className={[
+        "flex items-start gap-3 rounded-sm border p-3 text-left transition-colors",
+        checked
+          ? "border-white"
+          : "border-border hover:border-border-strong",
+        disabled ? "opacity-40 cursor-not-allowed" : "",
+      ].join(" ")}
+    >
+      <div
+        className={[
+          "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
+          checked ? "border-white bg-white" : "border-border-strong",
+        ].join(" ")}
+      >
+        {checked ? <span className="block h-1.5 w-1.5 rounded-full bg-zinc-950" /> : null}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <Icon className="h-3.5 w-3.5 text-white/60" />
+          <span className="text-[length:var(--text-sm)] font-medium text-white">
+            {label}
+          </span>
+        </div>
+        <p className="mt-1 text-[length:var(--text-xs)] text-white/50">{description}</p>
+      </div>
+    </button>
+  );
+}
 
-            {scopeType === "team" ? (
-              <div className="space-y-phi-2">
-                <label className="app-field-label">Target team</label>
-                <select
-                  value={teamId}
-                  onChange={(event) => setTeamId(event.target.value)}
-                  className="flex h-11 w-full max-w-md rounded-md border border-border bg-surface-2 px-phi-5 py-phi-2 text-[length:var(--text-sm)] text-white"
-                >
-                  {teamRecords.map((team) => (
-                    <option key={team.id} value={team.id}>
-                      {team.name}
-                    </option>
-                  ))}
-                </select>
-                {teamRecords.length === 0 ? (
-                  <div className="flex flex-wrap items-center gap-phi-3 text-[length:var(--text-sm)] text-amber-300">
-                    <span>Create a team in Collections before uploading team documents.</span>
-                    <Button type="button" variant="secondary" size="sm" onClick={() => setActiveTab("collections")}>
-                      Go to collections
-                    </Button>
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-
-            <div className="rounded-lg border border-dashed border-border p-phi-5">
-              <div className="flex items-start gap-phi-3">
-                <div className="rounded-md border border-border bg-surface-2 p-phi-3">
-                  <Upload className="size-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-[length:var(--text-sm)] font-medium text-white">Supported files</p>
-                  <p className="mt-phi-1 text-[length:var(--text-sm)] leading-relaxed text-zinc-500">TXT, MD, CSV, and JSON files are parsed into searchable chunks.</p>
-                </div>
-              </div>
-              <div className="mt-phi-5 flex flex-wrap items-center gap-phi-3">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                >
-                  Choose file
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  className="hidden"
-                  accept=".txt,.md,.markdown,.csv,.json,text/plain,text/markdown,text/csv,application/json"
-                  disabled={uploading}
-                  onChange={(event) => {
-                    setSelectedFile(event.target.files?.[0] ?? null);
-                    event.currentTarget.value = "";
-                  }}
-                />
-                <span className="text-[length:var(--text-sm)] text-zinc-500">TXT, MD, CSV, and JSON</span>
-              </div>
-              <div className="mt-phi-3 flex items-center justify-between gap-phi-3 text-[length:var(--text-sm)]">
-                <span className="truncate text-zinc-400">{selectedFile ? selectedFile.name : "No file selected yet"}</span>
-                <span className="shrink-0 text-zinc-500">{scopeLabel(scopeType)} library</span>
-              </div>
-            </div>
-
-            {error ? <p className="text-[length:var(--text-sm)] text-red-400">{error}</p> : null}
-            {success ? <p className="text-[length:var(--text-sm)] text-emerald-300">{success}</p> : null}
-
-            <Button onClick={uploadDocument} disabled={!selectedFile || uploading || (scopeType === "team" && !teamId)}>
-              {uploading ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  <span>Uploading...</span>
-                </>
-              ) : (
-                "Add to library"
-              )}
-            </Button>
-          </CardContent>
-        ) : null}
-
-        {activeTab === "collections" ? (
-          <CardContent className="space-y-phi-8">
-            {canManageShared ? (
-              <Card variant="inset">
-                <CardHeader>
-                  <CardTitle>Create team</CardTitle>
-                  <CardDescription>
-                    Team collections live here. New teams become available in the Upload tab right away.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-phi-5">
-                  <div className="grid gap-phi-5 lg:grid-cols-2">
-                    <div className="space-y-phi-2">
-                      <label className="app-field-label">Team name</label>
-                      <Input value={teamName} onChange={(event) => setTeamName(event.target.value)} placeholder="Engineering" />
-                    </div>
-                    <div className="space-y-phi-2">
-                      <label className="app-field-label">Description</label>
-                      <Input
-                        value={teamDescription}
-                        onChange={(event) => setTeamDescription(event.target.value)}
-                        placeholder="Design systems, platform, lifecycle ops"
-                      />
-                    </div>
-                  </div>
-                  <Button type="button" onClick={createNewTeam} disabled={!teamName.trim() || creatingTeam}>
-                    {creatingTeam ? "Creating..." : "Create team"}
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : null}
-
-            <div className="grid gap-phi-5 lg:grid-cols-2">
-              <Card variant="inset">
-                <CardHeader>
-                  <CardTitle>Collections</CardTitle>
-                  <CardDescription>High-level library breakdown by scope.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-phi-3">
-                  <div className="rounded-md border border-border-subtle bg-surface-1 p-phi-5">
-                    <div className="flex items-center justify-between gap-phi-3">
-                      <div className="flex items-center gap-phi-3">
-                        <div className="rounded-md border border-border-subtle bg-surface-2 p-phi-2">
-                          <Building2 className="size-4 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-[length:var(--text-sm)] font-medium text-white">Company library</p>
-                          <p className="text-[length:var(--text-sm)] text-zinc-400">Shared operational references</p>
-                        </div>
-                      </div>
-                      <Badge variant="default">{companyDocs.length}</Badge>
-                    </div>
-                  </div>
-                  <div className="rounded-md border border-border-subtle bg-surface-1 p-phi-5">
-                    <div className="flex items-center justify-between gap-phi-3">
-                      <div className="flex items-center gap-phi-3">
-                        <div className="rounded-md border border-border-subtle bg-surface-2 p-phi-2">
-                          <Users className="size-4 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-[length:var(--text-sm)] font-medium text-white">Team libraries</p>
-                          <p className="text-[length:var(--text-sm)] text-zinc-400">Department or function-specific collections</p>
-                        </div>
-                      </div>
-                      <Badge variant="default">{teamDocsByTeam.reduce((total, entry) => total + entry.docs.length, 0)}</Badge>
-                    </div>
-                  </div>
-                  <div className="rounded-md border border-border-subtle bg-surface-1 p-phi-5">
-                    <div className="flex items-center justify-between gap-phi-3">
-                      <div className="flex items-center gap-phi-3">
-                        <div className="rounded-md border border-border-subtle bg-surface-2 p-phi-2">
-                          <FolderOpen className="size-4 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-[length:var(--text-sm)] font-medium text-white">Personal library</p>
-                          <p className="text-[length:var(--text-sm)] text-zinc-400">Private notes and working context</p>
-                        </div>
-                      </div>
-                      <Badge variant="default">{personalDocs.length}</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card variant="inset">
-                <CardHeader>
-                  <CardTitle>Team coverage</CardTitle>
-                  <CardDescription>Each team collection and its current document count.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-phi-3">
-                  {teamDocsByTeam.length === 0 ? (
-                    <EmptyLibraryState
-                      title="No team coverage yet"
-                      description="Once teams exist, their document libraries will show up here for quick auditing."
-                    />
-                  ) : (
-                    teamDocsByTeam.map(({ team, docs: scopedDocs }) => (
-                      <div key={team.id} className="rounded-md border border-border-subtle bg-surface-1 p-phi-5">
-                        <div className="flex items-start justify-between gap-phi-3">
-                          <div className="min-w-0">
-                            <p className="truncate text-[length:var(--text-sm)] font-medium text-white">{team.name}</p>
-                            <p className="mt-phi-1 text-[length:var(--text-sm)] text-zinc-400">{team.description || "No description yet."}</p>
-                          </div>
-                          <Badge variant="default">{scopedDocs.length}</Badge>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card variant="inset">
-              <CardHeader>
-                <CardTitle>Retrieval map</CardTitle>
-                <CardDescription>What each agent can see based on assignment scope.</CardDescription>
-              </CardHeader>
-              <CardContent className="grid gap-phi-3 md:grid-cols-3">
-                <div className="rounded-md border border-border-subtle bg-surface-1 p-phi-5">
-                  <div className="flex items-center gap-phi-3">
-                    <Building2 className="size-4 text-white" />
-                    <p className="text-[length:var(--text-sm)] font-medium text-white">Company agents</p>
-                  </div>
-                  <p className="mt-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">Company library only</p>
-                </div>
-                <div className="rounded-md border border-border-subtle bg-surface-1 p-phi-5">
-                  <div className="flex items-center gap-phi-3">
-                    <Users className="size-4 text-white" />
-                    <p className="text-[length:var(--text-sm)] font-medium text-white">Team agents</p>
-                  </div>
-                  <p className="mt-phi-2 flex items-center gap-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
-                    Company
-                    <ArrowRight className="size-3.5" />
-                    Team library
-                  </p>
-                </div>
-                <div className="rounded-md border border-border-subtle bg-surface-1 p-phi-5">
-                  <div className="flex items-center gap-phi-3">
-                    <User2 className="size-4 text-white" />
-                    <p className="text-[length:var(--text-sm)] font-medium text-white">Employee agents</p>
-                  </div>
-                  <p className="mt-phi-2 flex items-center gap-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
-                    Company
-                    <ArrowRight className="size-3.5" />
-                    Personal library
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {processingCount > 0 ? (
-              <div className="rounded-lg border border-amber-400/20 bg-amber-400/5 p-phi-5 text-[length:var(--text-sm)] text-amber-100">
-                {processingCount} document{processingCount === 1 ? "" : "s"} still processing. They will appear in retrieval once indexing finishes.
-              </div>
-            ) : null}
-          </CardContent>
-        ) : null}
-      </Card>
+function ReviewRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start justify-between gap-3 border-b border-border-subtle py-2 last:border-b-0">
+      <span className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/45">
+        {label}
+      </span>
+      <span className="text-[length:var(--text-sm)] text-white text-right">{value}</span>
     </div>
   );
 }
