@@ -5,7 +5,8 @@ export type SetupAuditCategory =
   | "skill"
   | "enrichment"
   | "agent"
-  | "policy";
+  | "policy"
+  | "app";
 
 export type SetupAuditEventType =
   | "channel.connected"
@@ -20,7 +21,9 @@ export type SetupAuditEventType =
   | "enrichment.failed"
   | "agent.provisioned"
   | "agent.deleted"
-  | "policy.skill_policy_updated";
+  | "policy.skill_policy_updated"
+  | "app.requested"
+  | "app.installed";
 
 export async function recordSetupAuditEvent(input: {
   orgId: string;
