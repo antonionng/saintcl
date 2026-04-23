@@ -13,6 +13,11 @@ COPY openclaw-vendored/.npmrc ./.npmrc
 COPY openclaw-vendored/ui/package.json ./ui/package.json
 COPY openclaw-vendored/patches ./patches
 COPY openclaw-vendored/scripts ./scripts
+# Workspace member package.json files must be present before `pnpm install`,
+# otherwise pnpm 10 fails strict patch validation (e.g. ERR_PNPM_UNUSED_PATCH
+# for @whiskeysockets/baileys, declared in extensions/whatsapp/package.json).
+COPY openclaw-vendored/extensions ./extensions
+COPY openclaw-vendored/packages ./packages
 
 RUN NODE_OPTIONS=--max-old-space-size=2048 pnpm install --no-frozen-lockfile
 
