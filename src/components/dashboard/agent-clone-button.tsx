@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 export function AgentCloneButton({
   agentId,
   size = "sm",
-  variant = "ghost",
+  variant = "secondary",
   redirectToChat = true,
 }: {
   agentId: string;

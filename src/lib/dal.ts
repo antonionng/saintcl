@@ -24,7 +24,12 @@ import {
   mergeAccountProfileMetadata,
 } from "@/lib/account-profile";
 import { ORG_LOGO_BUCKET } from "@/lib/org-profile";
-import { ACTIVE_ORG_COOKIE_NAME, resolveActiveWorkspace } from "@/lib/org-selection";
+import {
+  ACTIVE_ORG_COOKIE_NAME,
+  LEGACY_ACTIVE_ORG_COOKIE_NAMES,
+  resolveActiveWorkspace,
+  sortWorkspaceMemberships,
+} from "@/lib/org-selection";
 import { normalizeAgentSessionAlias, parseAgentSessionKey } from "@/lib/openclaw/session-keys";
 import { normalizePlanTier, TRIAL_LENGTH_DAYS } from "@/lib/plans";
 import { getIsSuperAdmin } from "@/lib/super-admin";
@@ -59,6 +64,22 @@ async function ensureOrgFoundation(admin: NonNullable<ReturnType<typeof createAd
     admin.from("org_wallets").upsert({ org_id: orgId }),
     admin.from("org_policies").upsert({ org_id: orgId }),
   ]);
+}
+
+async function getUserTeamIds(
+  admin: NonNullable<ReturnType<typeof createAdminClient>>,
+  orgId: string,
+  userId: string,
+) {
+  const { data } = await admin
+    .from("team_members")
+    .select("team_id")
+    .eq("org_id", orgId)
+    .eq("user_id", userId);
+
+  return (data ?? [])
+    .map((row) => row.team_id)
+    .filter((teamId): teamId is string => typeof teamId === "string" && teamId.length > 0);
 }
 
 type OrgMembershipRow = {
@@ -439,15 +460,15 @@ async function getUserWorkspaceMemberships(
   );
   const logoByOrg = new Map(logos.map((entry) => [entry.orgId, entry.logoUrl]));
 
-  return memberships
-    .map((membership) => ({
+  return sortWorkspaceMemberships(
+    memberships.map((membership) => ({
       ...membership,
       org: {
         ...membership.org,
         logoUrl: logoByOrg.get(membership.org.id) ?? null,
       },
-    }))
-    .sort((a, b) => a.org.name.localeCompare(b.org.name));
+    })),
+  );
 }
 
 export const getCurrentOrg = cache(async (): Promise<CurrentOrgSession | null> => {
@@ -467,13 +488,17 @@ export const getCurrentOrg = cache(async (): Promise<CurrentOrgSession | null> =
   const isSuperAdmin = getIsSuperAdmin(canonicalUser);
 
   const workspaceCookieStore = await cookies();
-  const activeOrgId = workspaceCookieStore.get(ACTIVE_ORG_COOKIE_NAME)?.value ?? null;
+  const activeOrgId =
+    workspaceCookieStore.get(ACTIVE_ORG_COOKIE_NAME)?.value ??
+    LEGACY_ACTIVE_ORG_COOKIE_NAMES.map((cookieName) => workspaceCookieStore.get(cookieName)?.value).find(Boolean) ??
+    null;
   const memberships = await getUserWorkspaceMemberships(admin, user.id);
   const activeMembership = resolveActiveWorkspace(memberships, activeOrgId);
 
   if (activeMembership) {
     const orgLogoUrl =
       activeMembership.org.logoUrl ?? (await getSignedOrgLogoUrl(activeMembership.org.logo_path));
+    const teamIds = await getUserTeamIds(admin, activeMembership.org.id, user.id);
 
     await ensureOrgFoundation(admin, activeMembership.org.id);
     return {
@@ -485,6 +510,7 @@ export const getCurrentOrg = cache(async (): Promise<CurrentOrgSession | null> =
       isSuperAdmin,
       userId: user.id,
       email: user.email ?? null,
+      teamIds,
       capabilities: getRoleCapabilities(activeMembership.role, { isSuperAdmin }),
     };
   }
@@ -521,6 +547,7 @@ export const getCurrentOrg = cache(async (): Promise<CurrentOrgSession | null> =
     isSuperAdmin,
     userId: user.id,
     email: user.email ?? null,
+    teamIds: [],
     capabilities: getRoleCapabilities("owner", { isSuperAdmin }),
   };
 });
@@ -771,6 +798,20 @@ export async function getUsageSummary(orgId: string) {
     last7dSpendCents,
     eventCount: events.length,
   };
+}
+
+export async function getTrialMessageUsageCount(orgId: string) {
+  const admin = createAdminClient();
+  if (!admin) return 0;
+
+  const result = await admin
+    .from("request_events")
+    .select("id", { count: "exact", head: true })
+    .eq("org_id", orgId)
+    .eq("source", "session_usage_logs")
+    .eq("event_type", "request.completed");
+
+  return result.count ?? 0;
 }
 
 export async function getOrgPolicy(orgId: string) {

@@ -33,20 +33,20 @@ export function AuthShell({
                     <div className="space-y-4">
                       <p className="app-kicker">Agent operations</p>
                       <h1 className="text-4xl font-semibold tracking-[-0.06em] text-white">
-                        A calmer way to run your agent platform.
+                        Launch agents your company can trust.
                       </h1>
                       <p className="max-w-md text-sm leading-7 text-zinc-400">
-                        Move from onboarding to provisioning, billing, and runtime oversight in one
-                        cohesive workspace.
+                        Saint AGI gives teams useful AI agents with the controls, visibility, and reliability
+                        enterprises expect.
                       </p>
                     </div>
                   </div>
 
                   <div className="space-y-3 rounded-[1.5rem] border border-white/8 bg-white/[0.03] p-5">
-                    <p className="text-sm font-medium text-white">What you get after sign-in</p>
+                    <p className="text-sm font-medium text-white">Inside Saint AGI</p>
                     <p className="text-sm leading-6 text-zinc-400">
-                      Dashboard overview, agent fleet controls, channel connections, knowledge
-                      intake, billing visibility, and governed admin tools.
+                      Launch agents, assign access, connect channels, review activity, and keep runtime
+                      operations under control.
                     </p>
                     <Link href="/" className="text-sm text-zinc-300 transition-colors hover:text-white">
                       Back to homepage

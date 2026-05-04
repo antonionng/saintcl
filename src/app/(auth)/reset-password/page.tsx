@@ -50,7 +50,7 @@ export default function ResetPasswordPage() {
 
       if (data.session) {
         setReady(true);
-        setInfo("Choose a new password for your SaintClaw workspace account.");
+        setInfo("Choose a new password for your Saint AGI workspace account.");
       }
     }
 
@@ -66,7 +66,7 @@ export default function ResetPasswordPage() {
       if (event === "PASSWORD_RECOVERY" || Boolean(session)) {
         setReady(true);
         setError(null);
-        setInfo("Choose a new password for your SaintClaw workspace account.");
+        setInfo("Choose a new password for your Saint AGI workspace account.");
       }
     });
 

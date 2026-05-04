@@ -1,6 +1,6 @@
 ---
 name: testing-and-verification
-description: Verify SaintClaw changes with targeted tests and practical validation steps that match the current repo baseline. Use when changing shared logic, access control, billing, runtime behavior, or when deciding what to test before handoff.
+description: Verify SaintAGI changes with targeted tests and practical validation steps that match the current repo baseline. Use when changing shared logic, access control, billing, runtime behavior, or when deciding what to test before handoff.
 ---
 
 # Testing And Verification

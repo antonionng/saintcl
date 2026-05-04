@@ -47,12 +47,12 @@ export function DashboardShell({
       return false;
     }
 
-    return window.localStorage.getItem("saintclaw:sidebar-collapsed") === "true";
+    return window.localStorage.getItem("saintagi:sidebar-collapsed") === "true";
   });
   const sidebarCollapsed = isConsoleRoute || isSidebarCollapsed;
 
   useEffect(() => {
-    window.localStorage.setItem("saintclaw:sidebar-collapsed", String(isSidebarCollapsed));
+    window.localStorage.setItem("saintagi:sidebar-collapsed", String(isSidebarCollapsed));
   }, [isSidebarCollapsed]);
 
   return (

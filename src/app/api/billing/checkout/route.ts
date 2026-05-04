@@ -89,7 +89,7 @@ export async function POST(request: Request) {
   const cancelUrl = `${getBaseUrl()}${returnPath}${successSeparator}checkout=cancelled&kind=${payload.kind}`;
 
   if (payload.kind === "plan" && payload.planId === "enterprise") {
-    return NextResponse.json({ url: "mailto:founder@saintclaw.ai?subject=Saint%20AGI%20Enterprise" });
+    return NextResponse.json({ url: "mailto:founder@saintagi.ai?subject=Saint%20AGI%20Enterprise" });
   }
 
   if (payload.kind === "plan") {
@@ -148,7 +148,7 @@ export async function POST(request: Request) {
       {
         price_data: {
           currency: "gbp",
-          product_data: { name: "SaintClaw Wallet Top-up" },
+          product_data: { name: "Saint AGI Wallet Top-up" },
           unit_amount: payload.amountCents,
         },
         quantity: 1,

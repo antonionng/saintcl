@@ -14,7 +14,7 @@ export function assertAdminRole(role: string) {
 
 export function assertCommandAllowed(command: string) {
   if (DANGEROUS_PATTERNS.some((pattern) => pattern.test(command))) {
-    throw new Error("This command is blocked by SaintClaw terminal policy.");
+    throw new Error("This command is blocked by Saint AGI terminal policy.");
   }
 }
 

@@ -9,6 +9,37 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { getPlanDisplayName } from "@/lib/plans";
 
+type SyncResult = {
+  status: "ok" | "skipped" | "partial" | "failed";
+  totalAgents: number;
+  syncedAgents: number;
+  failedAgents: number;
+  failures: Array<{ agentId: string; name: string; message: string }>;
+  reason?: string;
+};
+
+function describeSyncResult(sync: SyncResult | undefined): string | null {
+  if (!sync) {
+    return null;
+  }
+
+  if (sync.status === "ok") {
+    return sync.totalAgents === 0
+      ? "No agents to sync."
+      : `Updated ${sync.syncedAgents} agent context file${sync.syncedAgents === 1 ? "" : "s"}.`;
+  }
+
+  if (sync.status === "skipped") {
+    return sync.reason ?? "Agent sync was skipped.";
+  }
+
+  if (sync.status === "partial") {
+    return `Synced ${sync.syncedAgents} of ${sync.totalAgents} agents. ${sync.failedAgents} failed.`;
+  }
+
+  return sync.reason || "Agent context sync failed.";
+}
+
 export function SettingsGeneralForm({
   orgName,
   slug,
@@ -36,8 +67,11 @@ export function SettingsGeneralForm({
   const [nextLogoUrl, setNextLogoUrl] = useState(logoUrl);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [syncWarning, setSyncWarning] = useState<string | null>(null);
+  const [lastSync, setLastSync] = useState<SyncResult | null>(null);
 
   useEffect(() => {
     setNextName(orgName);
@@ -47,6 +81,8 @@ export function SettingsGeneralForm({
     setNextLogoUrl(logoUrl);
     setError(null);
     setSuccess(null);
+    setSyncWarning(null);
+    setLastSync(null);
   }, [agentBrief, companySummary, logoUrl, orgName, slug, website]);
 
   const hasChanges = useMemo(
@@ -92,6 +128,32 @@ export function SettingsGeneralForm({
     }
   }
 
+  function applySyncResult(sync: SyncResult | undefined, baseSuccess: string) {
+    setLastSync(sync ?? null);
+
+    if (!sync) {
+      setSuccess(baseSuccess);
+      setSyncWarning(null);
+      return;
+    }
+
+    const description = describeSyncResult(sync);
+    if (sync.status === "ok") {
+      setSuccess(description ? `${baseSuccess} ${description}` : baseSuccess);
+      setSyncWarning(null);
+      return;
+    }
+
+    if (sync.status === "skipped") {
+      setSuccess(baseSuccess);
+      setSyncWarning(description);
+      return;
+    }
+
+    setSuccess(baseSuccess);
+    setSyncWarning(description);
+  }
+
   async function saveOrgProfile() {
     if (!canEdit || !hasChanges) {
       return;
@@ -100,6 +162,7 @@ export function SettingsGeneralForm({
     setSaving(true);
     setError(null);
     setSuccess(null);
+    setSyncWarning(null);
 
     try {
       const res = await fetch("/api/org", {
@@ -112,17 +175,53 @@ export function SettingsGeneralForm({
           agentBrief: nextAgentBrief.trim(),
         }),
       });
-      const body = (await res.json()) as { error?: { message?: string } };
+      const body = (await res.json()) as {
+        data?: { sync?: SyncResult };
+        error?: { message?: string };
+      };
       if (!res.ok) {
         throw new Error(body.error?.message || "Unable to save organization details.");
       }
 
-      setSuccess("Organization details saved.");
+      applySyncResult(body.data?.sync, "Organization details saved.");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to save organization details.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function syncAgentContext() {
+    if (!canEdit) {
+      return;
+    }
+
+    setSyncing(true);
+    setError(null);
+    setSuccess(null);
+    setSyncWarning(null);
+
+    try {
+      const res = await fetch("/api/org", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ forceSync: true }),
+      });
+      const body = (await res.json()) as {
+        data?: { sync?: SyncResult };
+        error?: { message?: string };
+      };
+      if (!res.ok) {
+        throw new Error(body.error?.message || "Unable to sync agent context.");
+      }
+
+      applySyncResult(body.data?.sync, "Agent context refreshed.");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to sync agent context.");
+    } finally {
+      setSyncing(false);
     }
   }
 
@@ -183,10 +282,30 @@ export function SettingsGeneralForm({
           </div>
           {error ? <p className="text-sm text-red-400">{error}</p> : null}
           {success ? <p className="text-sm text-emerald-300">{success}</p> : null}
+          {syncWarning ? <p className="text-sm text-amber-300">{syncWarning}</p> : null}
+          {lastSync && lastSync.failures.length > 0 ? (
+            <ul className="space-y-1 rounded-md border border-amber-400/20 bg-amber-500/[0.04] p-3 text-xs text-amber-200">
+              {lastSync.failures.slice(0, 5).map((failure) => (
+                <li key={failure.agentId}>
+                  <span className="font-medium">{failure.name || failure.agentId}</span>: {failure.message}
+                </li>
+              ))}
+            </ul>
+          ) : null}
           {canEdit ? (
-            <Button onClick={saveOrgProfile} disabled={!hasChanges || saving || uploadingLogo}>
-              {saving ? "Saving..." : "Save changes"}
-            </Button>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button onClick={saveOrgProfile} disabled={!hasChanges || saving || syncing || uploadingLogo}>
+                {saving ? "Saving..." : "Save changes"}
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={syncAgentContext}
+                disabled={saving || syncing || uploadingLogo}
+                title="Rewrite SOUL.md and bootstrap files for every agent in this workspace using the saved company profile."
+              >
+                {syncing ? "Syncing..." : "Sync agent context"}
+              </Button>
+            </div>
           ) : (
             <p className="text-sm text-zinc-500">Only admins can update workspace profile settings.</p>
           )}

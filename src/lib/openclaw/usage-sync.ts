@@ -1,3 +1,4 @@
+import { applyLlmUsageMarkup, LLM_USAGE_MARKUP_PERCENT } from "@/lib/billing/math";
 import { recordUsageCharge } from "@/lib/billing/usage";
 import {
   projectSessionUsageLogs,
@@ -175,10 +176,12 @@ export async function syncOpenClawUsageForOrg(
 
       const previousCostUsd = Number(checkpoints.get(session.key)?.last_total_cost_usd ?? 0);
       const deltaUsd = Math.max(0, totalCostUsd - previousCostUsd);
-      const deltaCents = convertUsdToBillingCents(deltaUsd);
+      const providerCostCents = convertUsdToBillingCents(deltaUsd);
+      const deltaCents = applyLlmUsageMarkup(providerCostCents);
       const agent = resolveAgentForSession(session.key, session.agentId, agentsByOpenClawId);
       const model = session.model ?? null;
       const provider = session.modelProvider ?? (model ? parseProviderFromModelRef(model) : null);
+      let checkpointWritten = false;
 
       if (deltaCents > 0) {
         await recordUsageCharge({
@@ -196,30 +199,45 @@ export async function syncOpenClawUsageForOrg(
             model,
             totalCostUsd,
             deltaCostUsd: deltaUsd,
+            providerCostCents,
+            markupPercent: LLM_USAGE_MARKUP_PERCENT,
             totalTokens,
             source: "openclaw.sessions.usage",
+          },
+          checkpoint: {
+            totalCostUsd,
+            totalTokens,
+            model,
+            provider,
+            metadata: {
+              source: "openclaw.sessions.usage",
+              channel: session.channel ?? null,
+            },
           },
         });
         chargedSessions += 1;
         chargedCents += deltaCents;
+        checkpointWritten = true;
       } else {
         skippedSessions += 1;
       }
 
-      await admin.from("session_usage_checkpoints").upsert({
-        org_id: orgId,
-        session_key: session.key,
-        agent_id: agent?.id ?? null,
-        model,
-        provider,
-        last_total_cost_usd: totalCostUsd,
-        last_total_tokens: totalTokens,
-        last_synced_at: new Date().toISOString(),
-        metadata: {
-          source: "openclaw.sessions.usage",
-          channel: session.channel ?? null,
-        },
-      });
+      if (!checkpointWritten) {
+        await admin.from("session_usage_checkpoints").upsert({
+          org_id: orgId,
+          session_key: session.key,
+          agent_id: agent?.id ?? null,
+          model,
+          provider,
+          last_total_cost_usd: totalCostUsd,
+          last_total_tokens: totalTokens,
+          last_synced_at: new Date().toISOString(),
+          metadata: {
+            source: "openclaw.sessions.usage",
+            channel: session.channel ?? null,
+          },
+        });
+      }
 
       if (options.includeLogs !== false) {
         try {

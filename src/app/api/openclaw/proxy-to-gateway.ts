@@ -10,37 +10,6 @@ export type OpenClawProxyRouteParams = {
   params: Promise<{ path?: string[] }>;
 };
 
-const SAINTCLAW_LOGO_STYLE = String.raw`<style id="saintclaw-console-logo-style">
-.brand-logo {
-  position: relative;
-}
-.brand-logo > * {
-  opacity: 0 !important;
-}
-.brand-logo::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("/saintclaw-placeholder-logo.png?v=3");
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-</style>`;
-
-function injectConsoleLogoStyle(html: string) {
-  if (html.includes('id="saintclaw-console-logo-style"')) {
-    return html;
-  }
-  if (html.includes("</head>")) {
-    return html.replace("</head>", `${SAINTCLAW_LOGO_STYLE}</head>`);
-  }
-  if (html.includes("</body>")) {
-    return html.replace("</body>", `${SAINTCLAW_LOGO_STYLE}</body>`);
-  }
-  return `${html}${SAINTCLAW_LOGO_STYLE}`;
-}
-
 const WORKSPACE_PROXY_ALLOWED_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 const WORKSPACE_PROXY_ALLOWED_EXACT_PATHS = new Set(["", "chat", "favicon.svg", "sw.js"]);
 const WORKSPACE_PROXY_ALLOWED_PREFIXES = ["__openclaw/", "assets/", "avatar/"];
@@ -86,7 +55,7 @@ export async function proxyToGateway(
   const target = await resolveTenantGatewayTarget(session.org.id);
   if (!target) {
     return NextResponse.json(
-      { error: { message: "OpenClaw gateway is not configured." } },
+      { error: { message: "Runtime gateway is not configured." } },
       { status: 503 },
     );
   }
@@ -154,23 +123,6 @@ export async function proxyToGateway(
     outHeaders.delete("content-security-policy");
     outHeaders.delete("x-frame-options");
     outHeaders.set("cache-control", "no-store");
-
-    const contentType = response.headers.get("content-type") || "";
-    const shouldInjectConsoleLogo =
-      method === "GET" &&
-      pathParts.length === 0 &&
-      contentType.toLowerCase().includes("text/html");
-    if (shouldInjectConsoleLogo) {
-      const html = await response.text();
-      const patchedHtml = injectConsoleLogoStyle(html);
-      outHeaders.delete("content-encoding");
-      outHeaders.delete("content-length");
-      return new NextResponse(patchedHtml, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: outHeaders,
-      });
-    }
 
     return new NextResponse(response.body, {
       status: response.status,

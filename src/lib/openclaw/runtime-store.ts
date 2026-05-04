@@ -52,6 +52,23 @@ export async function upsertRuntimeMetadata(runtime: OpenClawRuntimeDescriptor) 
   return inserted.data ?? null;
 }
 
+export async function listAllocatedRuntimePorts(excludingOrgId?: string) {
+  const admin = createAdminClient();
+  if (!admin) {
+    return [];
+  }
+
+  let query = admin.from("openclaw_runtimes").select("gateway_port");
+  if (excludingOrgId) {
+    query = query.neq("org_id", excludingOrgId);
+  }
+
+  const { data } = await query;
+  return (data ?? [])
+    .map((entry) => entry.gateway_port)
+    .filter((port): port is number => typeof port === "number");
+}
+
 export async function insertAgentMetadata(input: {
   orgId: string;
   userId?: string;
@@ -77,7 +94,7 @@ export async function insertAgentMetadata(input: {
       name: input.name,
       openclaw_agent_id: input.slug,
       model: input.model,
-      status: "provisioning",
+      status: "online",
       config: {
         persona: input.persona ?? "",
         workspace: input.workspacePath,

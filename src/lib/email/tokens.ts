@@ -20,7 +20,7 @@ function decodeBase64Url(value: string) {
 
 function signValue(value: string) {
   const secret =
-    env.emailTokenSecret || process.env.EMAIL_TOKEN_SECRET || (process.env.NODE_ENV === "test" ? "saintclaw-test-email-token-secret" : null);
+    env.emailTokenSecret || process.env.EMAIL_TOKEN_SECRET || (process.env.NODE_ENV === "test" ? "saintagi-test-email-token-secret" : null);
   if (!secret) {
     throw new Error("EMAIL_TOKEN_SECRET is not configured.");
   }

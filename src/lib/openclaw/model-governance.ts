@@ -4,14 +4,28 @@ import {
   buildModelCatalogSnapshot,
   type ModelCatalogEntry,
   findAllowedModel,
+  restrictSnapshotToTrialFreeModels,
 } from "@/lib/openclaw/model-catalog";
 import { syncOpenClawUsageForOrg } from "@/lib/openclaw/usage-sync";
+import { isTrialModelRestrictionActive } from "@/lib/plans";
 
 type ModelSelectionContext = "agent" | "session";
+type TrialGateOptions = {
+  trialStatus?: string | null;
+  trialEndsAt?: string | null;
+  isSuperAdmin?: boolean;
+};
 
-export async function getOrgModelCatalogState(orgId: string) {
+function resolveSnapshotForTrial<T extends Awaited<ReturnType<typeof buildModelCatalogSnapshot>>>(
+  snapshot: T,
+  options?: TrialGateOptions,
+) {
+  return isTrialModelRestrictionActive(options) ? restrictSnapshotToTrialFreeModels(snapshot) : snapshot;
+}
+
+export async function getOrgModelCatalogState(orgId: string, options?: TrialGateOptions) {
   const policy = await getOrgPolicy(orgId);
-  const snapshot = await buildModelCatalogSnapshot(policy);
+  const snapshot = resolveSnapshotForTrial(await buildModelCatalogSnapshot(policy), options);
   return { policy, snapshot };
 }
 
@@ -19,17 +33,26 @@ export async function assertModelSelectionAllowed(params: {
   orgId: string;
   userId?: string | null;
   isSuperAdmin?: boolean;
+  trialStatus?: string | null;
+  trialEndsAt?: string | null;
   model: string;
   context: ModelSelectionContext;
 }) {
   await syncOpenClawUsageForOrg(params.orgId);
   const [{ policy, snapshot }, wallet] = await Promise.all([
-    getOrgModelCatalogState(params.orgId),
+    getOrgModelCatalogState(params.orgId, {
+      trialStatus: params.trialStatus,
+      trialEndsAt: params.trialEndsAt,
+      isSuperAdmin: params.isSuperAdmin,
+    }),
     getOrgWallet(params.orgId),
   ]);
 
   const selectedModel = findAllowedModel(params.model, snapshot.approvedModels);
   if (!selectedModel) {
+    if (isTrialModelRestrictionActive(params)) {
+      throw new Error("Paid models are locked during trial. Upgrade and top up your wallet to use this model.");
+    }
     throw new Error("This model is not approved for your organization.");
   }
 
@@ -83,10 +106,16 @@ export async function resolveModelSelection(params: {
   orgId: string;
   userId?: string | null;
   isSuperAdmin?: boolean;
+  trialStatus?: string | null;
+  trialEndsAt?: string | null;
   requestedModel?: string | null;
   context: ModelSelectionContext;
 }) {
-  const { policy, snapshot } = await getOrgModelCatalogState(params.orgId);
+  const { policy, snapshot } = await getOrgModelCatalogState(params.orgId, {
+    trialStatus: params.trialStatus,
+    trialEndsAt: params.trialEndsAt,
+    isSuperAdmin: params.isSuperAdmin,
+  });
   const candidate = params.requestedModel?.trim() || snapshot.defaultModel;
   const selectedModel =
     findAllowedModel(candidate, snapshot.approvedModels) ??
@@ -101,6 +130,8 @@ export async function resolveModelSelection(params: {
       orgId: params.orgId,
       userId: params.userId,
       isSuperAdmin: params.isSuperAdmin,
+      trialStatus: params.trialStatus,
+      trialEndsAt: params.trialEndsAt,
       model: params.requestedModel,
       context: params.context,
     });

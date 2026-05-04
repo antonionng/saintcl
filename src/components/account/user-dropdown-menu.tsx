@@ -21,6 +21,7 @@ type UserDropdownMenuProps = {
   triggerClassName?: string;
   menuClassName?: string;
   showLabel?: boolean;
+  showChevron?: boolean;
   workspaces?: WorkspaceMembership[];
   currentOrgId?: string | null;
 };
@@ -36,6 +37,7 @@ export function UserDropdownMenu({
   triggerClassName,
   menuClassName,
   showLabel = true,
+  showChevron = showLabel,
   workspaces = [],
   currentOrgId,
 }: UserDropdownMenuProps) {
@@ -95,12 +97,17 @@ export function UserDropdownMenu({
           avatarUrl={avatarUrl}
           displayName={displayName}
           email={email}
-          className="size-9 rounded-full border-white/15 bg-white/[0.08] text-xs"
+          className={cn(
+            "rounded-full border-white/15 bg-white/[0.08] text-xs",
+            showLabel ? "size-9" : "size-10",
+          )}
         />
         {showLabel ? (
           <span className="hidden max-w-36 truncate sm:inline">{accountLabel}</span>
         ) : null}
-        <ChevronDown className={cn("size-4 text-zinc-400 transition-transform", open && "rotate-180")} />
+        {showChevron ? (
+          <ChevronDown className={cn("size-4 text-zinc-400 transition-transform", open && "rotate-180")} />
+        ) : null}
       </button>
 
       {open ? (

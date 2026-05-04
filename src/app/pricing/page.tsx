@@ -1,13 +1,23 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import placeholderLogo from "../../../public/saintclaw-placeholder-logo.png";
+import placeholderLogo from "../../../public/saintagi-placeholder-logo.png";
 
 import { UserDropdownMenu } from "@/components/account/user-dropdown-menu";
 import { headerLinks } from "@/components/landing/content";
 import { PricingPlans } from "@/components/pricing/pricing-plans";
 import { Button } from "@/components/ui/button";
 import { getCurrentOrg, getCurrentUserProfile, getCurrentUserWorkspaces } from "@/lib/dal";
+
+export const metadata: Metadata = {
+  title: "Pricing for Governed AI Agent Adoption",
+  description:
+    "Start with one governed AI agent, prove the workflow, and scale Saint AGI across teams with clear plans, usage credit, and spend visibility.",
+  alternates: {
+    canonical: "/pricing",
+  },
+};
 
 export default async function PricingPage() {
   const session = await getCurrentOrg();
@@ -25,7 +35,7 @@ export default async function PricingPage() {
             <Link href="/" className="inline-flex h-10 items-center">
               <Image
                 src={placeholderLogo}
-                alt="SaintClaw"
+                alt="Saint AGI"
                 className="h-10 w-auto object-contain opacity-95"
                 priority
               />
@@ -80,7 +90,7 @@ export default async function PricingPage() {
       </div>
 
       <footer className="site-shell border-t border-white/8 py-8 text-sm text-zinc-500">
-        SaintClaw. The platform for company-wide AI adoption.
+        Saint AGI. The platform for company-wide AI adoption.
       </footer>
     </main>
   );

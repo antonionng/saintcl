@@ -10,8 +10,8 @@ describe("openclaw agent bootstrap templates", () => {
       model: "openrouter/auto",
       persona: "Help the user move quickly.",
       org: {
-        name: "SaintClaw",
-        website: "https://saintclaw.com",
+        name: "SaintAGI",
+        website: "https://saintagi.com",
         companySummary: "AI workspace software",
         agentBrief: "Stay practical.",
       },
@@ -36,8 +36,8 @@ describe("openclaw agent bootstrap templates", () => {
       model: "openrouter/auto",
       persona: "Operate like a strong software engineer.",
       org: {
-        name: "SaintClaw",
-        website: "https://saintclaw.com",
+        name: "SaintAGI",
+        website: "https://saintagi.com",
         companySummary: "AI workspace software",
         agentBrief: "Stay practical.",
       },
@@ -51,7 +51,9 @@ describe("openclaw agent bootstrap templates", () => {
     });
 
     expect(files.soul).toContain("Operate like a strong software engineer.");
-    expect(files.soul).toContain("Company profile:");
+    expect(files.soul).toContain("## Company Context");
+    expect(files.soul).toContain("- Company description: AI workspace software");
+    expect(files.soul).toContain("- Brief for agents: Stay practical.");
     expect(files.user).toContain("- Name: Antonio");
     expect(files.user).toContain("- Workspace role: owner");
   });

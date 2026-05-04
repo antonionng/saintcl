@@ -27,7 +27,7 @@ create policy "table_update" on public.example_table
   for update using (org_id = public.current_org_id() and public.is_org_admin());
 ```
 
-## Common SaintClaw Rules
+## Common SaintAGI Rules
 
 - Admin-only writes are common for billing, policies, and governance tables.
 - Read access often applies to all org members for org-scoped records.

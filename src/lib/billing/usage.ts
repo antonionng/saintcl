@@ -1,4 +1,4 @@
-import { debitWallet, ensureWallet } from "@/lib/billing/wallet";
+import { ensureWallet } from "@/lib/billing/wallet";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const usagePricing = {
@@ -18,6 +18,13 @@ type UsageChargeInput = {
   unit?: string;
   sessionKey?: string | null;
   metadata?: Record<string, unknown>;
+  checkpoint?: {
+    totalCostUsd: number;
+    totalTokens: number;
+    model?: string | null;
+    provider?: string | null;
+    metadata?: Record<string, unknown>;
+  };
 };
 
 export async function assertCanSpend(orgId: string, amountCents: number) {
@@ -39,40 +46,41 @@ export async function recordUsageCharge(input: UsageChargeInput) {
 
   const wallet = await assertCanSpend(input.orgId, input.amountCents);
 
-  const { data: usageEvent, error } = await admin
-    .from("usage_events")
-    .insert({
-      org_id: input.orgId,
-      user_id: input.userId,
-      agent_id: input.agentId,
-      event_type: input.eventType,
-      quantity: input.quantity ?? 1,
-      unit: input.unit ?? "operation",
-      amount_cents: input.amountCents,
-      session_key: input.sessionKey ?? null,
-      metadata: input.metadata ?? {},
-    })
-    .select()
-    .single();
+  const { data, error } = await admin.schema("app_private").rpc("record_usage_charge", {
+    p_org_id: input.orgId,
+    p_event_type: input.eventType,
+    p_amount_cents: input.amountCents,
+    p_description: input.description,
+    p_user_id: input.userId ?? null,
+    p_agent_id: input.agentId ?? null,
+    p_quantity: input.quantity ?? 1,
+    p_unit: input.unit ?? "operation",
+    p_session_key: input.sessionKey ?? null,
+    p_metadata: input.metadata ?? {},
+    p_checkpoint_total_cost_usd: input.checkpoint?.totalCostUsd ?? null,
+    p_checkpoint_total_tokens: input.checkpoint?.totalTokens ?? null,
+    p_checkpoint_model: input.checkpoint?.model ?? null,
+    p_checkpoint_provider: input.checkpoint?.provider ?? null,
+    p_checkpoint_metadata: input.checkpoint?.metadata ?? {},
+  });
 
   if (error) {
     throw error;
   }
 
-  const ledgerEntry = await debitWallet({
-    orgId: input.orgId,
-    userId: input.userId,
-    agentId: input.agentId,
-    amountCents: input.amountCents,
-    sourceType: input.eventType,
-    description: input.description,
-    metadata: input.metadata ?? {},
-  });
+  const result = data as {
+    usageEvent: unknown;
+    ledgerEntry: unknown;
+    lowBalance?: boolean;
+  } | null;
 
   return {
-    usageEvent,
-    ledgerEntry,
-    lowBalance: (wallet.balance_cents - input.amountCents) <= wallet.low_balance_threshold_cents,
+    usageEvent: result?.usageEvent ?? null,
+    ledgerEntry: result?.ledgerEntry ?? null,
+    lowBalance:
+      typeof result?.lowBalance === "boolean"
+        ? result.lowBalance
+        : (wallet.balance_cents - input.amountCents) <= wallet.low_balance_threshold_cents,
   };
 }
 

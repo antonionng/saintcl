@@ -20,7 +20,7 @@ function normalizeUrl(raw: string): string {
 async function fetchPageText(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, {
-      headers: { "User-Agent": "SaintClaw-Enrichment/1.0" },
+      headers: { "User-Agent": "SaintAGI-Enrichment/1.0" },
       signal: AbortSignal.timeout(15_000),
       redirect: "follow",
     });
@@ -70,8 +70,8 @@ async function summarizeWithLlm(prompt: string): Promise<string | null> {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://saintclaw.ai",
-        "X-Title": "SaintClaw Enrichment",
+        "HTTP-Referer": "https://saintagi.ai",
+        "X-Title": "SaintAGI Enrichment",
       },
       body: JSON.stringify({
         model: "openai/gpt-4o-mini",

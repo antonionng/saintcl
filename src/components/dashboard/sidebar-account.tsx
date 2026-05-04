@@ -35,7 +35,7 @@ export function SidebarAccount({
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const accountLabel = displayName ?? email ?? orgName ?? "SaintClaw";
+  const accountLabel = displayName ?? email ?? orgName ?? "Saint AGI";
 
   async function handleLogout() {
     const supabase = createClient();

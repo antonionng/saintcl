@@ -5,7 +5,7 @@ import {
   getAuthenticatedHomePath,
   getRoleCapabilities,
 } from "./access";
-import { calculateNextBalance } from "./billing/math";
+import { applyLlmUsageMarkup, calculateNextBalance, LLM_USAGE_MARKUP_PERCENT } from "./billing/math";
 import { isBillableModel, requiresWalletBalance } from "./model-pricing";
 import { buildObservabilityDedupeKey, projectSessionUsageLogs } from "./observability-shared";
 import { buildModelCatalogSnapshotFromDiscovery } from "./openclaw/model-catalog";
@@ -21,15 +21,26 @@ import {
 } from "./openclaw/terminal-policy";
 import { paginateDiscoveryCatalog } from "./openclaw/discovery-pagination";
 import { resolveKnowledgeMimeType } from "./knowledge";
-import { resolveActiveWorkspace } from "./org-selection";
+import { resolveActiveWorkspace, sortWorkspaceMemberships } from "./org-selection";
 import { parseAgentSessionKey } from "./openclaw/session-keys";
 import { createEmailActionToken, verifyEmailActionToken } from "./email/tokens";
 import { renderEmailTemplate } from "./email/templates";
-import { canProvisionAnotherAgent, getPlanAgentLimit, getPlanSeatPriceCents } from "./plans";
+import {
+  canProvisionAnotherAgent,
+  getPlanAgentLimit,
+  getPlanSeatPriceCents,
+  hasTrialMessageCapacity,
+  isTrialModelRestrictionActive,
+  TRIAL_LENGTH_DAYS,
+  TRIAL_MESSAGE_LIMIT,
+} from "./plans";
 import { getIsSuperAdmin } from "./super-admin";
 import type { CurrentOrgSession } from "../types";
 
-function makeSession(role: CurrentOrgSession["role"], options?: { isSuperAdmin?: boolean }): CurrentOrgSession {
+function makeSession(
+  role: CurrentOrgSession["role"],
+  options?: { isSuperAdmin?: boolean; teamIds?: string[] },
+): CurrentOrgSession {
   const isSuperAdmin = options?.isSuperAdmin ?? false;
   return {
     org: {
@@ -43,6 +54,7 @@ function makeSession(role: CurrentOrgSession["role"], options?: { isSuperAdmin?:
     isSuperAdmin,
     userId: "user_123",
     email: "user@example.com",
+    teamIds: options?.teamIds ?? [],
     capabilities: getRoleCapabilities(role, { isSuperAdmin }),
   };
 }
@@ -54,6 +66,12 @@ describe("wallet balance math", () => {
 
   it("debits reduce balance", () => {
     expect(calculateNextBalance(1000, 250, "debit")).toBe(750);
+  });
+
+  it("applies the platform LLM usage margin", () => {
+    expect(LLM_USAGE_MARKUP_PERCENT).toBe(30);
+    expect(applyLlmUsageMarkup(100)).toBe(130);
+    expect(applyLlmUsageMarkup(101)).toBe(132);
   });
 });
 
@@ -79,6 +97,20 @@ describe("plan agent limits", () => {
   it("caps active trials at one agent regardless of the paid tier they selected", () => {
     expect(canProvisionAnotherAgent("business", 0, { trialStatus: "active" })).toBe(true);
     expect(canProvisionAnotherAgent("business", 1, { trialStatus: "active" })).toBe(false);
+  });
+
+  it("keeps active trials short and message capped", () => {
+    const activeTrial = { trialStatus: "active", trialEndsAt: new Date(Date.now() + 60_000).toISOString() };
+    expect(TRIAL_LENGTH_DAYS).toBe(7);
+    expect(TRIAL_MESSAGE_LIMIT).toBe(150);
+    expect(hasTrialMessageCapacity(149, activeTrial)).toBe(true);
+    expect(hasTrialMessageCapacity(150, activeTrial)).toBe(false);
+  });
+
+  it("restricts non-super-admin active trials to free models", () => {
+    const activeTrial = { trialStatus: "active", trialEndsAt: new Date(Date.now() + 60_000).toISOString() };
+    expect(isTrialModelRestrictionActive(activeTrial)).toBe(true);
+    expect(isTrialModelRestrictionActive({ ...activeTrial, isSuperAdmin: true })).toBe(false);
   });
 
   it("exposes seat pricing for invite billing", () => {
@@ -209,6 +241,38 @@ describe("model catalog snapshot", () => {
   });
 });
 
+describe("usage alert email copy", () => {
+  it("renders trial warning alerts", () => {
+    const rendered = renderEmailTemplate({
+      templateKey: "usage-alert",
+      orgName: "Acme",
+      usageAlert: {
+        kind: "trial-warning",
+        trialMessageCount: 130,
+        trialMessageLimit: 150,
+      },
+    });
+
+    expect(rendered.subject).toContain("close to the trial message limit");
+    expect(rendered.text).toContain("130 of 150");
+  });
+
+  it("renders low wallet alerts", () => {
+    const rendered = renderEmailTemplate({
+      templateKey: "usage-alert",
+      orgName: "Acme",
+      usageAlert: {
+        kind: "wallet-low",
+        walletBalanceCents: 900,
+        lowBalanceThresholdCents: 2000,
+      },
+    });
+
+    expect(rendered.subject).toContain("wallet balance is low");
+    expect(rendered.text).toContain("£9");
+  });
+});
+
 describe("role capabilities", () => {
   it("owner gets billing and console management", () => {
     const capabilities = getRoleCapabilities("owner");
@@ -232,16 +296,16 @@ describe("role capabilities", () => {
     expect(capabilities.canManageAdminTools).toBe(true);
   });
 
-  it("routes admins to the dashboard and employees to the workspace", () => {
-    expect(getAuthenticatedHomePath("owner")).toBe("/dashboard");
-    expect(getAuthenticatedHomePath("admin")).toBe("/dashboard");
+  it("routes authenticated users to the workspace", () => {
+    expect(getAuthenticatedHomePath("owner")).toBe("/workspace");
+    expect(getAuthenticatedHomePath("admin")).toBe("/workspace");
     expect(getAuthenticatedHomePath("employee")).toBe("/workspace");
     expect(getAuthenticatedHomePath("member")).toBe("/workspace");
   });
 
-  it("routes super admins to the dashboard even if their workspace role is employee", () => {
-    expect(getAuthenticatedHomePath("employee", { isSuperAdmin: true })).toBe("/dashboard");
-    expect(getAuthenticatedHomePath("member", { isSuperAdmin: true })).toBe("/dashboard");
+  it("routes super admins to the same workspace-first home", () => {
+    expect(getAuthenticatedHomePath("employee", { isSuperAdmin: true })).toBe("/workspace");
+    expect(getAuthenticatedHomePath("member", { isSuperAdmin: true })).toBe("/workspace");
   });
 });
 
@@ -272,6 +336,24 @@ describe("assignment visibility", () => {
       }),
     ).toBe(false);
   });
+
+  it("allows employees to see assignments for their teams", () => {
+    expect(
+      canSessionAccessAssignment(makeSession("employee", { teamIds: ["team_123"] }), {
+        assignee_type: "team",
+        assignee_ref: "team_123",
+      }),
+    ).toBe(true);
+  });
+
+  it("blocks employees from unrelated team assignments", () => {
+    expect(
+      canSessionAccessAssignment(makeSession("employee", { teamIds: ["team_123"] }), {
+        assignee_type: "team",
+        assignee_ref: "team_456",
+      }),
+    ).toBe(false);
+  });
 });
 
 describe("workspace selection", () => {
@@ -279,10 +361,10 @@ describe("workspace selection", () => {
     {
       org: {
         id: "org_alpha",
-        name: "Alpha",
+        name: "Saint",
         slug: "alpha",
         plan: "pro",
-        created_at: new Date().toISOString(),
+        created_at: "2026-01-01T00:00:00.000Z",
       },
       role: "owner" as const,
       capabilities: getRoleCapabilities("owner"),
@@ -293,7 +375,7 @@ describe("workspace selection", () => {
         name: "Beta",
         slug: "beta",
         plan: "business",
-        created_at: new Date().toISOString(),
+        created_at: "2026-02-01T00:00:00.000Z",
       },
       role: "employee" as const,
       capabilities: getRoleCapabilities("employee"),
@@ -306,6 +388,13 @@ describe("workspace selection", () => {
 
   it("falls back to the first workspace when the requested org is missing", () => {
     expect(resolveActiveWorkspace(workspaces, "org_missing")?.org.id).toBe("org_alpha");
+  });
+
+  it("orders fallback workspaces by creation time before name", () => {
+    expect(sortWorkspaceMemberships([...workspaces].reverse()).map((workspace) => workspace.org.id)).toEqual([
+      "org_alpha",
+      "org_beta",
+    ]);
   });
 });
 

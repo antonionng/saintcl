@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getCurrentOrg, getOrgMembers } from "@/lib/dal";
-import { syncOrgContextToAgents } from "@/lib/openclaw/profile-context";
+import { syncOrgContextToAgents, type SyncOrgContextResult } from "@/lib/openclaw/profile-context";
+import { ACTIVE_ORG_COOKIE_NAME } from "@/lib/org-selection";
 import { enrichOrgWebsite } from "@/lib/org-website-enrichment";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -12,7 +13,41 @@ const updateOrgSchema = z.object({
   companySummary: z.string().trim().max(2000).optional().default(""),
   agentBrief: z.string().trim().max(2000).optional().default(""),
   forceEnrich: z.boolean().optional(),
+  forceSync: z.boolean().optional(),
 });
+
+async function runOrgContextSync(input: {
+  orgId: string;
+  org: {
+    name: string | null;
+    website: string | null;
+    companySummary: string | null;
+    agentBrief: string | null;
+  };
+}): Promise<SyncOrgContextResult> {
+  try {
+    return await syncOrgContextToAgents(input);
+  } catch (error) {
+    return {
+      status: "failed",
+      totalAgents: 0,
+      syncedAgents: 0,
+      failedAgents: 0,
+      failures: [],
+      reason: error instanceof Error ? error.message : "Unknown sync error.",
+    };
+  }
+}
+
+function setActiveOrgCookie(response: NextResponse, orgId: string) {
+  response.cookies.set(ACTIVE_ORG_COOKIE_NAME, orgId, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+  });
+}
 
 export async function GET() {
   const session = await getCurrentOrg();
@@ -65,7 +100,38 @@ export async function PATCH(request: Request) {
       createdBy: session.userId,
     }).catch(() => null);
 
-    return NextResponse.json({ data: { ok: true, enrichmentTriggered: true } });
+    const response = NextResponse.json({ data: { ok: true, enrichmentTriggered: true } });
+    setActiveOrgCookie(response, session.org.id);
+    return response;
+  }
+
+  if (payload.forceSync) {
+    const { data: orgRow, error: readError } = await admin
+      .from("orgs")
+      .select("id, name, slug, plan, website, company_summary, agent_brief, logo_path, created_at")
+      .eq("id", session.org.id)
+      .single();
+
+    if (readError || !orgRow) {
+      return NextResponse.json(
+        { error: { message: readError?.message || "Workspace not found." } },
+        { status: 500 },
+      );
+    }
+
+    const sync = await runOrgContextSync({
+      orgId: session.org.id,
+      org: {
+        name: orgRow.name,
+        website: orgRow.website,
+        companySummary: orgRow.company_summary,
+        agentBrief: orgRow.agent_brief,
+      },
+    });
+
+    const response = NextResponse.json({ data: { org: orgRow, sync } });
+    setActiveOrgCookie(response, session.org.id);
+    return response;
   }
 
   const updateFields: Record<string, unknown> = {};
@@ -85,7 +151,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: { message: error.message } }, { status: 500 });
   }
 
-  await syncOrgContextToAgents({
+  const sync = await runOrgContextSync({
     orgId: session.org.id,
     org: {
       name: data.name,
@@ -93,7 +159,7 @@ export async function PATCH(request: Request) {
       companySummary: data.company_summary,
       agentBrief: data.agent_brief,
     },
-  }).catch(() => null);
+  });
 
   if (data.website?.trim()) {
     enrichOrgWebsite({
@@ -103,5 +169,7 @@ export async function PATCH(request: Request) {
     }).catch(() => null);
   }
 
-  return NextResponse.json({ data });
+  const response = NextResponse.json({ data: { org: data, sync } });
+  setActiveOrgCookie(response, session.org.id);
+  return response;
 }

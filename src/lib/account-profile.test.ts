@@ -51,11 +51,11 @@ describe("account profile helpers", () => {
     ).toBe("Alex Founder");
   });
 
-  it("extracts a display name from the SaintClaw profile metadata fallback", () => {
+  it("extracts a display name from the SaintAGI profile metadata fallback", () => {
     expect(
       getMetadataDisplayName({
         user_metadata: {
-          saintclaw_profile: {
+          saintagi_profile: {
             display_name: "Antonio",
           },
         },
@@ -77,7 +77,7 @@ describe("account profile helpers", () => {
   it("merges account profile metadata without clearing unrelated fields", () => {
     const merged = mergeAccountProfileMetadata(
       {
-        saintclaw_profile: {
+        saintagi_profile: {
           display_name: "Alex Founder",
           avatar_path: "user_123/avatar.png",
         },

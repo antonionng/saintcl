@@ -1,0 +1,22 @@
+# Saint AGI
+
+> Saint AGI is the agent layer for modern teams. The platform helps companies launch governed AI agents with workspace chat, business channels, approvals, audit trails, spend control, model routing, and runtime operations.
+
+## Core Pages
+
+- [Home](https://saintagi.com/): Platform overview for governed company AI agents.
+- [Capabilities](https://saintagi.com/capabilities): Autonomous execution, channels, tool automation, memory, governance, and runtime controls.
+- [Models](https://saintagi.com/models): Model routing across deep reasoning, fast execution, open deployment options, and premium access.
+- [Pricing](https://saintagi.com/pricing): Plans for launching and scaling governed agent adoption.
+- [Agent Recipes](https://saintagi.com/templates): Pre-built agent recipes for meetings, support, sales, operations, IT, engineering, and leadership.
+
+## What Saint AGI Does
+
+Saint AGI gives employees a simple workspace for approved agents while giving operators control over access, approvals, audit trails, spend, model policy, runtime health, and channel rollout.
+
+The platform is designed for companies moving from AI trials to governed execution across sales, support, operations, IT, meetings, engineering, finance, and leadership workflows.
+
+## Contact
+
+- Website: https://saintagi.com/
+- Email: hello@neuralnetworkgroup.com

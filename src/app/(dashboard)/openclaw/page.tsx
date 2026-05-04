@@ -61,10 +61,10 @@ export default async function OpenClawPage() {
     return (
       <div className="space-y-8">
         <div className="space-y-2">
-          <p className="app-kicker">SaintClaw</p>
-          <h1 className="text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">Console</h1>
+          <p className="app-kicker">Saint AGI</p>
+          <h1 className="text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">Runtime console</h1>
           <p className="max-w-2xl text-sm leading-7 text-zinc-400">
-            Advanced runtime controls stay reserved for workspace admins.
+            Advanced runtime controls stay reserved for admins and the platform owner.
           </p>
         </div>
         <AccessDenied description="Employees work from the provisioned workspace while admins operate the low-level runtime console." />
@@ -83,6 +83,12 @@ export default async function OpenClawPage() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#05060a]">
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-black/40 to-transparent" />
+      <div className="pointer-events-none absolute left-4 top-4 z-20 max-w-xl rounded-2xl border border-white/10 bg-black/70 px-4 py-3 text-white backdrop-blur">
+        <p className="text-xs font-medium uppercase tracking-[0.12em] text-white/55">Admin runtime console</p>
+        <p className="mt-1 text-sm font-semibold text-white">
+          Platform-owner controls for the Saint AGI runtime, gateway health, sessions, and configuration.
+        </p>
+      </div>
       {"error" in status && status.error ? (
         <p className="absolute bottom-4 left-4 z-20 rounded-2xl border border-amber-400/30 bg-black/70 px-4 py-3 text-sm text-amber-200 backdrop-blur">
           {status.error}. You can still try the embedded workspace while the gateway reconnects.
@@ -91,7 +97,7 @@ export default async function OpenClawPage() {
       <div id="console" className="min-h-screen overflow-hidden">
         <iframe
           src={embeddedConsoleUrl}
-          title="SaintClaw Console"
+          title="Saint AGI Console"
           className="block h-screen min-h-screen w-full bg-[#0b0b12]"
         />
       </div>

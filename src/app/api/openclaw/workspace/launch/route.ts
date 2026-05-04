@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   const target = await resolveTenantGatewayTarget(session.org.id);
   if (!target) {
     return NextResponse.json(
-      { error: { message: "OpenClaw gateway is not configured." } },
+      { error: { message: "Runtime gateway is not configured." } },
       { status: 503 },
     );
   }

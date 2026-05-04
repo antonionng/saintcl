@@ -112,7 +112,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Unsupported channel type." }, { status: 400 });
       }
     } else if (installer === "config-toggle") {
-      // For search/memory/tools/models, recording the install is enough for v1.
+      // For search, memory, and tools, recording the install is enough for v1.
       // The agent runtime will pick up bindings from agent_apps and the gateway
       // plugin governance flow surfaces the corresponding plugin to agents.
     } else if (installer === "mcp-stub") {

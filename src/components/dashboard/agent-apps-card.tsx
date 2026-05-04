@@ -33,9 +33,9 @@ export function AgentAppsCard({
       {bindings.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border-subtle p-5 text-sm text-zinc-400">
           <Cable className="mb-2 size-4 text-zinc-500" />
-          <p>No apps connected yet. Connect Slack, Telegram, search providers and more from the app store.</p>
+          <p>No apps connected yet. Add channels, search providers, skills, and tools from Connect.</p>
           <Button asChild variant="ghost" size="sm" className="mt-3 px-0">
-            <Link href={`/apps?agent=${agentId}`}>Browse the app store</Link>
+            <Link href={`/apps?agent=${agentId}`}>Open Connect</Link>
           </Button>
         </div>
       ) : (

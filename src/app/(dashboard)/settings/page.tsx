@@ -10,9 +10,11 @@ import { SettingsConnectionsForm } from "@/components/dashboard/settings-connect
 import { SettingsGeneralForm } from "@/components/dashboard/settings-general-form";
 import { SettingsMembersForm } from "@/components/dashboard/settings-members-form";
 import { SettingsPersonasForm } from "@/components/dashboard/settings-personas-form";
+import { SettingsSectionTabs } from "@/components/dashboard/settings-section-tabs";
 import { BillingActions } from "@/components/dashboard/billing-actions";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { LLM_USAGE_MARKUP_PERCENT } from "@/lib/billing/math";
 import {
   getAgents,
   getChannels,
@@ -94,6 +96,7 @@ export default async function SettingsPage({
               ? requestedSearchParams.unsubscribe
               : null
           }
+          isSuperAdmin={session?.isSuperAdmin ?? false}
           unsubscribeMessage={
             typeof requestedSearchParams.message === "string" ? requestedSearchParams.message : null
           }
@@ -127,6 +130,7 @@ async function SettingsTabContent({
   capabilities,
   unsubscribeStatus,
   unsubscribeMessage,
+  isSuperAdmin,
 }: {
   activeTab: "general" | "members" | "personas" | "governance" | "billing" | "integrations" | "security" | "email";
   userId: string | null;
@@ -145,6 +149,7 @@ async function SettingsTabContent({
   capabilities: typeof fallbackCapabilities;
   unsubscribeStatus: "success" | "error" | null;
   unsubscribeMessage: string | null;
+  isSuperAdmin: boolean;
 }) {
   if (activeTab === "general") {
     return (
@@ -187,7 +192,10 @@ async function SettingsTabContent({
   if (activeTab === "governance") {
     const [policy, catalogState] = await Promise.all([
       getOrgPolicy(orgId),
-      getOrgModelCatalogState(orgId),
+      getOrgModelCatalogState(orgId, {
+        trialStatus,
+        trialEndsAt,
+      }),
     ]);
 
     const skillPolicyData = (policy?.skill_policy as {
@@ -249,137 +257,151 @@ async function SettingsTabContent({
     const planConfig = getPlanConfig(orgPlan);
 
     return (
-      <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
-            icon={CreditCard}
-            title="Current plan"
-            value={getPlanDisplayName(orgPlan)}
-            detail={`${getPlanIntervalLabel(billingInterval)} billing${resolvedTrialStatus === "active" ? ` · ${trialDaysRemaining} trial day${trialDaysRemaining === 1 ? "" : "s"} left` : ""}`}
-          />
-          <MetricCard
-            icon={CreditCard}
-            title="Wallet balance"
-            value={formatCurrency(balance)}
-            detail={`Low-balance threshold: ${formatCurrency((wallet?.low_balance_threshold_cents ?? 0) / 100)}`}
-          />
-          <MetricCard
-            icon={Activity}
-            title="Usage sync"
-            value={formatCurrency(sync.chargedCents / 100)}
-            detail={
-              sync.lastError
-                ? sync.lastError
-                : `Last sync charged ${sync.chargedSessions} session(s) and skipped ${sync.skippedSessions}.`
-            }
-          />
-          <MetricCard
-            icon={CreditCard}
-            title="Projected burn"
-            value={formatCurrency(weeklyBurn)}
-            detail="Last 7 days of recorded AI/API spend."
-          />
-          <MetricCard
-            icon={ShieldCheck}
-            title="Included usage credit"
-            value={planConfig.includedUsageCreditCents ? formatCurrency(planConfig.includedUsageCreditCents / 100) : "Custom"}
-            detail={planConfig.storageGb ? `${planConfig.storageGb} GB included storage` : "Custom enterprise storage and support"}
-          />
-        </div>
-
-        <Card className="settings-panel">
-          <CardHeader>
-            <CardTitle>Wallet actions</CardTitle>
-            <CardDescription>
-              Run Stripe top-ups or manual admin credits without leaving the settings hub.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <BillingActions returnPath="/settings?tab=billing" />
-          </CardContent>
-        </Card>
-
-        <Card className="settings-panel">
-          <CardHeader>
-            <CardTitle>Plans</CardTitle>
-            <CardDescription>
-              Compare monthly and annual plans, manage Stripe billing, and convert trial workspaces when ready.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <SettingsBillingPlans
-              currentPlan={orgPlan}
-              currentInterval={billingInterval}
-              trialStatus={trialStatus}
-              trialEndsAt={trialEndsAt}
-              stripeSubscriptionStatus={stripeSubscriptionStatus}
-            />
-          </CardContent>
-        </Card>
-
-        <Card className="settings-panel">
-          <CardHeader>
-            <CardTitle>Billing status</CardTitle>
-            <CardDescription>Subscription lifecycle, trial state, and spend controls for this workspace.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-3">
-            <StatusTile
-              label="Trial"
-              value={resolvedTrialStatus === "active" ? `Active · ${trialDaysRemaining} day${trialDaysRemaining === 1 ? "" : "s"} left` : resolvedTrialStatus}
-            />
-            <StatusTile label="Subscription" value={stripeSubscriptionStatus ?? "Not linked"} />
-            <StatusTile
-              label="Approval mode"
-              value={policy?.require_approval_on_spend ? "Enabled" : "Disabled"}
-            />
-          </CardContent>
-        </Card>
-
-        <Card className="settings-panel">
-          <CardHeader>
-            <CardTitle>Ledger history</CardTitle>
-            <CardDescription>Immutable wallet events for top-ups, usage, and manual adjustments.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            {ledger.length === 0 ? (
-              <p className="px-4 py-6 text-center text-[length:var(--text-sm)] text-white/55">
-                No wallet entries yet.
-              </p>
-            ) : (
-              <ul>
-                {ledger.map((entry) => (
-                  <li
-                    key={entry.id}
-                    className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-[length:var(--text-sm)] text-white">
-                        {entry.description}
-                      </p>
-                      <p className="mt-0.5 text-[length:var(--text-xs)] text-white/45">
-                        {entry.source_type} · {new Date(entry.created_at).toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p
-                        className={`text-[length:var(--text-sm)] ${
-                          entry.direction === "credit" ? "text-emerald-300" : "text-amber-300"
-                        }`}
-                      >
-                        {entry.direction === "credit" ? "+" : "-"}
-                        {formatCurrency(entry.amount_cents / 100)}
-                      </p>
-                      <p className="text-[length:var(--text-xs)] text-white/45">
-                        Balance {formatCurrency((entry.balance_after_cents ?? 0) / 100)}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <SettingsSectionTabs
+        tabs={[
+          {
+            id: "overview",
+            label: "Overview",
+            content: (
+              <div className="space-y-5 p-5">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  <MetricCard
+                    icon={CreditCard}
+                    title="Current plan"
+                    value={getPlanDisplayName(orgPlan)}
+                    detail={`${getPlanIntervalLabel(billingInterval)} billing${resolvedTrialStatus === "active" ? ` · ${trialDaysRemaining} trial day${trialDaysRemaining === 1 ? "" : "s"} left` : ""}`}
+                  />
+                  <MetricCard
+                    icon={CreditCard}
+                    title="Wallet balance"
+                    value={formatCurrency(balance)}
+                    detail={`Low-balance threshold: ${formatCurrency((wallet?.low_balance_threshold_cents ?? 0) / 100)}`}
+                  />
+                  <MetricCard
+                    icon={Activity}
+                    title="Usage sync"
+                    value={formatCurrency(sync.chargedCents / 100)}
+                    detail={
+                      sync.lastError
+                        ? sync.lastError
+                        : `Last sync charged ${sync.chargedSessions} session(s) and skipped ${sync.skippedSessions}.`
+                    }
+                  />
+                  <MetricCard
+                    icon={CreditCard}
+                    title="Projected burn"
+                    value={formatCurrency(weeklyBurn)}
+                    detail="Last 7 days of recorded AI/API spend."
+                  />
+                </div>
+                <div className="grid gap-3 md:grid-cols-4">
+                  <StatusTile
+                    label="Included usage credit"
+                    value={planConfig.includedUsageCreditCents ? formatCurrency(planConfig.includedUsageCreditCents / 100) : "Custom"}
+                  />
+                  <StatusTile
+                    label="Trial"
+                    value={resolvedTrialStatus === "active" ? `Active · ${trialDaysRemaining} day${trialDaysRemaining === 1 ? "" : "s"} left` : resolvedTrialStatus}
+                  />
+                  <StatusTile label="Subscription" value={stripeSubscriptionStatus ?? "Not linked"} />
+                  <StatusTile
+                    label="Approval mode"
+                    value={policy?.require_approval_on_spend ? "Enabled" : "Disabled"}
+                  />
+                </div>
+              </div>
+            ),
+          },
+          {
+            id: "wallet",
+            label: "Wallet",
+            content: (
+              <section className="space-y-4 p-5">
+                <div>
+                  <h3 className="text-[length:var(--text-base)] font-medium text-white">Wallet actions</h3>
+                  <p className="mt-1 text-[length:var(--text-xs)] text-white/55">
+                    Top up for paid model usage. Runtime costs include a {LLM_USAGE_MARKUP_PERCENT}% service margin.
+                  </p>
+                </div>
+                <BillingActions returnPath="/settings?tab=billing" canIssueManualCredit={isSuperAdmin} />
+              </section>
+            ),
+          },
+          {
+            id: "plans",
+            label: "Plans",
+            content: (
+              <section className="space-y-4 p-5">
+                <div>
+                  <h3 className="text-[length:var(--text-base)] font-medium text-white">Plans</h3>
+                  <p className="mt-1 text-[length:var(--text-xs)] text-white/55">
+                    Compare monthly and annual plans, manage Stripe billing, and convert trial workspaces when ready.
+                  </p>
+                </div>
+                <SettingsBillingPlans
+                  currentPlan={orgPlan}
+                  currentInterval={billingInterval}
+                  trialStatus={trialStatus}
+                  trialEndsAt={trialEndsAt}
+                  stripeSubscriptionStatus={stripeSubscriptionStatus}
+                />
+              </section>
+            ),
+          },
+          {
+            id: "ledger",
+            label: "Ledger",
+            content: (
+              <section className="space-y-4 p-5">
+                <div>
+                  <h3 className="text-[length:var(--text-base)] font-medium text-white">Ledger history</h3>
+                  <p className="mt-1 text-[length:var(--text-xs)] text-white/55">
+                    Immutable wallet events for top-ups, usage, and manual adjustments.
+                  </p>
+                </div>
+                <div className="overflow-hidden rounded-md border border-border">
+                  {ledger.length === 0 ? (
+                    <p className="px-4 py-6 text-center text-[length:var(--text-sm)] text-white/55">
+                      No wallet entries yet.
+                    </p>
+                  ) : (
+                    <ul>
+                      {ledger.map((entry) => (
+                        <li
+                          key={entry.id}
+                          className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-[length:var(--text-sm)] text-white">
+                              {entry.description}
+                            </p>
+                            <p className="mt-0.5 text-[length:var(--text-xs)] text-white/45">
+                              {entry.source_type} · {new Date(entry.created_at).toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            <p
+                              className={`text-[length:var(--text-sm)] ${
+                                entry.direction === "credit" ? "text-emerald-300" : "text-amber-300"
+                              }`}
+                            >
+                              {entry.direction === "credit" ? "+" : "-"}
+                              {formatCurrency(entry.amount_cents / 100)}
+                            </p>
+                            <p className="text-[length:var(--text-xs)] text-white/45">
+                              Balance {formatCurrency((entry.balance_after_cents ?? 0) / 100)}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </section>
+            ),
+          },
+        ]}
+      />
     );
   }
 
@@ -387,78 +409,116 @@ async function SettingsTabContent({
     const [channels, agents] = await Promise.all([getChannels(orgId), getAgents(orgId)]);
 
     return (
-      <div className="space-y-8">
-        <section>
-          <div className="flex flex-col gap-2 pb-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
-            <div>
-              <h3 className="text-[length:var(--text-base)] font-medium text-white">
-                Connected channels
-              </h3>
-              <p className="mt-0.5 text-[length:var(--text-xs)] text-white/55">
-                Telegram and Slack channels routed to your agents.
-              </p>
-            </div>
-            <SettingsConnectionsForm
-              orgId={orgId}
-              agents={agents.map((agent) => ({ id: agent.id, name: agent.name }))}
-            />
-          </div>
-          <div className="border border-border rounded-md overflow-hidden">
-            {channels.length === 0 ? (
-              <p className="px-4 py-6 text-center text-[length:var(--text-sm)] text-white/55">
-                No channels connected yet.
-              </p>
-            ) : (
-              <ul>
-                {channels.map((channel) => (
-                  <li
-                    key={channel.id}
-                    className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-[length:var(--text-sm)] font-medium capitalize text-white">
-                        {channel.type}
+      <SettingsSectionTabs
+        tabs={[
+          {
+            id: "channels",
+            label: "Channels",
+            content: (
+              <section className="space-y-4 p-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <h3 className="text-[length:var(--text-base)] font-medium text-white">
+                      Connected channels
+                    </h3>
+                    <p className="mt-1 text-[length:var(--text-xs)] text-white/55">
+                      Telegram and Slack channels routed to your agents.
+                    </p>
+                  </div>
+                  <SettingsConnectionsForm
+                    orgId={orgId}
+                    agents={agents.map((agent) => ({ id: agent.id, name: agent.name }))}
+                  />
+                </div>
+                <div className="overflow-hidden rounded-md border border-border">
+                  {channels.length === 0 ? (
+                    <div className="px-4 py-8 text-center">
+                      <p className="text-[length:var(--text-sm)] font-medium text-white">
+                        No channels connected yet.
                       </p>
-                      <p className="mt-0.5 text-[length:var(--text-xs)] text-white/45">
-                        {(channel.agents as { name: string } | null)?.name ?? channel.agent_id}
-                        {channel.connected_at
-                          ? ` · connected ${new Date(channel.connected_at).toLocaleDateString()}`
-                          : " · pending"}
+                      <p className="mx-auto mt-1 max-w-md text-[length:var(--text-xs)] text-white/55">
+                        Connect Telegram or Slack once a business agent is ready to handle inbound messages.
                       </p>
                     </div>
-                    <Badge variant={channel.status === "connected" ? "success" : "warning"}>
-                      {channel.status}
-                    </Badge>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </section>
-
-        <section>
-          <div className="pb-3">
-            <h3 className="text-[length:var(--text-base)] font-medium text-white">How it works</h3>
-            <p className="mt-0.5 text-[length:var(--text-xs)] text-white/55">
-              Connections are validated, written to the tenant runtime, and recorded as billable usage events.
-            </p>
-          </div>
-          <div className="grid gap-3 md:grid-cols-3">
-            <MiniProcessCard
-              title="1. Collect credentials"
-              description="Capture bot tokens or workspace identifiers for the provider."
-            />
-            <MiniProcessCard
-              title="2. Persist tenant config"
-              description="SaintClaw stores the binding and updates the tenant runtime."
-            />
-            <MiniProcessCard
-              title="3. Route traffic"
-              description="Inbound provider traffic is routed to the selected agent."
-            />
-          </div>
-        </section>
-      </div>
+                  ) : (
+                    <ul>
+                      {channels.map((channel) => (
+                        <li
+                          key={channel.id}
+                          className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-[length:var(--text-sm)] font-medium capitalize text-white">
+                              {channel.type}
+                            </p>
+                            <p className="mt-0.5 text-[length:var(--text-xs)] text-white/45">
+                              {(channel.agents as { name: string } | null)?.name ?? channel.agent_id}
+                              {channel.connected_at
+                                ? ` · connected ${new Date(channel.connected_at).toLocaleDateString()}`
+                                : " · pending"}
+                            </p>
+                          </div>
+                          <Badge variant={channel.status === "connected" ? "success" : "warning"}>
+                            {channel.status}
+                          </Badge>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </section>
+            ),
+          },
+          {
+            id: "setup",
+            label: "Setup guide",
+            content: (
+              <section className="space-y-5 p-5">
+                <div>
+                  <h3 className="text-[length:var(--text-base)] font-medium text-white">Ready setup</h3>
+                  <p className="mt-1 max-w-3xl text-[length:var(--text-sm)] leading-6 text-zinc-400">
+                    Slack and Telegram are productized for the current rollout. WhatsApp, Google Chat, Teams, email,
+                    Meet, and voice should be treated as enterprise setup until their credential, runtime, and diagnostics
+                    flows are fully self-serve.
+                  </p>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <MiniProcessCard
+                    title="Telegram"
+                    description="Use a bot token from BotFather and bind it to the agent that should handle messages."
+                  />
+                  <MiniProcessCard
+                    title="Slack"
+                    description="Use the target workspace team ID and route company channel traffic to a selected agent."
+                  />
+                </div>
+                <div className="space-y-3 border-t border-border-subtle pt-5">
+                  <div>
+                    <h3 className="text-[length:var(--text-base)] font-medium text-white">How it works</h3>
+                    <p className="mt-1 text-[length:var(--text-xs)] text-white/55">
+                      Connections are validated, written to the tenant runtime, and recorded as billable usage events.
+                    </p>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <MiniProcessCard
+                      title="1. Collect credentials"
+                      description="Capture bot tokens or workspace identifiers for the provider."
+                    />
+                    <MiniProcessCard
+                      title="2. Persist tenant config"
+                      description="Saint AGI stores the binding and updates the tenant runtime."
+                    />
+                    <MiniProcessCard
+                      title="3. Route traffic"
+                      description="Inbound provider traffic is routed to the selected agent."
+                    />
+                  </div>
+                </div>
+              </section>
+            ),
+          },
+        ]}
+      />
     );
   }
 

@@ -11,7 +11,7 @@ const capabilityIcons = {
   "Tools and automation": Wrench,
   "Memory and routing": BrainCircuit,
   "Governance and trust": ShieldCheck,
-  "Local-first runtime": HardDrive,
+  "Runtime governance": HardDrive,
 } as const;
 
 export function FeatureGrid() {
@@ -29,11 +29,10 @@ export function FeatureGrid() {
             </div>
 
             <div className="rounded-[1.5rem] border border-white/8 bg-black p-5 lg:p-6">
-              <p className="text-[0.68rem] uppercase tracking-[0.14em] text-white/60">SaintClaw signal</p>
+              <p className="text-[0.68rem] uppercase tracking-[0.14em] text-white/60">Saint AGI signal</p>
               <p className="mt-3 text-lg font-semibold tracking-[-0.03em] text-white">{capabilitiesIntro.supportingCopy}</p>
               <p className="mt-3 text-sm leading-7 text-white/72">
-                Give teams the right agents, models, and channels for each task without fragmenting policy, rollout,
-                or operator control.
+                Admins get control. Employees get useful agents. The platform stays observable.
               </p>
             </div>
           </div>
@@ -66,8 +65,7 @@ export function FeatureGrid() {
               <Link href={capabilitiesIntro.cta.href}>{capabilitiesIntro.cta.label}</Link>
             </Button>
             <p className="max-w-2xl text-sm leading-7 text-white/72">
-              See how SaintClaw combines execution, routing, governance, and real tool use into one platform your
-              company can roll out with confidence.
+              See how Saint AGI brings agents, channels, governance, and runtime operations into one rollout path.
             </p>
           </div>
         </div>

@@ -31,15 +31,19 @@ export function renderOrgContextForAgent(input: {
   agentBrief?: string | null;
 }) {
   const lines = [
-    input.name?.trim() ? `Company: ${input.name.trim()}` : null,
-    input.website?.trim() ? `Website: ${input.website.trim()}` : null,
-    input.companySummary?.trim() ? `What the company does: ${input.companySummary.trim()}` : null,
-    input.agentBrief?.trim() ? `Company notes: ${input.agentBrief.trim()}` : null,
+    input.name?.trim() ? `- Company name: ${input.name.trim()}` : null,
+    input.website?.trim() ? `- Website: ${input.website.trim()}` : null,
+    input.companySummary?.trim() ? `- Company description: ${input.companySummary.trim()}` : null,
+    input.agentBrief?.trim() ? `- Brief for agents: ${input.agentBrief.trim()}` : null,
   ].filter((line): line is string => Boolean(line));
 
   if (lines.length === 0) {
     return null;
   }
 
-  return `Company profile:\n${lines.join("\n")}\n\nUse this as lightweight company context. Do not treat it as a replacement for policy, live data, or uploaded knowledge files.`;
+  return `## Company Context
+
+${lines.join("\n")}
+
+Use these saved company settings as active context for this workspace. If asked what the company description or agent brief says, quote the matching field above directly before adding interpretation.`;
 }

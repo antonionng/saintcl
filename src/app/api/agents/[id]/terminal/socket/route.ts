@@ -196,7 +196,7 @@ export async function GET(
             version: "0.1.0",
             platform: "web",
             mode: "backend",
-            displayName: "saintclaw-terminal-proxy",
+            displayName: "saintagi-terminal-proxy",
           },
           role: "operator",
           scopes: ["operator.admin", "operator.read", "operator.write"],

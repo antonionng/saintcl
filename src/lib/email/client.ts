@@ -1,7 +1,13 @@
 import { env, isResendConfigured } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createEmailActionToken } from "@/lib/email/tokens";
-import { type EmailTemplateKey, renderEmailTemplate } from "@/lib/email/templates";
+import {
+  type AdminWorkspaceDigestStats,
+  type AgentIntroductionDetails,
+  type EmailTemplateKey,
+  type UsageAlertDetails,
+  renderEmailTemplate,
+} from "@/lib/email/templates";
 import { getBaseUrl } from "@/lib/utils";
 
 type SendTemplatedEmailInput = {
@@ -23,6 +29,9 @@ type SendTemplatedEmailInput = {
   preferenceForUnsubscribe?: "marketing" | "weekly" | "welcome" | null;
   metadata?: Record<string, unknown>;
   ctaUrl?: string | null;
+  agentIntroduction?: AgentIntroductionDetails | null;
+  digest?: AdminWorkspaceDigestStats | null;
+  usageAlert?: UsageAlertDetails | null;
 };
 
 export function buildUnsubscribeUrl(input: {
@@ -154,6 +163,9 @@ export async function sendTemplatedEmail(input: SendTemplatedEmailInput) {
     billedAmountCents: input.billedAmountCents,
     unsubscribeUrl,
     ctaUrl: input.ctaUrl,
+    agentIntroduction: input.agentIntroduction,
+    digest: input.digest,
+    usageAlert: input.usageAlert,
   });
 
   const event = await reserveEmailEvent({

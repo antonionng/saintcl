@@ -15,8 +15,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: { message: "Not authenticated" } }, { status: 401 });
   }
 
-  if (!session.capabilities.canManageBilling) {
-    return NextResponse.json({ error: { message: "Admin access required." } }, { status: 403 });
+  if (!session.isSuperAdmin) {
+    return NextResponse.json({ error: { message: "Platform admin access required." } }, { status: 403 });
   }
 
   const payload = manualCreditSchema.parse(await request.json());

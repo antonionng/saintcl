@@ -2,7 +2,7 @@ export const modelsPageHero = {
   kicker: "Models",
   title: "Power, flexibility, and control across the full model range.",
   description:
-    "SaintClaw gives your company access to deep reasoning, fast execution, open deployment paths, and budget-aware coverage under one governed operating layer.",
+    "Saint AGI gives your company access to deep reasoning, fast execution, open deployment paths, and budget-aware coverage under one governed operating layer.",
   primary: {
     href: "/signup",
     label: "Start free",
@@ -41,7 +41,7 @@ export const modelBandsIntro = {
   kicker: "Coverage",
   title: "The right model band for each type of work.",
   description:
-    "SaintClaw is built around model range, not single-model dependency. Teams can match the task to the right balance of reasoning depth, latency, price, and control.",
+    "Saint AGI is built around model range, not single-model dependency. Teams can match the task to the right balance of reasoning depth, latency, price, and control.",
 } as const;
 
 export const modelBands = [
@@ -95,7 +95,7 @@ export const operatingPrinciplesIntro = {
   kicker: "Operating model",
   title: "Model flexibility without operational drift.",
   description:
-    "SaintClaw keeps the surrounding system stable even when the model behind a workflow changes. That is what makes model range useful at company scale.",
+    "Saint AGI keeps the surrounding system stable even when the model behind a workflow changes. That is what makes model range useful at company scale.",
 } as const;
 
 export const operatingPrinciples = [
@@ -162,7 +162,7 @@ export const modelsUseCases = [
 export const modelsClosingCta = {
   title: "A wider model surface is only useful when the company can control it.",
   description:
-    "SaintClaw turns model variety into a practical operating advantage by keeping routing, approvals, memory, and runtime behavior aligned as adoption scales.",
+    "Saint AGI turns model variety into a practical operating advantage by keeping routing, approvals, memory, and runtime behavior aligned as adoption scales.",
   primary: {
     href: "/signup",
     label: "Start free",

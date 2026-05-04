@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import type { BillingInterval } from "@/types";
+import { LLM_USAGE_MARKUP_PERCENT } from "@/lib/billing/math";
 import {
   BILLING_INTERVALS,
   PLAN_CATALOG,
@@ -16,6 +17,9 @@ import {
   getResolvedTrialStatus,
   getTrialDaysRemaining,
   normalizePlanTier,
+  TRIAL_FREE_MODEL_LABEL,
+  TRIAL_LENGTH_DAYS,
+  TRIAL_MESSAGE_LIMIT,
 } from "@/lib/plans";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
@@ -227,7 +231,7 @@ export function PricingPlans(props: PricingPlansProps) {
                 {props.mode === "marketing" ? (
                   plan.contactSales ? (
                     <Button asChild className="w-full" variant="secondary">
-                      <Link href="mailto:founder@saintclaw.ai?subject=Saint%20AGI%20Enterprise">{actionLabel}</Link>
+                      <Link href="mailto:founder@saintagi.ai?subject=Saint%20AGI%20Enterprise">{actionLabel}</Link>
                     </Button>
                   ) : (
                     <Button asChild className="w-full">
@@ -237,7 +241,7 @@ export function PricingPlans(props: PricingPlansProps) {
                 ) : (
                   plan.contactSales ? (
                     <Button asChild className="w-full" variant="secondary">
-                      <Link href="mailto:founder@saintclaw.ai?subject=Saint%20AGI%20Enterprise">Contact sales</Link>
+                      <Link href="mailto:founder@saintagi.ai?subject=Saint%20AGI%20Enterprise">Contact sales</Link>
                     </Button>
                   ) : (
                     <Button
@@ -265,9 +269,10 @@ export function PricingPlans(props: PricingPlansProps) {
           <div className="rounded-[1.6rem] border border-white/8 bg-white/[0.02] p-5 text-sm leading-7 text-zinc-400">
             <p className="text-white">Trial terms</p>
             <div className="mt-3 grid gap-3 lg:grid-cols-2">
-              <p>14 days, no card required.</p>
+            <p>{TRIAL_LENGTH_DAYS} days, no card required.</p>
               <p>1 agent included during trial.</p>
-              <p>Free OpenRouter models only during trial.</p>
+            <p>{TRIAL_FREE_MODEL_LABEL} and other free models only during trial.</p>
+            <p>{TRIAL_MESSAGE_LIMIT} trial messages before upgrade.</p>
               <p>Channels, personal memory, and dashboard included.</p>
             </div>
           </div>
@@ -278,7 +283,7 @@ export function PricingPlans(props: PricingPlansProps) {
               <p>Starter extra agents: {formatCurrencyCents(getPlanConfig("starter").extraAgentPriceCents ?? 0)} / agent / month.</p>
               <p>Pro extra agents: {formatCurrencyCents(getPlanConfig("pro").extraAgentPriceCents ?? 0)} / agent / month.</p>
               <p>Business extra agents: {formatCurrencyCents(getPlanConfig("business").extraAgentPriceCents ?? 0)} / agent / month.</p>
-              <p>Paid-model usage beyond included credit is billed separately as adoption grows.</p>
+              <p>Paid-model usage beyond included credit is wallet-billed with a {LLM_USAGE_MARKUP_PERCENT}% service margin.</p>
             </div>
           </div>
         </>
@@ -288,8 +293,9 @@ export function PricingPlans(props: PricingPlansProps) {
         <div className="rounded-[1.6rem] border border-white/8 bg-white/[0.02] p-5 text-sm leading-7 text-zinc-400">
           <p className="text-white">Usage and add-ons</p>
           <p>
-            Model usage beyond included credit continues through your wallet and Stripe-backed top-ups. Extra agents are
-            priced per tier, and additional storage can be added as usage grows.
+            Model usage beyond included credit continues through your wallet and Stripe-backed top-ups with a{" "}
+            {LLM_USAGE_MARKUP_PERCENT}% service margin. Extra agents are priced per tier, and additional storage can be
+            added as usage grows.
           </p>
           <div className="mt-3 grid gap-3 lg:grid-cols-2">
             <p>Starter extra agents: {formatCurrencyCents(getPlanConfig("starter").extraAgentPriceCents ?? 0)} / agent.</p>
@@ -305,7 +311,7 @@ export function PricingPlans(props: PricingPlansProps) {
             <p>Starter extra agents: {formatCurrencyCents(getPlanConfig("starter").extraAgentPriceCents ?? 0)} / agent / month.</p>
             <p>Pro extra agents: {formatCurrencyCents(getPlanConfig("pro").extraAgentPriceCents ?? 0)} / agent / month.</p>
             <p>Business extra agents: {formatCurrencyCents(getPlanConfig("business").extraAgentPriceCents ?? 0)} / agent / month.</p>
-            <p>Paid-model usage beyond included credit is billed separately as adoption grows.</p>
+            <p>Paid-model usage beyond included credit is wallet-billed with a {LLM_USAGE_MARKUP_PERCENT}% service margin.</p>
           </div>
         </div>
       )}

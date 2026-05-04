@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import placeholderLogo from "../../../public/saintclaw-placeholder-logo.png";
+import placeholderLogo from "../../../public/saintagi-placeholder-logo.png";
 
 import { UserDropdownMenu } from "@/components/account/user-dropdown-menu";
 import { CapabilitiesOverview } from "@/components/capabilities/capabilities-overview";
@@ -13,9 +13,12 @@ import { Button } from "@/components/ui/button";
 import { getCurrentOrg, getCurrentUserProfile, getCurrentUserWorkspaces } from "@/lib/dal";
 
 export const metadata: Metadata = {
-  title: "Capabilities | SaintClaw",
+  title: "AI Agent Capabilities",
   description:
-    "Explore SaintClaw capabilities across autonomous execution, local-first runtime, multi-channel communication, tool automation, memory, and governance.",
+    "Explore Saint AGI capabilities across autonomous execution, local-first runtime, multi-channel communication, tool automation, memory, and governance.",
+  alternates: {
+    canonical: "/capabilities",
+  },
 };
 
 export default async function CapabilitiesPage() {
@@ -30,7 +33,7 @@ export default async function CapabilitiesPage() {
           <Link href="/" className="inline-flex h-10 items-center">
             <Image
               src={placeholderLogo}
-              alt="SaintClaw"
+              alt="Saint AGI"
               className="h-10 w-auto object-contain opacity-95"
               priority
             />

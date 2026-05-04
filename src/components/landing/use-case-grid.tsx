@@ -8,7 +8,7 @@ export function UseCaseGrid() {
           <div className="max-w-3xl space-y-3">
             <p className="app-kicker">Teams / roles</p>
             <h2 className="text-3xl font-semibold tracking-[-0.05em] text-white sm:text-4xl lg:text-[3rem] lg:leading-[1.04]">
-              Make every team AI-powered with agents that follow through.
+              Start with one team. Expand when the workflow proves itself.
             </h2>
           </div>
 

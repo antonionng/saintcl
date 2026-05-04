@@ -13,8 +13,10 @@ const topupOptions = [
 
 export function BillingActions({
   returnPath = "/billing",
+  canIssueManualCredit = false,
 }: {
   returnPath?: string;
+  canIssueManualCredit?: boolean;
 }) {
   const [manualAmount, setManualAmount] = useState("50");
   const [creditAmount, setCreditAmount] = useState("25");
@@ -69,11 +71,12 @@ export function BillingActions({
     <div className="space-y-5">
       <div className="space-y-3">
         <p className="app-kicker">Add balance</p>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           {topupOptions.map((option) => (
             <Button
               key={option.amountCents}
               variant="secondary"
+              size="sm"
               onClick={() => openCheckout(option.amountCents)}
               disabled={loading !== null}
             >
@@ -81,7 +84,7 @@ export function BillingActions({
             </Button>
           ))}
         </div>
-        <div className="flex gap-3">
+        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
           <Input
             type="number"
             min="5"
@@ -91,33 +94,38 @@ export function BillingActions({
             placeholder="Custom top-up"
           />
           <Button
+            variant="secondary"
             onClick={() => openCheckout(Math.max(500, Math.round(Number(manualAmount || "0") * 100)))}
             disabled={loading !== null}
           >
-            Custom top-up
+            Custom
           </Button>
         </div>
       </div>
 
-      <div className="space-y-3 rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
-        <p className="app-kicker">Manual admin credit</p>
-        <Input
-          type="number"
-          min="1"
-          step="1"
-          value={creditAmount}
-          onChange={(event) => setCreditAmount(event.target.value)}
-          placeholder="Amount in GBP"
-        />
-        <Input
-          value={creditDescription}
-          onChange={(event) => setCreditDescription(event.target.value)}
-          placeholder="Credit description"
-        />
-        <Button variant="secondary" onClick={issueManualCredit} disabled={loading !== null}>
-          {loading === "manual-credit" ? "Applying..." : "Apply manual credit"}
-        </Button>
-      </div>
+      {canIssueManualCredit ? (
+        <div className="space-y-3 border-t border-border-subtle pt-5">
+          <p className="app-kicker">Manual platform credit</p>
+          <div className="grid gap-2 md:grid-cols-[160px_minmax(0,1fr)]">
+            <Input
+              type="number"
+              min="1"
+              step="1"
+              value={creditAmount}
+              onChange={(event) => setCreditAmount(event.target.value)}
+              placeholder="Amount in GBP"
+            />
+            <Input
+              value={creditDescription}
+              onChange={(event) => setCreditDescription(event.target.value)}
+              placeholder="Credit description"
+            />
+          </div>
+          <Button variant="secondary" onClick={issueManualCredit} disabled={loading !== null}>
+            {loading === "manual-credit" ? "Applying..." : "Apply manual credit"}
+          </Button>
+        </div>
+      ) : null}
 
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
     </div>

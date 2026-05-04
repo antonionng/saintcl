@@ -63,7 +63,7 @@ export function SettingsEmailPreferencesForm({
         <CardHeader>
           <CardTitle>Email preferences</CardTitle>
           <CardDescription>
-            Control which non-essential SaintClaw messages reach you for this workspace.
+            Control which non-essential Saint AGI messages reach you for this workspace.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -81,7 +81,7 @@ export function SettingsEmailPreferencesForm({
           />
           <PreferenceRow
             title="Welcome series"
-            description="The onboarding sequence that helps new users get more value from SaintClaw quickly."
+            description="The onboarding sequence that helps new users get more value from Saint AGI quickly."
             checked={preferences.welcomeSeriesOptIn}
             onChange={(checked) => setPreferences((current) => ({ ...current, welcomeSeriesOptIn: checked }))}
           />
@@ -101,7 +101,7 @@ export function SettingsEmailPreferencesForm({
 
       <Card className="settings-panel">
         <CardHeader>
-          <CardTitle>How SaintClaw uses email</CardTitle>
+          <CardTitle>How Saint AGI uses email</CardTitle>
           <CardDescription>Transactional mail stays on so your workspace can keep working.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm leading-7 text-zinc-400">
@@ -143,17 +143,28 @@ function PreferenceRow({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="flex items-start justify-between gap-4 rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className="flex w-full items-start justify-between gap-4 rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4 text-left transition-colors hover:border-white/16 hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+    >
       <div className="min-w-0">
         <p className="font-medium text-white">{title}</p>
         <p className="mt-2 text-sm leading-6 text-zinc-400">{description}</p>
       </div>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(event) => onChange(event.target.checked)}
-        className="mt-1 size-4 rounded border-white/20 bg-white/[0.06]"
-      />
-    </label>
+      <span
+        className={`mt-1 flex h-6 w-11 shrink-0 items-center rounded-full border p-0.5 transition-colors ${
+          checked ? "border-emerald-300/60 bg-emerald-400/80" : "border-white/15 bg-white/[0.06]"
+        }`}
+      >
+        <span
+          className={`size-4 rounded-full bg-white shadow-sm transition-transform ${
+            checked ? "translate-x-5" : "translate-x-0"
+          }`}
+        />
+      </span>
+    </button>
   );
 }

@@ -17,7 +17,9 @@ export function isAdminRole(role?: string | null, options?: { isSuperAdmin?: boo
 }
 
 export function getAuthenticatedHomePath(role?: string | null, options?: { isSuperAdmin?: boolean }) {
-  return isAdminRole(role, options) ? "/dashboard" : "/workspace";
+  void role;
+  void options;
+  return "/workspace";
 }
 
 export function canSessionAccessAssignment(
@@ -29,6 +31,9 @@ export function canSessionAccessAssignment(
   if (assignment.assignee_type === "org") return true;
   if (assignment.assignee_type === "employee") {
     return assignment.assignee_ref === session.userId || assignment.assignee_ref === session.email;
+  }
+  if (assignment.assignee_type === "team") {
+    return session.teamIds.includes(assignment.assignee_ref);
   }
   return false;
 }

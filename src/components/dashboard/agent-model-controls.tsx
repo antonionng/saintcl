@@ -138,7 +138,7 @@ export function AgentModelControls(props: {
           value={agentModel}
           onChange={(event) => setAgentModel(event.target.value)}
           disabled={!props.canManageAgents || !props.allowAgentOverride || loading !== null}
-          className="flex h-11 w-full rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-2 text-sm text-white"
+          className="flex h-9 w-full rounded-sm border border-border bg-transparent px-3 py-2 text-[length:var(--text-sm)] text-white outline-none transition-colors focus:border-border-strong"
         >
           {props.approvedModels.map((entry) => (
             <option key={entry.id} value={entry.id}>
@@ -155,7 +155,7 @@ export function AgentModelControls(props: {
           </p>
         ) : null}
         {props.canManageAgents ? (
-          <Button onClick={saveAgentModel} disabled={!props.allowAgentOverride || loading !== null}>
+          <Button variant="secondary" size="sm" onClick={saveAgentModel} disabled={!props.allowAgentOverride || loading !== null}>
             {loading === "agent" ? "Saving..." : "Save agent default"}
           </Button>
         ) : (
@@ -163,7 +163,7 @@ export function AgentModelControls(props: {
         )}
       </div>
 
-      <div className="space-y-3 rounded-xl border border-white/8 bg-white/[0.02] p-4">
+      <div className="space-y-3 rounded-md border border-border-subtle bg-transparent p-4">
         <div>
           <p className="text-sm font-medium text-white">Session override</p>
           <p className="text-xs text-zinc-500">
@@ -184,7 +184,7 @@ export function AgentModelControls(props: {
             value={sessionModel}
             onChange={(event) => setSessionModel(event.target.value)}
             disabled={!props.allowSessionOverride || loading !== null}
-            className="flex h-11 w-full rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-2 text-sm text-white"
+            className="flex h-9 w-full rounded-sm border border-border bg-transparent px-3 py-2 text-[length:var(--text-sm)] text-white outline-none transition-colors focus:border-border-strong"
           >
             {props.approvedModels.map((entry) => (
               <option key={entry.id} value={entry.id}>
@@ -198,7 +198,7 @@ export function AgentModelControls(props: {
             </p>
           ) : null}
         </div>
-        <Button onClick={saveSessionModel} disabled={!props.allowSessionOverride || loading !== null}>
+        <Button variant="secondary" size="sm" onClick={saveSessionModel} disabled={!props.allowSessionOverride || loading !== null}>
           {loading === "session" ? "Applying..." : "Apply session override"}
         </Button>
       </div>
@@ -209,7 +209,7 @@ export function AgentModelControls(props: {
           <p className="text-sm text-zinc-500">No session overrides have been applied yet.</p>
         ) : (
           props.sessionOverrides.map((entry) => (
-            <div key={entry.id} className="rounded-xl border border-white/8 bg-white/[0.02] p-4">
+            <div key={entry.id} className="rounded-md border border-border-subtle bg-transparent p-4">
               <p className="text-sm font-medium text-white">{entry.model}</p>
               <p className="mt-2 text-xs text-zinc-500">
                 {entry.session_key} · {new Date(entry.created_at).toLocaleString()}

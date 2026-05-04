@@ -3,8 +3,11 @@ import type { BillingInterval, PlanTier } from "@/types";
 export const BILLING_INTERVALS = ["monthly", "annual"] as const satisfies BillingInterval[];
 export const PLAN_ORDER = ["starter", "pro", "business", "enterprise"] as const satisfies PlanTier[];
 export const SELF_SERVE_PLAN_ORDER = ["starter", "pro", "business"] as const satisfies PlanTier[];
-export const TRIAL_LENGTH_DAYS = 14;
+export const TRIAL_LENGTH_DAYS = 7;
 export const TRIAL_AGENT_LIMIT = 1;
+export const TRIAL_MESSAGE_LIMIT = 150;
+export const TRIAL_FREE_MODEL_ID = "openrouter/meta-llama/llama-3.3-70b:free";
+export const TRIAL_FREE_MODEL_LABEL = "Llama 3.3 70B Free";
 
 type PlanCatalogEntry = {
   id: PlanTier;
@@ -193,6 +196,31 @@ export function getAgentProvisionLimitMessage(
     return `Your trial includes ${limit} agent. Upgrade to unlock the full ${getPlanDisplayName(plan)} plan limits.`;
   }
   return `Your ${getPlanDisplayName(plan)} plan allows up to ${limit} agent${limit === 1 ? "" : "s"}. Upgrade your plan to provision more.`;
+}
+
+export function isTrialModelRestrictionActive(options?: {
+  trialStatus?: string | null;
+  trialEndsAt?: string | null;
+  isSuperAdmin?: boolean;
+}) {
+  if (options?.isSuperAdmin) {
+    return false;
+  }
+  return getResolvedTrialStatus(options?.trialStatus, options?.trialEndsAt) === "active";
+}
+
+export function hasTrialMessageCapacity(
+  usedMessages: number,
+  options?: { trialStatus?: string | null; trialEndsAt?: string | null; isSuperAdmin?: boolean },
+) {
+  if (!isTrialModelRestrictionActive(options)) {
+    return true;
+  }
+  return usedMessages < TRIAL_MESSAGE_LIMIT;
+}
+
+export function getTrialMessageLimitMessage() {
+  return `Your trial includes ${TRIAL_MESSAGE_LIMIT} messages on the free trial model. Upgrade and top up your wallet to continue.`;
 }
 
 export function getPlanIntervalLabel(interval: BillingInterval) {

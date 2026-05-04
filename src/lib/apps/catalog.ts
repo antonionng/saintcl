@@ -4,8 +4,7 @@ export type AppCategory =
   | "search"
   | "memory"
   | "tool"
-  | "mcp"
-  | "model";
+  | "mcp";
 
 export type AppInstallType = "click" | "paste-token" | "oauth-soon";
 
@@ -28,7 +27,6 @@ export type CatalogApp = {
   openclawId?: string;
   skillSlug?: string;
   channelType?: string;
-  modelId?: string;
   requiresEnv?: string[];
   tags?: string[];
 };
@@ -40,8 +38,9 @@ export const CATEGORY_LABELS: Record<AppCategory, string> = {
   memory: "Memory",
   tool: "Tools",
   mcp: "MCP",
-  model: "Models",
 };
+
+export const SORTED_APP_CATEGORIES: AppCategory[] = ["channel", "mcp", "memory", "search", "skill", "tool"];
 
 const SIMPLE_ICON = (slug: string, color = "ffffff") =>
   `https://cdn.simpleicons.org/${slug}/${color}`;
@@ -142,7 +141,7 @@ export const CATALOG: CatalogApp[] = [
     id: "memory-core",
     name: "Memory",
     category: "memory",
-    vendor: "OpenClaw",
+    vendor: "Saint AGI",
     oneLiner: "Persistent memory across conversations.",
     description:
       "Your agent remembers user preferences, past conversations, and key facts across sessions.",
@@ -155,7 +154,7 @@ export const CATALOG: CatalogApp[] = [
     id: "memory-lancedb",
     name: "Vector Memory",
     category: "memory",
-    vendor: "OpenClaw",
+    vendor: "Saint AGI",
     oneLiner: "Vector-backed long-term memory.",
     description:
       "Local vector store for high-volume embeddings. Pairs with knowledge bases for semantic recall.",
@@ -170,7 +169,7 @@ export const CATALOG: CatalogApp[] = [
     id: "browser-tool",
     name: "Browser",
     category: "tool",
-    vendor: "OpenClaw",
+    vendor: "Saint AGI",
     oneLiner: "Headless browser for live web pages.",
     description:
       "Lets your agent open URLs, take screenshots, click buttons, and read full pages in real time.",
@@ -183,7 +182,7 @@ export const CATALOG: CatalogApp[] = [
     id: "diffs-tool",
     name: "Diffs",
     category: "tool",
-    vendor: "OpenClaw",
+    vendor: "Saint AGI",
     oneLiner: "File diffs and patch operations.",
     description: "Compare files, generate patches, and apply targeted edits inside the agent workspace.",
     install: "click",
@@ -195,7 +194,7 @@ export const CATALOG: CatalogApp[] = [
     id: "diagnostics-otel",
     name: "Telemetry",
     category: "tool",
-    vendor: "OpenClaw",
+    vendor: "Saint AGI",
     oneLiner: "OpenTelemetry trace export.",
     description: "Send agent traces to your OpenTelemetry collector for production observability.",
     install: "click",
@@ -209,7 +208,7 @@ export const CATALOG: CatalogApp[] = [
     id: "skill-web-search",
     name: "Web Search Skill",
     category: "skill",
-    vendor: "OpenClaw",
+    vendor: "Saint AGI",
     oneLiner: "Multi-provider web search skill.",
     description: "Agent skill that wraps multiple search providers for resilient research.",
     install: "click",
@@ -221,7 +220,7 @@ export const CATALOG: CatalogApp[] = [
     id: "skill-file-edit",
     name: "File Editor Skill",
     category: "skill",
-    vendor: "OpenClaw",
+    vendor: "Saint AGI",
     oneLiner: "Read, write, and patch files.",
     description: "Adds file editing capability to the agent workspace.",
     install: "click",
@@ -233,7 +232,7 @@ export const CATALOG: CatalogApp[] = [
     id: "skill-code-exec",
     name: "Code Execution Skill",
     category: "skill",
-    vendor: "OpenClaw",
+    vendor: "Saint AGI",
     oneLiner: "Sandboxed code execution.",
     description: "Run Python, JavaScript, and bash in a sandboxed environment with output capture.",
     install: "click",
@@ -245,7 +244,7 @@ export const CATALOG: CatalogApp[] = [
     id: "skill-pdf-reader",
     name: "PDF Reader Skill",
     category: "skill",
-    vendor: "OpenClaw Community",
+    vendor: "Saint AGI Community",
     oneLiner: "Extract text from PDF documents.",
     description: "Parse tables, forms, and multi-page reports into usable text.",
     install: "click",
@@ -257,7 +256,7 @@ export const CATALOG: CatalogApp[] = [
     id: "skill-data-analysis",
     name: "Data Analysis Skill",
     category: "skill",
-    vendor: "OpenClaw Community",
+    vendor: "Saint AGI Community",
     oneLiner: "CSV and Excel parsing with pivots.",
     description: "Turn raw spreadsheets into insights with natural language queries.",
     install: "click",
@@ -403,74 +402,6 @@ export const CATALOG: CatalogApp[] = [
     tags: ["chat", "team"],
   },
 
-  // --- Models (top OpenRouter ids) ---
-  {
-    id: "model-claude-sonnet-4",
-    name: "Claude Sonnet 4",
-    category: "model",
-    vendor: "Anthropic",
-    logo: SIMPLE_ICON("anthropic", "D97757"),
-    oneLiner: "Balanced model with strong reasoning.",
-    install: "click",
-    installer: "config-toggle",
-    modelId: "anthropic/claude-sonnet-4",
-  },
-  {
-    id: "model-claude-opus-4",
-    name: "Claude Opus 4",
-    category: "model",
-    vendor: "Anthropic",
-    logo: SIMPLE_ICON("anthropic", "D97757"),
-    oneLiner: "Top-tier reasoning for hard problems.",
-    install: "click",
-    installer: "config-toggle",
-    modelId: "anthropic/claude-opus-4",
-  },
-  {
-    id: "model-gpt-5",
-    name: "GPT-5",
-    category: "model",
-    vendor: "OpenAI",
-    logo: SIMPLE_ICON("openai", "ffffff"),
-    oneLiner: "OpenAI flagship model.",
-    install: "click",
-    installer: "config-toggle",
-    modelId: "openai/gpt-5",
-  },
-  {
-    id: "model-gpt-5-mini",
-    name: "GPT-5 Mini",
-    category: "model",
-    vendor: "OpenAI",
-    logo: SIMPLE_ICON("openai", "ffffff"),
-    oneLiner: "Fast, cheap, capable.",
-    install: "click",
-    installer: "config-toggle",
-    modelId: "openai/gpt-5-mini",
-  },
-  {
-    id: "model-gemini-2-5-pro",
-    name: "Gemini 2.5 Pro",
-    category: "model",
-    vendor: "Google",
-    logo: SIMPLE_ICON("googlegemini", "8E75B2"),
-    oneLiner: "Long context multimodal model.",
-    install: "click",
-    installer: "config-toggle",
-    modelId: "google/gemini-2.5-pro",
-  },
-  {
-    id: "model-llama-3-3",
-    name: "Llama 3.3 70B",
-    category: "model",
-    vendor: "Meta",
-    logo: SIMPLE_ICON("meta", "0467DF"),
-    oneLiner: "Open-weight workhorse.",
-    install: "click",
-    installer: "config-toggle",
-    modelId: "meta-llama/llama-3.3-70b-instruct",
-  },
-
   // --- MCP placeholders ---
   {
     id: "mcp-filesystem",
@@ -501,6 +432,19 @@ export function getApp(id: string): CatalogApp | undefined {
   return CATALOG.find((app) => app.id === id);
 }
 
+export function sortCatalogApps(apps: CatalogApp[]): CatalogApp[] {
+  const categoryRank = new Map(SORTED_APP_CATEGORIES.map((category, index) => [category, index]));
+
+  return [...apps].sort((a, b) => {
+    const categoryDelta =
+      (categoryRank.get(a.category) ?? Number.MAX_SAFE_INTEGER) -
+      (categoryRank.get(b.category) ?? Number.MAX_SAFE_INTEGER);
+    if (categoryDelta !== 0) return categoryDelta;
+
+    return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+  });
+}
+
 export function filterCatalog(opts: { category?: AppCategory | "all"; search?: string }): CatalogApp[] {
   let items = CATALOG;
   if (opts.category && opts.category !== "all") {
@@ -516,5 +460,5 @@ export function filterCatalog(opts: { category?: AppCategory | "all"; search?: s
         app.tags?.some((tag) => tag.toLowerCase().includes(q)),
     );
   }
-  return items;
+  return sortCatalogApps(items);
 }

@@ -1,6 +1,6 @@
 ---
 name: supabase-schema-and-rls
-description: Add or modify SaintClaw Supabase schema, row-level security, org-scoped policies, and audit-friendly persistence. Use when writing migrations, introducing new tables, or changing tenant data access rules.
+description: Add or modify SaintAGI Supabase schema, row-level security, org-scoped policies, and audit-friendly persistence. Use when writing migrations, introducing new tables, or changing tenant data access rules.
 ---
 
 # Supabase Schema And RLS
@@ -11,7 +11,7 @@ Use this skill for migrations and tenant data model changes.
 
 1. Add schema in a new migration under `supabase/migrations/`.
 2. Make org ownership explicit with `org_id` where the data is tenant-scoped.
-3. Enable RLS and add policies that mirror SaintClaw session rules.
+3. Enable RLS and add policies that mirror SaintAGI session rules.
 4. Add update timestamps and audit hooks for important records.
 
 ## Default Schema Rules

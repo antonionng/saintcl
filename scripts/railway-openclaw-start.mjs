@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { access } from "node:fs/promises";
 import { constants } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const DEFAULT_BOOTSTRAP_CHANNELS = [
@@ -20,6 +20,36 @@ async function fileExists(targetPath) {
     return true;
   } catch {
     return false;
+  }
+}
+
+async function removeIfPresent(targetPath) {
+  try {
+    await rm(targetPath, { recursive: true, force: true });
+  } catch (error) {
+    console.warn(`[gateway] failed to remove ${targetPath}: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+async function reclaimGeneratedStateSpace(stateDir) {
+  await Promise.all([
+    removeIfPresent(path.join(stateDir, "plugin-runtime-deps")),
+    removeIfPresent(path.join(stateDir, "logs")),
+    removeIfPresent(path.join(stateDir, "tmp")),
+  ]);
+}
+
+async function writeConfigWithSpaceRetry(configPath, stateDir, config) {
+  const payload = `${JSON.stringify(config, null, 2)}\n`;
+  try {
+    await writeFile(configPath, payload, "utf8");
+  } catch (error) {
+    if (!(error && typeof error === "object" && "code" in error && error.code === "ENOSPC")) {
+      throw error;
+    }
+    console.warn("[gateway] config write hit ENOSPC; clearing generated cache and retrying once.");
+    await reclaimGeneratedStateSpace(stateDir);
+    await writeFile(configPath, payload, "utf8");
   }
 }
 
@@ -176,11 +206,11 @@ function mergeConfig(existingConfig, options) {
   defaults.model = currentModel;
   defaults.models = models;
 
-  if (
-    (!Array.isArray(controlUi.allowedOrigins) || controlUi.allowedOrigins.length === 0) &&
-    options.allowedOrigins.length > 0
-  ) {
-    controlUi.allowedOrigins = options.allowedOrigins;
+  if (options.allowedOrigins.length > 0) {
+    const existingAllowedOrigins = Array.isArray(controlUi.allowedOrigins)
+      ? controlUi.allowedOrigins.filter((value) => typeof value === "string" && value.trim().length > 0)
+      : [];
+    controlUi.allowedOrigins = [...new Set([...existingAllowedOrigins, ...options.allowedOrigins])];
   }
 
   if (
@@ -192,6 +222,17 @@ function mergeConfig(existingConfig, options) {
 
   if (Array.isArray(controlUi.allowedOrigins) && controlUi.allowedOrigins.length > 0) {
     delete controlUi.dangerouslyAllowHostHeaderOriginFallback;
+  }
+
+  // SaintAGI runs as a hosted multi-tenant control plane: the Next.js backend
+  // holds OPENCLAW_GATEWAY_TOKEN and connects to this Railway gateway over the
+  // network as a trusted operator (client.id=gateway-client, mode=backend).
+  // Tenant data isolation happens at the workspace path layer above gateway
+  // auth, so we trust the shared token instead of requiring per-backend device
+  // pairing. Operators who want stricter behavior can override the flag in the
+  // gateway config.
+  if (controlUi.allowSharedTokenBackendOperator === undefined) {
+    controlUi.allowSharedTokenBackendOperator = true;
   }
 
   for (const channelId of options.bootstrapChannels) {
@@ -210,6 +251,13 @@ function mergeConfig(existingConfig, options) {
       pluginAllow.push(channelId);
     }
   }
+
+  pluginEntries.bonjour = {
+    ...(pluginEntries.bonjour && typeof pluginEntries.bonjour === "object" && !Array.isArray(pluginEntries.bonjour)
+      ? pluginEntries.bonjour
+      : {}),
+    enabled: false,
+  };
 
   const nextConfig = {
     ...config,
@@ -246,6 +294,7 @@ async function main() {
   const stateDir = process.env.OPENCLAW_STATE_DIR?.trim() || "/data/.openclaw";
   const workspaceDir = process.env.OPENCLAW_WORKSPACE_DIR?.trim() || "/data/workspace";
   const configPath = process.env.OPENCLAW_CONFIG_PATH?.trim() || path.join(stateDir, "openclaw.json");
+  const pluginStageDir = process.env.OPENCLAW_PLUGIN_STAGE_DIR?.trim() || "/tmp/openclaw-plugin-runtime-deps";
   const defaultModel = process.env.OPENCLAW_DEFAULT_MODEL?.trim();
   const bootstrapChannels = parseBootstrapChannels(process.env.OPENCLAW_BOOTSTRAP_CHANNELS);
 
@@ -259,7 +308,9 @@ async function main() {
 
   await mkdir(stateDir, { recursive: true });
   await mkdir(workspaceDir, { recursive: true });
+  await mkdir(pluginStageDir, { recursive: true });
   await mkdir(path.dirname(configPath), { recursive: true });
+  await removeIfPresent(path.join(stateDir, "plugin-runtime-deps"));
 
   let existingConfig = {};
   if (await fileExists(configPath)) {
@@ -277,7 +328,7 @@ async function main() {
     bootstrapChannels,
   });
 
-  await writeFile(configPath, `${JSON.stringify(nextConfig, null, 2)}\n`, "utf8");
+  await writeConfigWithSpaceRetry(configPath, stateDir, nextConfig);
 
   const child = spawn(
     process.execPath,
@@ -302,6 +353,7 @@ async function main() {
         OPENCLAW_STATE_DIR: stateDir,
         OPENCLAW_WORKSPACE_DIR: workspaceDir,
         OPENCLAW_CONFIG_PATH: configPath,
+        OPENCLAW_PLUGIN_STAGE_DIR: pluginStageDir,
       },
     },
   );

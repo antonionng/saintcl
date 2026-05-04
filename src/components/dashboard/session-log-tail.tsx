@@ -167,70 +167,74 @@ export function SessionLogTail({
 
   return (
     <Card className="h-full">
-      <CardHeader className={compact ? "p-5" : undefined}>
+      <CardHeader className={compact ? "p-4" : undefined}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">
             <CardTitle>{title}</CardTitle>
-            <p className="text-sm text-zinc-400">
+            <p className={compact ? "text-xs text-zinc-500" : "text-sm text-zinc-400"}>
               {compact
                 ? "Live session summary and the latest request metrics."
                 : "Review the selected session, including usage totals, recent request outcomes, and activity events."}
             </p>
           </div>
-          <div className="rounded-full border border-white/8 bg-black/20 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-zinc-500">
+          <div className="rounded-sm border border-border-subtle bg-transparent px-2 py-1 text-[11px] uppercase tracking-[0.12em] text-zinc-500">
             {sessionKey ? "Live stream" : "Awaiting selection"}
           </div>
         </div>
       </CardHeader>
-      <CardContent className={compact ? "space-y-4 p-5 pt-0" : "space-y-4"}>
+      <CardContent className={compact ? "space-y-3 p-4 pt-0" : "space-y-4"}>
         {!sessionKey ? (
-          <div className="rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-6 text-sm text-zinc-400">
+          <div className="rounded-md border border-border-subtle bg-transparent px-3 py-4 text-sm text-zinc-400">
             Select a session to inspect live activity.
           </div>
         ) : null}
 
         {loading && !snapshot ? (
-          <div className="rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-6 text-sm text-zinc-400">
+          <div className="rounded-md border border-border-subtle bg-transparent px-3 py-4 text-sm text-zinc-400">
             Loading live session telemetry...
           </div>
         ) : null}
 
         {error ? (
-          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-            {error}
+          <div className="rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-3 text-sm text-amber-200">
+            {error === "Session not found." ? "No live session is available for this request yet." : error}
           </div>
         ) : null}
 
         {snapshot ? (
           <>
-            <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-4">
+            <div className="rounded-md border border-border-subtle bg-transparent p-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Session</p>
-                  <h3 className="text-lg font-medium text-white">{snapshot.agent.name}</h3>
+                  <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Session</p>
+                  <h3 className={compact ? "text-sm font-medium text-white" : "text-lg font-medium text-white"}>
+                    {snapshot.agent.name}
+                  </h3>
                   <p className="text-xs text-zinc-500">{snapshot.sessionKey}</p>
                 </div>
-                <div className="rounded-2xl border border-white/8 bg-black/20 px-3 py-3 text-sm text-zinc-300">
-                  <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">Model</p>
+                <div className="rounded-md border border-border-subtle bg-black/10 px-3 py-2 text-sm text-zinc-300">
+                  <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500">Model</p>
                   <p className="mt-1">{snapshot.provider ?? "unknown"} / {snapshot.model ?? "unknown"}</p>
                 </div>
               </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className={`mt-3 grid gap-2 ${compact ? "grid-cols-2" : "sm:grid-cols-2 xl:grid-cols-4"}`}>
                 {[
                   { label: "Requests", value: snapshot.stats.totalRequests.toLocaleString() },
                   { label: "Tokens", value: snapshot.stats.totalTokens.toLocaleString() },
                   { label: "Cost", value: formatCurrency(snapshot.stats.totalCostUsd) },
                   { label: "Avg latency", value: formatLatency(snapshot.stats.averageLatencyMs) },
                 ].map((stat) => (
-                  <div key={stat.label} className="rounded-xl border border-white/8 bg-black/20 px-3 py-3">
-                    <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">{stat.label}</p>
-                    <p className="mt-2 text-lg font-medium text-white">{stat.value}</p>
+                  <div key={stat.label} className="rounded-md border border-border-subtle bg-black/10 px-3 py-2">
+                    <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500">{stat.label}</p>
+                    <p className={compact ? "mt-1 text-sm font-medium text-white" : "mt-2 text-lg font-medium text-white"}>
+                      {stat.value}
+                    </p>
                   </div>
                 ))}
               </div>
             </div>
 
-            {points.length > 0 ? (
+            {points.length > 0 && !compact ? (
               <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-4">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Recent usage cadence</p>
@@ -255,19 +259,19 @@ export function SessionLogTail({
               </div>
             ) : null}
 
-            <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-4">
+            <div className="rounded-md border border-border-subtle bg-transparent p-3">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Recent request metrics</p>
+                <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Recent request metrics</p>
                 <p className="text-xs text-zinc-500">
                   Showing {Math.min(snapshot.requestEvents.length, compact ? 6 : 10)} most recent
                 </p>
               </div>
-              <div className="mt-4 space-y-3">
+              <div className="mt-3 space-y-2">
                 {snapshot.requestEvents.slice(0, compact ? 6 : 10).map((event) => (
-                  <div key={event.id} className="rounded-xl border border-white/8 bg-black/20 px-3 py-3 text-sm">
+                  <div key={event.id} className="rounded-md border border-border-subtle bg-black/10 px-3 py-3 text-sm">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
-                        <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+                        <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500">
                           {new Date(event.occurredAt).toLocaleTimeString()}
                         </p>
                         <p className="text-sm text-zinc-300">
@@ -275,29 +279,29 @@ export function SessionLogTail({
                         </p>
                       </div>
                       <span
-                        className={`rounded-full border px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.16em] ${getStatusClasses(event.status)}`}
+                        className={`rounded-sm border px-2 py-1 text-[10px] font-medium uppercase tracking-[0.12em] ${getStatusClasses(event.status)}`}
                       >
                         {event.status}
                       </span>
                     </div>
-                    <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                      <div className="rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5">
-                        <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">Tokens</p>
+                    <div className={`mt-3 grid gap-2 ${compact ? "grid-cols-3" : "sm:grid-cols-3"}`}>
+                      <div className="rounded-md border border-border-subtle bg-transparent px-3 py-2">
+                        <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500">Tokens</p>
                         <p className="mt-1 text-sm font-medium text-zinc-200">
                           {event.totalTokens?.toLocaleString() ?? "n/a"}
                         </p>
                       </div>
-                      <div className="rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5">
-                        <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">Cost</p>
+                      <div className="rounded-md border border-border-subtle bg-transparent px-3 py-2">
+                        <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500">Cost</p>
                         <p className="mt-1 text-sm font-medium text-zinc-200">{formatCurrency(event.costUsd)}</p>
                       </div>
-                      <div className="rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5">
-                        <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">Latency</p>
+                      <div className="rounded-md border border-border-subtle bg-transparent px-3 py-2">
+                        <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500">Latency</p>
                         <p className="mt-1 text-sm font-medium text-zinc-200">{formatLatency(event.latencyMs)}</p>
                       </div>
                     </div>
                     {event.errorMessage ? (
-                      <p className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-amber-200">
+                      <p className="mt-3 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-amber-200">
                         {event.errorMessage}
                       </p>
                     ) : null}
@@ -306,6 +310,7 @@ export function SessionLogTail({
               </div>
             </div>
 
+            {!compact ? (
             <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Activity feed</p>
@@ -325,6 +330,7 @@ export function SessionLogTail({
                 ))}
               </div>
             </div>
+            ) : null}
           </>
         ) : null}
       </CardContent>

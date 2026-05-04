@@ -5,7 +5,7 @@ const ACCOUNT_AVATAR_EXTENSION_BY_MIME_TYPE = {
   "image/webp": "webp",
 } as const;
 
-const ACCOUNT_PROFILE_METADATA_KEY = "saintclaw_profile";
+const ACCOUNT_PROFILE_METADATA_KEY = "saintagi_profile";
 
 export const ACCOUNT_AVATAR_BUCKET = "account-avatars";
 export const ACCOUNT_AVATAR_MAX_BYTES = 5 * 1024 * 1024;
@@ -121,13 +121,13 @@ export function getPreferredUserDisplayName({
     }
   }
 
-  return "SaintClaw";
+  return "Saint AGI";
 }
 
 export function getUserAvatarInitials({
   displayName,
   email,
-  fallbackLabel = "SaintClaw",
+  fallbackLabel = "Saint AGI",
 }: {
   displayName?: string | null;
   email?: string | null;

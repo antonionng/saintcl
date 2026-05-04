@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Activity, ArrowRight, Bot, Cable, Database, Puzzle, TerminalSquare } from "lucide-react";
+import { Activity, ArrowRight, Bot, TerminalSquare } from "lucide-react";
 
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -31,17 +31,17 @@ export default async function DashboardPage() {
 
   const dashboardStats: DashboardStat[] = [
     { id: "agents", label: "Agents", value: String(stats.agents), delta: stats.agents === 0 ? "None yet" : "Active" },
-    { id: "channels", label: "Apps", value: String(stats.channels), delta: stats.channels === 0 ? "None connected" : "Connected" },
+    { id: "channels", label: "Connectors", value: String(stats.channels), delta: stats.channels === 0 ? "None connected" : "Connected" },
     { id: "docs", label: "Knowledge", value: String(stats.docs), delta: stats.docs === 0 ? "No documents" : "Indexed" },
-    { id: "runtimes", label: "Workspaces", value: String(stats.runtimes), delta: stats.runtimes === 0 ? "Not started" : "Running" },
+    { id: "runtimes", label: "Runtimes", value: String(stats.runtimes), delta: stats.runtimes === 0 ? "Not started" : "Running" },
   ];
 
   return (
     <div className="space-y-phi-13">
       <PageHeader
-        eyebrow="Overview"
-        title="Home"
-        description="Your agents, connected apps, and recent activity at a glance."
+        eyebrow="Operations"
+        title="Rollout overview"
+        description="Runtime health, connector coverage, approvals, knowledge, and recent activity for company admins."
         action={
           <Button asChild>
             <Link href="/agents/new">New agent</Link>
@@ -54,14 +54,14 @@ export default async function DashboardPage() {
       <div className="grid gap-phi-5 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Workspaces</CardTitle>
+            <CardTitle>Runtime health</CardTitle>
           </CardHeader>
           <CardContent>
             {runtimes.length === 0 ? (
               <EmptyState
                 icon={Activity}
-                title="No workspaces yet"
-                description="Create your first agent and a workspace will spin up automatically."
+                title="No runtime yet"
+                description="Create your first agent and Saint AGI will prepare the governed runtime path automatically."
                 className="py-phi-8"
               />
             ) : (
@@ -74,7 +74,7 @@ export default async function DashboardPage() {
                           {session?.org.name ?? "Workspace"}
                         </p>
                         <p className="mt-phi-2 text-[length:var(--text-sm)] text-zinc-400">
-                          {runtime.status === "online" ? "Ready for chat" : "Connecting"}
+                          {runtime.status === "online" ? "Ready for assigned workspaces" : "Connecting"}
                         </p>
                       </div>
                       <Badge variant={runtime.status === "online" ? "success" : "warning"}>
@@ -95,14 +95,14 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Approval queue</CardTitle>
+            <CardTitle>Governance queue</CardTitle>
           </CardHeader>
           <CardContent>
             {approvals.length === 0 ? (
               <EmptyState
                 icon={TerminalSquare}
                 title="No pending approvals"
-                description="Terminal commands requiring approval will appear here."
+                description="Risky commands and governed actions that require admin review will appear here."
                 className="py-phi-8"
               />
             ) : (
@@ -128,14 +128,14 @@ export default async function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent logs</CardTitle>
+          <CardTitle>Recent rollout activity</CardTitle>
         </CardHeader>
         <CardContent>
           {logs.length === 0 ? (
             <EmptyState
               icon={Bot}
               title="No activity yet"
-              description="Activity will appear here once your agents start chatting."
+              description="Agent activity, connector events, and runtime signals will appear here as your rollout starts."
               action={
                 <div className="flex flex-wrap justify-center gap-phi-3">
                   <Button asChild size="sm">
@@ -164,49 +164,6 @@ export default async function DashboardPage() {
           )}
         </CardContent>
       </Card>
-
-      <div className="grid gap-phi-5 md:grid-cols-2 lg:grid-cols-4">
-        <Link
-          href="/agents/new"
-          className="group rounded-lg border border-border-subtle bg-surface-2 p-phi-8 transition-colors hover:border-border hover:bg-surface-3"
-        >
-          <Bot className="size-5 text-white" />
-          <h3 className="mt-phi-5 text-[length:var(--text-lg)] font-medium tracking-[-0.02em] text-white">Create an agent</h3>
-          <p className="mt-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
-            Pick a role and your agent is ready to chat in seconds.
-          </p>
-        </Link>
-        <Link
-          href="/apps"
-          className="group rounded-lg border border-border-subtle bg-surface-2 p-phi-8 transition-colors hover:border-border hover:bg-surface-3"
-        >
-          <Cable className="size-5 text-white" />
-          <h3 className="mt-phi-5 text-[length:var(--text-lg)] font-medium tracking-[-0.02em] text-white">Browse the app store</h3>
-          <p className="mt-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
-            Connect Slack, Telegram, search, and more in one click.
-          </p>
-        </Link>
-        <Link
-          href="/skills"
-          className="group rounded-lg border border-border-subtle bg-surface-2 p-phi-8 transition-colors hover:border-border hover:bg-surface-3"
-        >
-          <Puzzle className="size-5 text-white" />
-          <h3 className="mt-phi-5 text-[length:var(--text-lg)] font-medium tracking-[-0.02em] text-white">Install skills</h3>
-          <p className="mt-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
-            Give your agents new abilities from the curated skill library.
-          </p>
-        </Link>
-        <Link
-          href="/knowledge"
-          className="group rounded-lg border border-border-subtle bg-surface-2 p-phi-8 transition-colors hover:border-border hover:bg-surface-3"
-        >
-          <Database className="size-5 text-white" />
-          <h3 className="mt-phi-5 text-[length:var(--text-lg)] font-medium tracking-[-0.02em] text-white">Upload knowledge</h3>
-          <p className="mt-phi-2 text-[length:var(--text-sm)] leading-relaxed text-zinc-400">
-            Drop in documents and your agents will use them as context.
-          </p>
-        </Link>
-      </div>
     </div>
   );
 }

@@ -5,17 +5,15 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Activity,
-  AlertTriangle,
-  Bot,
   ChevronLeft,
   ChevronRight,
   Command,
   Database,
   LayoutDashboard,
+  MessageSquare,
   type LucideIcon,
   Settings,
   Store,
-  UserCircle2,
   UserPlus,
 } from "lucide-react";
 
@@ -96,12 +94,10 @@ export function DashboardSidebar({
   }, []);
 
   const allConnected = platformStatus.supabase && platformStatus.openclaw;
-  const StatusIcon = allConnected ? Activity : AlertTriangle;
   const statusColor = allConnected ? "text-emerald-400" : "text-amber-400";
   const orgLabel = platformStatus.orgName ?? "Personal workspace";
   const visibleAgents = platformStatus.visibleAgents ?? [];
   const hasSingleVisibleAgent = visibleAgents.length === 1;
-  const agentNavLabel = hasSingleVisibleAgent ? "My agent" : "My agents";
 
   const statusLines: string[] = [];
   if (!platformStatus.supabase) statusLines.push("Account services unavailable");
@@ -177,13 +173,12 @@ export function DashboardSidebar({
     {
       id: "main",
       items: [
-        { href: "/openclaw", label: agentNavLabel, icon: Bot, requires: "canManageConsole" },
+        { href: "/workspace", label: "Chat", icon: MessageSquare },
         { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
         { href: "/agents", label: "Agents", icon: Command },
-        { href: "/apps", label: "Apps", icon: Store },
         { href: "/observability", label: "Activity", icon: Activity },
         { href: "/knowledge", label: "Knowledge", icon: Database },
-        { href: "/account", label: "Account", icon: UserCircle2 },
+        { href: "/apps", label: "Connect", icon: Store },
       ],
     },
     {
@@ -209,13 +204,24 @@ export function DashboardSidebar({
       {
         id: "operations",
         label: "Operations",
-        items: visibleSettingsTabs
-          .filter((tab) => tab.section === "operations")
-          .map((tab) => ({
+        items: [
+          ...visibleSettingsTabs
+            .filter((tab) => tab.section === "operations")
+            .map((tab) => ({
             href: `/settings?tab=${tab.id}`,
             label: tab.label,
             active: tab.id === activeSettingsTab,
-          })),
+            })),
+          ...(platformStatus.capabilities.canManageConsole
+            ? [
+                {
+                  href: "/openclaw",
+                  label: "Runtime console",
+                  active: isConsoleRoute,
+                },
+              ]
+            : []),
+        ],
       },
     ].filter((group) => group.items.length > 0),
     agents: agentContextualGroups,
@@ -244,7 +250,7 @@ export function DashboardSidebar({
         items: [
           {
             href: "/apps",
-            label: "All apps",
+            label: "Available",
             active: pathname === "/apps" && !searchParams.get("category"),
           },
           {
@@ -266,6 +272,11 @@ export function DashboardSidebar({
             href: "/apps?category=model",
             label: "Models",
             active: searchParams.get("category") === "model",
+          },
+          {
+            href: "/apps?roadmap=1",
+            label: "Roadmap",
+            active: searchParams.get("roadmap") === "1",
           },
         ],
       },

@@ -374,7 +374,7 @@ export function AgentTerminalPanel({ agentId }: { agentId: string }) {
                 <span>Terminal drawer</span>
                 <span>{connectionState}</span>
               </div>
-              <div ref={containerRef} className="saintclaw-terminal min-h-[420px] px-3 py-3" />
+              <div ref={containerRef} className="saintagi-terminal min-h-[420px] px-3 py-3" />
             </div>
           ) : null}
 

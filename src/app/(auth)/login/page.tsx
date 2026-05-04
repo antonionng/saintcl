@@ -16,7 +16,7 @@ function LoginPageContent() {
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("changeme123");
+  const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"sign-in" | "recovery">("sign-in");
   const [recoveryMessage, setRecoveryMessage] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -56,9 +56,13 @@ function LoginPageContent() {
         return;
       }
 
-      const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+      const { error: recoveryError } = await supabase.auth
+        .resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        })
+        .catch(() => ({
+          error: new Error("Supabase Auth is temporarily unavailable. Please try again in a few minutes."),
+        }));
 
       if (recoveryError) {
         setError(recoveryError.message);
@@ -72,7 +76,7 @@ function LoginPageContent() {
     }
 
     if (!isSupabaseConfigured()) {
-      router.push("/dashboard");
+      router.push("/workspace");
       return;
     }
 
@@ -83,7 +87,9 @@ function LoginPageContent() {
       return;
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password }).catch(() => ({
+      error: new Error("Supabase Auth is temporarily unavailable. Please try again in a few minutes."),
+    }));
     if (signInError) {
       setError(signInError.message);
       setLoading(false);
@@ -100,8 +106,8 @@ function LoginPageContent() {
       title="Welcome back"
       description={
         mode === "sign-in"
-          ? "Sign in to your workspace."
-          : "Enter your email and we will send a reset link."
+          ? "Access your governed agent workspace."
+          : "Enter your email to reset your password."
       }
       footer={
         <>
@@ -162,7 +168,7 @@ function LoginPageContent() {
         )}
         {!isSupabaseConfigured() ? (
           <p className="text-sm leading-6 text-zinc-500">
-            Supabase keys are not set. Sign-in will open the dashboard in demo mode.
+            Supabase keys are not set. Sign-in will open chat in demo mode.
           </p>
         ) : null}
         {recoveryMessage ? <p className="text-sm text-emerald-300">{recoveryMessage}</p> : null}
@@ -194,7 +200,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <AuthShell compact title="Welcome back" description="Loading sign-in..." footer={null}>
+        <AuthShell compact title="Welcome back" description="Loading sign in..." footer={null}>
           <div className="h-48" />
         </AuthShell>
       }

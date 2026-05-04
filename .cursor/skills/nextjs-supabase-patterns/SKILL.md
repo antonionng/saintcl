@@ -1,6 +1,6 @@
 ---
 name: nextjs-supabase-patterns
-description: Build SaintClaw features in Next.js App Router using Supabase-backed org-scoped data access, capability checks, and route validation. Use when adding dashboard pages, API routes, server-side data access, or authenticated product features.
+description: Build SaintAGI features in Next.js App Router using Supabase-backed org-scoped data access, capability checks, and route validation. Use when adding dashboard pages, API routes, server-side data access, or authenticated product features.
 ---
 
 # Next.js Supabase Patterns

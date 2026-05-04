@@ -1,6 +1,6 @@
-# SaintClaw
+# SaintAGI
 
-SaintClaw is an enterprise-focused SaaS control plane for managed agent runtimes. It combines a Next.js dashboard, Supabase backend, tenant-scoped runtime process management, governed terminal access, app and channel configuration, knowledge upload, and billing surfaces.
+SaintAGI is an enterprise-focused SaaS control plane for managed agent runtimes. It combines a Next.js dashboard, Supabase backend, tenant-scoped runtime process management, governed terminal access, app and channel configuration, knowledge upload, and billing surfaces.
 
 ## Stack
 
@@ -29,7 +29,7 @@ npm run openclaw:install
 npm run openclaw:build
 ```
 
-4. Start the SaintClaw app:
+4. Start the SaintAGI app:
 
 ```bash
 npm run dev
@@ -67,13 +67,13 @@ Copy `.env.local.example` to `.env.local` and provide:
 - `OPENROUTER_API_KEY` if you want Saint AGI-managed OpenClaw runtimes to use OpenRouter
 - optional OpenClaw runtime overrides like `OPENCLAW_VENDOR_DIR`, `OPENCLAW_RUNTIME_ROOT`, and `OPENCLAW_BASE_PORT`
 
-By default, SaintClaw now points tenant runtimes at `OPENCLAW_DEFAULT_MODEL=openrouter/auto`. To force a specific OpenRouter model, set `OPENCLAW_DEFAULT_MODEL` explicitly, for example:
+By default, SaintAGI now points tenant runtimes at `OPENCLAW_DEFAULT_MODEL=openrouter/auto`. To force a specific OpenRouter model, set `OPENCLAW_DEFAULT_MODEL` explicitly, for example:
 
 ```text
 OPENCLAW_DEFAULT_MODEL=openrouter/meta-llama/llama-3.3-70b:free
 ```
 
-OpenClaw already has native OpenRouter support, so you do not need a separate OpenRouter CLI bridge inside SaintClaw. Under the hood, the vendored runtime can also be onboarded directly with:
+OpenClaw already has native OpenRouter support, so you do not need a separate OpenRouter CLI bridge inside SaintAGI. Under the hood, the vendored runtime can also be onboarded directly with:
 
 ```bash
 cd openclaw-vendored
@@ -155,13 +155,13 @@ Notes:
 
 - The Railway startup script seeds `gateway.mode=local`, a persistent workspace path, and Control UI origin handling automatically.
 - If `OPENCLAW_ALLOWED_ORIGINS` is not set yet, the service falls back to host-header origin mode so you can bootstrap the first deploy, then tighten origins afterward.
-- SaintClaw launches the advanced admin console against the hosted gateway directly, while the main product experience remains inside the SaintClaw UI.
+- SaintAGI launches the advanced admin console against the hosted gateway directly, while the main product experience remains inside the SaintAGI UI.
 
 ## Vendored OpenClaw
 
-The OpenClaw snapshot is stored in `openclaw-vendored`. It is pinned to upstream version `2026.4.21` (see `openclaw-vendored/package.json`). When bumping this snapshot, smoke-test the RPC paths used in `src/lib/openclaw/client.ts` (`config.patch`, `agent.create`, `skills.install`, `chat.*`) and the proxy in `src/app/api/openclaw/proxy-to-gateway.ts`.
+The OpenClaw snapshot is stored in `openclaw-vendored`. It is pinned to upstream version `2026.4.24` (see `openclaw-vendored/package.json`). When bumping this snapshot, smoke-test the RPC paths used in `src/lib/openclaw/client.ts` (`config.patch`, `agent.create`, `skills.install`, `chat.*`) and the proxy in `src/app/api/openclaw/proxy-to-gateway.ts`.
 
-SaintClaw-specific runtime ownership includes:
+SaintAGI-specific runtime ownership includes:
 
 - one OpenClaw runtime per tenant
 - tenant-scoped state/config/workspace roots
@@ -170,7 +170,7 @@ SaintClaw-specific runtime ownership includes:
 
 ## Runtime Layout
 
-SaintClaw manages tenant runtime state beneath:
+SaintAGI manages tenant runtime state beneath:
 
 ```text
 runtime-data/openclaw/<tenantId>/

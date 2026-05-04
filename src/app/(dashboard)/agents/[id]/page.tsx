@@ -2,7 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MessageSquare } from "lucide-react";
 
+import { AccessDenied } from "@/components/dashboard/access-denied";
 import { AgentAppsCard } from "@/components/dashboard/agent-apps-card";
+import { AgentAvatar } from "@/components/dashboard/agent-avatar";
+import { AgentAvatarEditor } from "@/components/dashboard/agent-avatar-editor";
 import { AgentCloneButton } from "@/components/dashboard/agent-clone-button";
 import { AgentDeleteButton } from "@/components/dashboard/agent-delete-button";
 import { AgentModelControls } from "@/components/dashboard/agent-model-controls";
@@ -12,9 +15,12 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { normalizeAgentAvatarConfig } from "@/lib/agent-identity";
+import { getSignedAgentAvatarUrl } from "@/lib/agent-avatar-storage";
+import { getAgentDisplayStatus, getAgentStatusLabel } from "@/lib/agent-status";
 import { listAgentApps } from "@/lib/apps/store";
 import { CATALOG } from "@/lib/apps/catalog";
-import { getCurrentOrg, getSessionModelOverrides, getVisibleAgentForSession } from "@/lib/dal";
+import { getAgent, getCurrentOrg, getSessionModelOverrides, getVisibleAgentForSession } from "@/lib/dal";
 import { getOrgModelCatalogState } from "@/lib/openclaw/model-governance";
 import { titleCase } from "@/lib/utils";
 
@@ -29,9 +35,22 @@ export default async function AgentDetailPage({
   if (!session?.org.id) notFound();
 
   const agent = await getVisibleAgentForSession(id, session);
-  if (!agent) notFound();
+  if (!agent) {
+    const existingAgent = await getAgent(id, session.org.id);
+    if (!existingAgent) notFound();
+    return (
+      <AccessDenied
+        title="Agent access required"
+        description="This agent exists in your workspace, but it is not assigned to you or one of your teams."
+      />
+    );
+  }
   const [{ snapshot }, sessionOverrides, agentAppRows] = await Promise.all([
-    getOrgModelCatalogState(session.org.id),
+    getOrgModelCatalogState(session.org.id, {
+      trialStatus: session.org.trial_status,
+      trialEndsAt: session.org.trial_ends_at,
+      isSuperAdmin: session.isSuperAdmin,
+    }),
     getSessionModelOverrides(session.org.id, agent.id, 8),
     listAgentApps(session.org.id, agent.id),
   ]);
@@ -48,19 +67,38 @@ export default async function AgentDetailPage({
   });
 
   const config = (agent.config ?? {}) as Record<string, unknown>;
+  const avatarConfig = normalizeAgentAvatarConfig(config.agentAvatar);
+  const avatarImageUrl = await getSignedAgentAvatarUrl(avatarConfig.imagePath);
+  const displayStatus = getAgentDisplayStatus(agent);
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        eyebrow="Agent"
-        title={agent.name}
-        description="Adjust the model, instructions, and tools your agent has access to."
-        action={
-          <div className="flex flex-wrap items-center gap-3">
-            <Badge variant={agent.status === "online" ? "success" : "default"}>
-              {agent.status}
+      <div className="flex flex-col gap-4 pb-2 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <AgentAvatar
+            agentId={agent.openclaw_agent_id}
+            name={agent.name}
+            initials={avatarConfig.initials}
+            theme={avatarConfig.theme}
+            imageUrl={avatarImageUrl}
+            className="size-12"
+          />
+          <PageHeader
+            eyebrow="Agent"
+            title={agent.name}
+            description="Adjust the model, instructions, and tools your agent has access to."
+            className="pb-0"
+          />
+        </div>
+        <div className="shrink-0">
+          <div className="flex flex-wrap items-center gap-2 [&_button]:h-8 [&_a]:h-8">
+            <Badge
+              variant={displayStatus === "online" ? "success" : "default"}
+              className="h-8 px-3 text-[length:var(--text-sm)]"
+            >
+              {getAgentStatusLabel(agent)}
             </Badge>
-            <Button asChild size="sm">
+            <Button asChild size="sm" variant="secondary">
               <Link href={`/agents/${agent.id}/chat`}>
                 <MessageSquare className="size-4" />
                 <span>Chat</span>
@@ -73,8 +111,8 @@ export default async function AgentDetailPage({
               <AgentDeleteButton agentId={agent.id} agentName={agent.name} redirectTo="/agents" />
             ) : null}
           </div>
-        }
-      />
+        </div>
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <section className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
@@ -114,6 +152,20 @@ export default async function AgentDetailPage({
                   ? `${titleCase(agent.assignment.assignee_type)} · ${agent.assignment.assignee_ref}`
                   : "Unassigned"}
               </p>
+            </div>
+            <div className="rounded-xl border border-white/8 bg-white/[0.02] p-4">
+              <p className="app-kicker">Avatar</p>
+              <div className="mt-3">
+                <AgentAvatarEditor
+                  agentId={agent.id}
+                  openclawAgentId={agent.openclaw_agent_id}
+                  name={agent.name}
+                  initialInitials={avatarConfig.initials}
+                  initialTheme={avatarConfig.theme}
+                  initialImageUrl={avatarImageUrl}
+                  canEdit={session.capabilities.canManageAgents}
+                />
+              </div>
             </div>
             <div className="rounded-xl border border-white/8 bg-white/[0.02] p-4">
               <p className="app-kicker">Persona</p>

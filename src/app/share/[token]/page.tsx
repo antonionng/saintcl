@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -9,6 +10,13 @@ import { buildGatewayWorkspaceProxyPath, resolveTenantGatewayTarget } from "@/li
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Shared Agent Preview",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 async function loadShareSession(token: string) {
   const admin = createAdminClient();
@@ -57,7 +65,7 @@ export default async function SharedAgentPage({
       <header className="border-b border-border-subtle">
         <div className="site-shell flex items-center justify-between py-4">
           <Link href="/" className="text-sm font-semibold tracking-[-0.02em] text-white">
-            SaintClaw
+            Saint AGI
           </Link>
           <Button asChild size="sm" variant="secondary">
             <Link href="/signup">Get your own agent</Link>

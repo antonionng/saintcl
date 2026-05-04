@@ -9,17 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { USE_CASES, type UseCaseId } from "@/lib/use-cases";
 import { isSupabaseConfigured } from "@/lib/env";
-import { getPlanDisplayName, getPlanIntervalLabel, normalizePlanTier } from "@/lib/plans";
+import { getPlanDisplayName, getPlanIntervalLabel, normalizePlanTier, TRIAL_LENGTH_DAYS } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 type Step = "account" | "use-case" | "team-size";
 
 const TEAM_SIZES = [
-  { id: "solo", label: "Just me", hint: "Solo founder or operator" },
+  { id: "solo", label: "Just me", hint: "Founder or operator" },
   { id: "2-10", label: "2 to 10", hint: "Small team or startup" },
   { id: "10-50", label: "10 to 50", hint: "Growing company" },
-  { id: "50+", label: "50+", hint: "Established business" },
+  { id: "50+", label: "50+", hint: "Larger organization" },
 ] as const;
 
 function SignupPageContent() {
@@ -53,7 +53,7 @@ function SignupPageContent() {
     }
     if (step === "use-case") {
       if (!useCase) {
-        setError("Pick the role you want your first agent to fill.");
+        setError("Choose the first workflow you want to improve.");
         return;
       }
       setStep("team-size");
@@ -114,14 +114,14 @@ function SignupPageContent() {
     step === "account"
       ? "Create your account"
       : step === "use-case"
-        ? "What should your first agent do?"
+        ? "Where should your first agent help?"
         : "How big is your team?";
   const stepDescription =
     step === "account"
-      ? `Start a 14-day ${getPlanDisplayName(selectedPlan)} trial. No credit card required.`
+      ? `Start a ${TRIAL_LENGTH_DAYS}-day ${getPlanDisplayName(selectedPlan)} trial. No credit card required.`
       : step === "use-case"
-        ? "We'll set up your first agent based on this. You can change it anytime."
-        : "Helps us tune defaults like billing and seat suggestions.";
+        ? "Choose a proven workflow. Saint AGI will set up the first governed agent around it."
+        : "This helps us prepare sensible defaults for access, policy, and rollout.";
 
   return (
     <AuthShell
@@ -193,8 +193,8 @@ function SignupPageContent() {
               />
             </div>
             <p className="text-xs leading-6 text-zinc-500">
-              Selected plan: {getPlanDisplayName(selectedPlan)} ({getPlanIntervalLabel(selectedInterval)}). 14-day trial,
-              no credit card.
+              {getPlanDisplayName(selectedPlan)} plan, {getPlanIntervalLabel(selectedInterval)} billing. {TRIAL_LENGTH_DAYS}-day trial,
+              no card required.
             </p>
           </>
         ) : null}
@@ -243,7 +243,7 @@ function SignupPageContent() {
 
         {!isSupabaseConfigured() && step === "team-size" ? (
           <p className="text-sm leading-6 text-zinc-500">
-            Account services are not configured. Submitting will open the dashboard in demo mode.
+            Account services are not configured. Submitting will open chat in demo mode.
           </p>
         ) : null}
         {error ? <p className="text-sm text-red-400">{error}</p> : null}

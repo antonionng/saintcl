@@ -446,5 +446,6 @@ export interface CurrentOrgSession {
   isSuperAdmin: boolean;
   userId: string;
   email?: string | null;
+  teamIds: string[];
   capabilities: OrgCapabilities;
 }

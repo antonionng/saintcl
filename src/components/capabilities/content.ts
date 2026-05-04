@@ -2,7 +2,7 @@ export const capabilitiesPageHero = {
   kicker: "Capabilities",
   title: "What your company needs to become AI-powered.",
   description:
-    "SaintClaw gives every team governed agents that can plan, act, route, and follow through across the tools, channels, and systems where employees already work.",
+    "Saint AGI gives every team governed agents that can plan, act, route, and follow through across the tools, channels, and systems where employees already work.",
   primary: {
     href: "/signup",
     label: "Start free",
@@ -79,7 +79,7 @@ export const capabilityPillars = [
     title: "Channels and communication",
     badge: "Built for real conversations",
     description:
-      "SaintClaw operates through the surfaces people already use, from chat to voice to inbound events, while preserving routing rules and agent identity.",
+      "Saint AGI operates through the surfaces people already use, from chat to voice to inbound events, while preserving routing rules and agent identity.",
     outcomes: [
       "Support DM and group workflows with routing controls",
       "Handle voice, typing, presence, and response behavior",
@@ -112,7 +112,7 @@ export const capabilityPillars = [
     title: "Model and agent orchestration",
     badge: "Best model for the job",
     description:
-      "SaintClaw supports multiple models, multiple agents, and controlled routing so teams are not locked to one provider, one cost profile, or one persona.",
+      "Saint AGI supports multiple models, multiple agents, and controlled routing so teams are not locked to one provider, one cost profile, or one persona.",
     outcomes: [
       "Switch between frontier, fast, open, and local models",
       "Coordinate multiple agents with isolated state",
@@ -136,7 +136,7 @@ export const operatingModelIntro = {
   kicker: "How it works",
   title: "One operating model for AI work across the company.",
   description:
-    "SaintClaw makes adoption operational. Requests come in from employees and teams, the runtime routes the work, tools execute it, governance stays in control, and outcomes come back with continuity intact.",
+    "Saint AGI makes adoption operational. Requests come in from employees and teams, the runtime routes the work, tools execute it, governance stays in control, and outcomes come back with continuity intact.",
 } as const;
 
 export const operatingModelSteps = [
@@ -176,7 +176,7 @@ export const capabilityBandsIntro = {
   kicker: "Capability bands",
   title: "A complete AI operating surface for the whole company.",
   description:
-    "SaintClaw turns broad agent capability into a platform your company can actually adopt, understand, and scale.",
+    "Saint AGI turns broad agent capability into a platform your company can actually adopt, understand, and scale.",
 } as const;
 
 export const capabilityBands = [
@@ -213,17 +213,17 @@ export const capabilityBands = [
 ] as const;
 
 export const differentiatorsIntro = {
-  kicker: "Why SaintClaw",
+  kicker: "Why Saint AGI",
   title: "Built for companies that want AI adoption without losing control.",
   description:
-    "SaintClaw is designed to help companies put AI to work across teams in a way that stays legible, governable, and ready to scale.",
+    "Saint AGI is designed to help companies put AI to work across teams in a way that stays legible, governable, and ready to scale.",
 } as const;
 
 export const capabilityComparisonIntro = {
   kicker: "Action over chat",
-  title: "Why SaintClaw feels different from chat-first AI tools.",
+  title: "Why Saint AGI feels different from chat-first AI tools.",
   description:
-    "The interface matters less than whether a company can actually deploy AI across teams. SaintClaw is built for systems that stay live, act across tools, and remain legible to the people responsible for outcomes.",
+    "The interface matters less than whether a company can actually deploy AI across teams. Saint AGI is built for systems that stay live, act across tools, and remain legible to the people responsible for outcomes.",
 } as const;
 
 export const capabilityComparison = [
@@ -237,7 +237,7 @@ export const capabilityComparison = [
     ],
   },
   {
-    title: "SaintClaw agents",
+    title: "Saint AGI agents",
     points: [
       "Plan, act, route, and follow through across real workflows",
       "Operate through chat, voice, inbox, webhooks, and runtime triggers",

@@ -184,15 +184,44 @@ export async function syncProfileContextToAssignedAgents(input: {
   );
 }
 
+export type SyncOrgContextResult = {
+  status: "ok" | "skipped" | "partial" | "failed";
+  totalAgents: number;
+  syncedAgents: number;
+  failedAgents: number;
+  failures: Array<{ agentId: string; name: string; message: string }>;
+  reason?: string;
+};
+
 export async function syncOrgContextToAgents(input: {
   orgId: string;
   org: OrgContextInput;
-}) {
+}): Promise<SyncOrgContextResult> {
   if (!isOpenClawConfigured()) {
-    return;
+    return {
+      status: "skipped",
+      totalAgents: 0,
+      syncedAgents: 0,
+      failedAgents: 0,
+      failures: [],
+      reason: "Runtime is not configured.",
+    };
   }
 
   const agents = await getAgents(input.orgId);
+  if (agents.length === 0) {
+    return {
+      status: "skipped",
+      totalAgents: 0,
+      syncedAgents: 0,
+      failedAgents: 0,
+      failures: [],
+      reason: "No agents in this workspace.",
+    };
+  }
+
+  const failures: SyncOrgContextResult["failures"] = [];
+  let syncedAgents = 0;
 
   await Promise.all(
     agents.map(async (agent) => {
@@ -209,22 +238,42 @@ export async function syncOrgContextToAgents(input: {
         config: (agent.config as Record<string, unknown> | null) ?? null,
       });
 
-      await Promise.all([
-        writeAgentBootstrapFiles({
-          orgId: input.orgId,
+      try {
+        await Promise.all([
+          writeAgentBootstrapFiles({
+            orgId: input.orgId,
+            agentId: agent.openclaw_agent_id,
+            name: agent.name,
+            model: agent.model,
+            persona,
+            org: input.org,
+            profile,
+          }),
+          persistAgentPersona({
+            orgId: input.orgId,
+            agentId: agent.id,
+            persona,
+          }),
+        ]);
+        syncedAgents += 1;
+      } catch (error) {
+        failures.push({
           agentId: agent.openclaw_agent_id,
           name: agent.name,
-          model: agent.model,
-          persona,
-          org: input.org,
-          profile,
-        }),
-        persistAgentPersona({
-          orgId: input.orgId,
-          agentId: agent.id,
-          persona,
-        }),
-      ]);
+          message: error instanceof Error ? error.message : String(error),
+        });
+      }
     }),
   );
+
+  const status: SyncOrgContextResult["status"] =
+    failures.length === 0 ? "ok" : syncedAgents === 0 ? "failed" : "partial";
+
+  return {
+    status,
+    totalAgents: agents.length,
+    syncedAgents,
+    failedAgents: failures.length,
+    failures,
+  };
 }

@@ -35,7 +35,7 @@ export async function resolveAgentTerminalAccess(agentId: string) {
   );
   const target = await resolveTenantGatewayTarget(session.org.id);
   if (!target) {
-    throw new Error("OpenClaw gateway is not configured.");
+    throw new Error("Runtime gateway is not configured.");
   }
 
   return {

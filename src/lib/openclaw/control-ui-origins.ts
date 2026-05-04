@@ -24,6 +24,22 @@ function withLoopbackAlias(origin: string) {
   }
 }
 
+function isLoopbackOrigin(origin: string) {
+  try {
+    const url = new URL(origin);
+    return ["localhost", "127.0.0.1"].includes(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function addCommonLocalDevOrigins(origins: Set<string>) {
+  for (let port = 3000; port <= 3010; port += 1) {
+    origins.add(`http://localhost:${port}`);
+    origins.add(`http://127.0.0.1:${port}`);
+  }
+}
+
 export async function ensureCurrentControlUiOrigin(orgId: string) {
   const requestHeaders = await headers();
   const forwardedProto = requestHeaders.get("x-forwarded-proto");
@@ -35,10 +51,16 @@ export async function ensureCurrentControlUiOrigin(orgId: string) {
     for (const origin of withLoopbackAlias(requestOrigin)) {
       candidateOrigins.add(origin);
     }
+    if (isLoopbackOrigin(requestOrigin)) {
+      addCommonLocalDevOrigins(candidateOrigins);
+    }
   }
   if (env.appUrl) {
     for (const origin of withLoopbackAlias(env.appUrl)) {
       candidateOrigins.add(origin);
+    }
+    if (isLoopbackOrigin(env.appUrl)) {
+      addCommonLocalDevOrigins(candidateOrigins);
     }
   }
 

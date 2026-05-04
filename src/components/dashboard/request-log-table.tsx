@@ -80,24 +80,24 @@ export function RequestLogTable({
 }) {
   return (
     <Card className="h-full">
-      <CardHeader className={compact ? "p-5" : undefined}>
+      <CardHeader className={compact ? "p-4" : undefined}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">
             <CardTitle>{compact ? "Recent activity" : "Request stream"}</CardTitle>
-            <p className="text-sm text-zinc-400">
+            <p className={compact ? "text-xs text-zinc-500" : "text-sm text-zinc-400"}>
               {compact
                 ? "Latest requests associated with this workspace."
                 : "Inspect recent model requests and select a session to review its live tail."}
             </p>
           </div>
-          <div className="rounded-full border border-white/8 bg-black/20 px-3 py-1 text-xs uppercase tracking-[0.16em] text-zinc-500">
+          <div className="rounded-sm border border-border-subtle bg-transparent px-2 py-1 text-[11px] uppercase tracking-[0.12em] text-zinc-500">
             {items.length} {items.length === 1 ? "request" : "requests"}
           </div>
         </div>
       </CardHeader>
-      <CardContent className={compact ? "space-y-3 p-5 pt-0" : "space-y-3"}>
+      <CardContent className={compact ? "space-y-2 p-4 pt-0" : "space-y-3"}>
         {items.length === 0 ? (
-          <div className="rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-6 text-sm text-zinc-400">
+          <div className="rounded-md border border-border-subtle bg-transparent px-3 py-4 text-sm text-zinc-400">
             {loading
               ? "Loading requests..."
               : "No model requests matched the current filters yet. Send a few messages, then refresh or clear the filters."}
@@ -108,18 +108,18 @@ export function RequestLogTable({
             const clickable = Boolean(item.sessionKey && onSelectSession);
             const row = (
               <div
-                className={`rounded-2xl border px-4 py-4 transition-colors ${
+                className={`rounded-md border px-3 py-3 transition-colors ${
                   isSelected
-                    ? "border-emerald-400/30 bg-emerald-500/[0.08]"
-                    : "border-white/8 bg-white/[0.02] hover:border-white/14 hover:bg-white/[0.04]"
+                    ? "border-emerald-500/25 bg-emerald-500/[0.05]"
+                    : "border-border-subtle bg-transparent hover:border-border hover:bg-white/[0.02]"
                 }`}
               >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="space-y-3">
-                    <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0 space-y-2">
+                    <div className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">
                       {new Date(item.occurredAt).toLocaleString()}
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-300">
                         <span className="font-medium text-white">{item.agentName ?? "Unassigned"}</span>
                         <span className="text-zinc-600">/</span>
@@ -129,33 +129,37 @@ export function RequestLogTable({
                     </div>
                   </div>
                   <span
-                    className={`rounded-full border px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.16em] ${getStatusClasses(item.status)}`}
+                    className={`rounded-sm border px-2 py-1 text-[10px] font-medium uppercase tracking-[0.12em] ${getStatusClasses(item.status)}`}
                   >
                     {item.status}
                   </span>
                 </div>
 
-                <div className={`mt-4 grid gap-2 ${compact ? "sm:grid-cols-2" : "sm:grid-cols-2 xl:grid-cols-4"}`}>
+                <div className={`mt-3 grid gap-2 ${compact ? "grid-cols-2" : "sm:grid-cols-2 xl:grid-cols-4"}`}>
                   {[
                     { label: "Latency", value: formatLatency(item.latencyMs) },
                     { label: "Tokens", value: formatTokens(item.totalTokens) },
                     { label: "Cost", value: formatCurrency(item.costUsd) },
                     { label: "Channel", value: item.channel ?? "n/a" },
                   ].map((metric) => (
-                    <div key={metric.label} className="rounded-xl border border-white/8 bg-black/20 px-3 py-2.5">
-                      <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">{metric.label}</p>
+                    <div key={metric.label} className="rounded-md border border-border-subtle bg-black/10 px-3 py-2">
+                      <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500">{metric.label}</p>
                       <p className="mt-1 text-sm font-medium text-zinc-200">{metric.value}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
-                  <span className="rounded-full border border-white/8 bg-black/20 px-2.5 py-1">{getSourceLabel(item)}</span>
-                  <span className="rounded-full border border-white/8 bg-black/20 px-2.5 py-1">{item.eventType}</span>
-                  {item.sessionKey ? <span className="truncate rounded-full border border-white/8 bg-black/20 px-2.5 py-1">{item.sessionKey}</span> : null}
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                  <span className="rounded-sm border border-border-subtle bg-black/10 px-2 py-1">{getSourceLabel(item)}</span>
+                  <span className="rounded-sm border border-border-subtle bg-black/10 px-2 py-1">{item.eventType}</span>
+                  {!compact && item.sessionKey ? (
+                    <span className="truncate rounded-sm border border-border-subtle bg-black/10 px-2 py-1">
+                      {item.sessionKey}
+                    </span>
+                  ) : null}
                 </div>
                 {item.errorMessage ? (
-                  <p className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
+                  <p className="mt-3 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
                     {item.errorMessage}
                   </p>
                 ) : null}

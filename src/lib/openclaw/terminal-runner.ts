@@ -23,7 +23,7 @@ export async function runApprovedTerminalCommand(
         ...process.env,
         OPENCLAW_STATE_DIR: runtime.paths.stateRoot,
         OPENCLAW_CONFIG_PATH: runtime.paths.configPath,
-        SAINTCLAW_TERMINAL_POLICY: "admin-only",
+        SAINTAGI_TERMINAL_POLICY: "admin-only",
       },
     });
 

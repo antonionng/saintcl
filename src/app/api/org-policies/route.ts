@@ -182,7 +182,7 @@ export async function PATCH(request: Request) {
       runtimeSync = {
         attempted: true,
         applied: false,
-        message: "Policies were saved, but the runtime sync is still pending because OpenClaw is offline.",
+        message: "Policies were saved, but the runtime sync is still pending because the runtime is offline.",
       };
     }
   }

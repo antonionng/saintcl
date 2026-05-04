@@ -15,6 +15,19 @@ type ConnectionAgent = {
 
 type ConnectionType = "telegram" | "slack";
 
+const READY_PROVIDERS: Record<ConnectionType, { label: string; description: string; credentialHelp: string }> = {
+  telegram: {
+    label: "Telegram",
+    description: "Fast bot-token setup for early customer support, ops, and internal workflows.",
+    credentialHelp: "Create a bot with BotFather, then paste the bot token here.",
+  },
+  slack: {
+    label: "Slack",
+    description: "Team workspace setup for company channels and internal agent workflows.",
+    credentialHelp: "Use the Slack team ID for the workspace this agent should serve.",
+  },
+};
+
 export function SettingsConnectionsForm({
   orgId,
   agents,
@@ -26,10 +39,17 @@ export function SettingsConnectionsForm({
 
   return (
     <>
-      <Button size="sm" onClick={() => setOpen(true)} disabled={agents.length === 0}>
-        <Plus className="h-3.5 w-3.5" />
-        <span>Connect channel</span>
-      </Button>
+      <div className="flex flex-col items-start gap-2 sm:items-end">
+        <Button size="sm" onClick={() => setOpen(true)} disabled={agents.length === 0}>
+          <Plus className="h-3.5 w-3.5" />
+          <span>Connect channel</span>
+        </Button>
+        {agents.length === 0 ? (
+          <p className="text-xs text-amber-300">
+            Create a business agent before connecting a channel.
+          </p>
+        ) : null}
+      </div>
       <ConnectChannelWizard
         open={open}
         onOpenChange={setOpen}
@@ -77,6 +97,7 @@ function ConnectChannelWizard({
   }, [type, botToken, teamId]);
 
   const canFinal = Boolean(agentId) && credentialsValid;
+  const providerMeta = READY_PROVIDERS[type];
 
   async function submit() {
     if (!canFinal) return;
@@ -109,8 +130,8 @@ function ConnectChannelWizard({
     <Wizard
       open={open}
       onOpenChange={onOpenChange}
-      title="Connect channel"
-      description="Link an external messaging channel to one of your agents."
+      title="Connect ready channel"
+      description="Bind Slack or Telegram to a specific agent. Enterprise channels stay in the Connector Center until setup is productized."
       steps={["Provider", "Credentials", "Review"]}
       step={step}
       onStepChange={setStep}
@@ -129,12 +150,14 @@ function ConnectChannelWizard({
           </label>
           <div className="grid grid-cols-2 gap-2">
             <ProviderRadio
-              label="Telegram"
+              label={READY_PROVIDERS.telegram.label}
+              description={READY_PROVIDERS.telegram.description}
               checked={type === "telegram"}
               onChange={() => setType("telegram")}
             />
             <ProviderRadio
-              label="Slack"
+              label={READY_PROVIDERS.slack.label}
+              description={READY_PROVIDERS.slack.description}
               checked={type === "slack"}
               onChange={() => setType("slack")}
             />
@@ -171,6 +194,7 @@ function ConnectChannelWizard({
               onChange={(e) => setBotToken(e.target.value)}
               placeholder="123456789:telegram-bot-token"
             />
+            <p className="text-[length:var(--text-xs)] text-white/45">{providerMeta.credentialHelp}</p>
           </div>
         ) : (
           <div className="flex flex-col gap-1.5">
@@ -182,11 +206,11 @@ function ConnectChannelWizard({
               onChange={(e) => setTeamId(e.target.value)}
               placeholder="T01234567"
             />
+            <p className="text-[length:var(--text-xs)] text-white/45">{providerMeta.credentialHelp}</p>
           </div>
         )}
         <p className="text-[length:var(--text-xs)] text-white/45">
-          Connections are tenant-scoped, charged through the usage pipeline, and queued as
-          pending until the provider handshake completes.
+          Connections are tenant-scoped, tied to an agent, and tracked through admin operations.
         </p>
       </Wizard.Step>
 
@@ -218,10 +242,12 @@ function ConnectChannelWizard({
 
 function ProviderRadio({
   label,
+  description,
   checked,
   onChange,
 }: {
   label: string;
+  description: string;
   checked: boolean;
   onChange: () => void;
 }) {
@@ -236,7 +262,10 @@ function ProviderRadio({
           : "border-border text-white/55 hover:border-border-strong hover:text-white",
       ].join(" ")}
     >
-      {label}
+      <span className="block">{label}</span>
+      <span className="mt-1 block text-[length:var(--text-xs)] font-normal leading-5 text-white/45">
+        {description}
+      </span>
     </button>
   );
 }

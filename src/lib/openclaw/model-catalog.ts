@@ -1,5 +1,6 @@
 import { env } from "../env";
 import { inferFreeModel } from "../model-pricing";
+import { TRIAL_FREE_MODEL_ID, TRIAL_FREE_MODEL_LABEL } from "../plans";
 import { parseProviderFromModelRef } from "./session-keys";
 
 export type ModelCatalogEntry = {
@@ -86,6 +87,16 @@ function createMinimalEntry(id: string, source: ModelCatalogEntry["source"]): Mo
     provider: parseProviderFromModelRef(id),
     isFree: inferFreeModel({ id }),
     source,
+  };
+}
+
+function createTrialFreeEntry(): ModelCatalogEntry {
+  return {
+    ...createMinimalEntry(TRIAL_FREE_MODEL_ID, "policy"),
+    label: TRIAL_FREE_MODEL_LABEL,
+    inputCostPerMillionCents: 0,
+    outputCostPerMillionCents: 0,
+    isFree: true,
   };
 }
 
@@ -396,6 +407,26 @@ export function buildModelCatalogSnapshotFromDiscovery(
 export async function buildModelCatalogSnapshot(policy: OrgPolicyLike | null | undefined) {
   const discoveryModels = await fetchOpenRouterDiscoveryCatalog(null);
   return buildModelCatalogSnapshotFromDiscovery(policy, discoveryModels);
+}
+
+export function restrictSnapshotToTrialFreeModels(snapshot: Awaited<ReturnType<typeof buildModelCatalogSnapshot>>) {
+  const trialModel =
+    snapshot.discoveryModels.find((entry) => entry.id === TRIAL_FREE_MODEL_ID) ??
+    snapshot.approvedModels.find((entry) => entry.id === TRIAL_FREE_MODEL_ID) ??
+    createTrialFreeEntry();
+
+  const normalizedTrialModel: ModelCatalogEntry = {
+    ...trialModel,
+    label: trialModel.label || TRIAL_FREE_MODEL_LABEL,
+    isFree: true,
+  };
+
+  return {
+    ...snapshot,
+    defaultModel: normalizedTrialModel.id,
+    approvedModels: [normalizedTrialModel],
+    discoveryModels: snapshot.discoveryModels.filter((entry) => entry.isFree),
+  };
 }
 
 export function buildOpenClawModelAllowlist(models: ModelCatalogEntry[]) {

@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     nextPath = next;
   } else if (session && isAdminRole(session.role, { isSuperAdmin: session.isSuperAdmin })) {
     const agents = await getAgents(session.org.id).catch(() => []);
-    nextPath = agents.length === 0 ? "/welcome" : "/dashboard";
+    nextPath = agents.length === 0 ? "/welcome" : "/workspace";
   } else {
     nextPath = getAuthenticatedHomePath(session?.role, { isSuperAdmin: session?.isSuperAdmin });
   }

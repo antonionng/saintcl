@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -11,6 +12,48 @@ type NewsArticlePageProps = {
     slug: string;
   }>;
 };
+
+export async function generateMetadata({ params }: NewsArticlePageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const article = getAnnouncementBySlug(slug);
+
+  if (!article) {
+    return {};
+  }
+
+  const path = `/news/${article.slug}`;
+  const title = article.title;
+  const description = article.summary;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: path,
+    },
+    openGraph: {
+      type: "article",
+      url: path,
+      title,
+      description,
+      siteName: "Saint AGI",
+      images: [
+        {
+          url: "/saintagi-og-share.png",
+          width: 900,
+          height: 507,
+          alt: "SaintAGI infinity mark with the text The agent layer for modern teams.",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/saintagi-og-share.png"],
+    },
+  };
+}
 
 export async function generateStaticParams() {
   return announcementCards.map((item) => ({

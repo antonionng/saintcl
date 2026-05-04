@@ -191,7 +191,7 @@ export function SettingsPersonasForm({
       <section>
         <SectionHeader
           title="Built-in personas"
-          description="Shipped SaintClaw templates available to all workspaces."
+          description="Shipped Saint AGI templates available to all workspaces."
         />
         <div className="border border-border rounded-md overflow-hidden">
           {builtInPersonas.length === 0 ? (

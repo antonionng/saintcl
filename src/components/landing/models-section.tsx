@@ -38,7 +38,7 @@ export function ModelsSection() {
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start">
             <p className="text-sm leading-7 text-white/72">
-              One consistent company standard. Teams can use more power where it matters, keep fast lanes for everyday work,
+              One company standard for AI work. Use more power where it matters, keep fast lanes for everyday tasks,
               and stay governed as usage expands.
             </p>
 

@@ -2,14 +2,34 @@ import { Suspense } from "react";
 
 import { AppsCatalog } from "@/components/dashboard/apps-catalog";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { Card, CardContent } from "@/components/ui/card";
 import { CATALOG } from "@/lib/apps/catalog";
 import { listOrgApps } from "@/lib/apps/store";
 import { getAgents, getCurrentOrg } from "@/lib/dal";
 
+function AppsCatalogSkeleton() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <Card key={index} variant="inset" className="overflow-hidden">
+          <CardContent className="space-y-4">
+            <div className="h-4 w-2/5 rounded bg-white/10" />
+            <div className="space-y-2">
+              <div className="h-3 rounded bg-white/8" />
+              <div className="h-3 w-4/5 rounded bg-white/8" />
+            </div>
+            <div className="h-8 w-28 rounded bg-white/10" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 export default async function AppsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ agent?: string; category?: string; q?: string }>;
+  searchParams: Promise<{ agent?: string; category?: string; q?: string; roadmap?: string }>;
 }) {
   const params = await searchParams;
   const session = await getCurrentOrg();
@@ -25,13 +45,14 @@ export default async function AppsPage({
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="App store"
-        title="Apps"
-        description="One place to add channels, skills, search, memory and tools to your agents. Most apps are click-to-install."
+        eyebrow="Connect"
+        title="Connector center"
+        description="Add productized channels, skills, search, memory, and tools. Show roadmap items when you are planning enterprise setup."
       />
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<AppsCatalogSkeleton />}>
         <AppsCatalog
+          key={`${params.category ?? "all"}:${params.q ?? ""}:${params.roadmap ?? ""}`}
           apps={CATALOG}
           installedAppIds={installedAppIds}
           agents={agentOptions}

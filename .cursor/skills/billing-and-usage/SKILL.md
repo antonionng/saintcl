@@ -1,6 +1,6 @@
 ---
 name: billing-and-usage
-description: Change SaintClaw wallet billing, usage charging, ledger writes, and Stripe-backed top-up flows safely. Use when editing wallet balance logic, usage events, low-balance behavior, pricing, or Stripe webhook processing.
+description: Change SaintAGI wallet billing, usage charging, ledger writes, and Stripe-backed top-up flows safely. Use when editing wallet balance logic, usage events, low-balance behavior, pricing, or Stripe webhook processing.
 ---
 
 # Billing And Usage

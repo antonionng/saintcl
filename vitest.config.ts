@@ -2,7 +2,7 @@ import { fileURLToPath } from "node:url";
 
 import { defineConfig } from "vitest/config";
 
-// Vitest is the default test runner for SaintClaw. The only project-wide
+// Vitest is the default test runner for SaintAGI. The only project-wide
 // concern this config exists to solve is mirroring the `@/*` -> `./src/*`
 // path alias from tsconfig.json so tests can import sibling modules the same
 // way the application does. Anything more (test environment, coverage, etc.)

@@ -1,6 +1,6 @@
 ---
 name: terminal-governance
-description: Maintain SaintClaw's governed terminal execution model, including admin-only access, approval flow, command blocking, repo allowlists, and audit logging. Use when changing terminal APIs, command approval logic, or runtime command execution.
+description: Maintain SaintAGI's governed terminal execution model, including admin-only access, approval flow, command blocking, repo allowlists, and audit logging. Use when changing terminal APIs, command approval logic, or runtime command execution.
 ---
 
 # Terminal Governance

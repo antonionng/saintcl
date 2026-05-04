@@ -1,6 +1,6 @@
 ---
 name: runtime-and-gateway-operations
-description: Work safely on SaintClaw tenant runtime lifecycle, gateway configuration, state layout, and hosted OpenClaw integration. Use when changing runtime bootstrapping, process management, gateway tokens, workspace layout, logs, or tenant gateway behavior.
+description: Work safely on SaintAGI tenant runtime lifecycle, gateway configuration, state layout, and hosted OpenClaw integration. Use when changing runtime bootstrapping, process management, gateway tokens, workspace layout, logs, or tenant gateway behavior.
 ---
 
 # Runtime And Gateway Operations

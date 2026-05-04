@@ -16,8 +16,8 @@ export default async function ObservabilityPage() {
     <div className="space-y-8">
       <PageHeader
         eyebrow="Activity"
-        title="Activity"
-        description="See what your agents are doing in real time. Track conversations, model usage, and response times."
+        title="Agent activity and audit"
+        description="Track what agents are doing across the rollout: conversations, model usage, response times, and operational signals for admins."
       />
       <ObservabilityShell
         visibleAgents={visibleAgents.map((agent) => ({

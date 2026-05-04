@@ -1,27 +1,316 @@
 export const headerLinks = [
+  { href: "/#platform", label: "Platform" },
   { href: "/#capabilities", label: "Product" },
   { href: "/capabilities", label: "Capabilities" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/models", label: "Models" },
-  { href: "/#news", label: "News" },
 ];
 
 export const companyProfile = {
-  brandName: "SaintClaw",
+  brandName: "Saint AGI",
   legalName: "Neural Network Group Ltd",
   contactEmail: "hello@neuralnetworkgroup.com",
   country: "England",
   governingLaw: "England and Wales",
   registeredOffice: "[Registered office address to be confirmed]",
-  tagline: "Make every employee AI-powered. Keep the rollout governed.",
+  tagline: "Launch useful agents with the control enterprises need.",
 };
+
+export const launchSteps = [
+  {
+    label: "1",
+    title: "Choose the job",
+    description: "Start with a proven use case like meetings, support, sales, operations, or IT.",
+  },
+  {
+    label: "2",
+    title: "Launch the agent",
+    description: "Saint AGI creates the workspace, applies policy, and prepares the runtime.",
+  },
+  {
+    label: "3",
+    title: "Bring it to work",
+    description: "Use workspace chat first, then connect approved business channels.",
+  },
+  {
+    label: "4",
+    title: "Scale with confidence",
+    description: "Admins keep access, approvals, audit trails, spend, and runtime health in one place.",
+  },
+] as const;
+
+export const agentPersonas = [
+  {
+    initials: "M",
+    name: "Maya",
+    role: "FINANCE · ACCOUNTANT",
+    description:
+      "Reconciles your books at 3am. Files VAT before coffee. Drafts board reports. Chases overdue invoices in seven languages.",
+    reportsToPrefix: "Reports to ",
+    reportsTo: "Rachel",
+    reportsToSuffix: ", your CFO.",
+  },
+  {
+    initials: "Mc",
+    name: "Marcus",
+    role: "SALES · ACCOUNT EXEC",
+    description:
+      "Researches accounts. Drafts outreach. Books meetings. Updates HubSpot without being asked.",
+    reportsToPrefix: "Reports to ",
+    reportsTo: "Sarah",
+    reportsToSuffix: ", your Head of Sales.",
+  },
+  {
+    initials: "P",
+    name: "Priya",
+    role: "TALENT · RECRUITER",
+    description:
+      "Sources candidates. Screens resumes. Schedules interviews. Shortlists with reasons attached.",
+    reportsToPrefix: "Reports to ",
+    reportsTo: "Marcus",
+    reportsToSuffix: ", your Head of People.",
+  },
+  {
+    initials: "J",
+    name: "James",
+    role: "MARKETING · CONTENT",
+    description:
+      "Drafts blog posts. Schedules social. Runs A/B tests. Reports performance every Monday morning.",
+    reportsToPrefix: "Reports to your ",
+    reportsTo: "CMO",
+    reportsToSuffix: ".",
+  },
+  {
+    initials: "E",
+    name: "Elena",
+    role: "CUSTOMER · SUPPORT",
+    description:
+      "Resolves Tier 1 in seconds. Answers in seven languages. Escalates with full context attached.",
+    reportsToPrefix: "Reports to your ",
+    reportsTo: "Head of Support",
+    reportsToSuffix: ".",
+  },
+  {
+    initials: "D",
+    name: "David",
+    role: "OPERATIONS · PM",
+    description:
+      "Routes work. Manages handoffs. Tracks deadlines. Sends standup summaries before standup.",
+    reportsToPrefix: "Reports to your ",
+    reportsTo: "COO",
+    reportsToSuffix: ".",
+  },
+] as const;
+
+export const agentsSectionIntro = {
+  kicker: "YOUR NEW HIRES",
+  title: "Meet six of them. Build the rest.",
+  description:
+    "14 pre-built personas designed for the work your team does every day. Custom personas when your work is different. Provision as many as your team can handle, all managed in one place.",
+  cta: { href: "/templates", label: "Browse all 14 personas" },
+};
+
+export const howItWorksIntro = {
+  kicker: "TEN-MINUTE SETUP",
+  title: "Provision an agent like you provision an email.",
+  description:
+    "No code. No consultants. No six-week implementation. By the time your coffee goes cold, your first agent is working.",
+};
+
+export const howItWorksSteps = [
+  {
+    number: "1",
+    label: "STEP ONE",
+    title: "Pick a persona.",
+    description:
+      "Choose from 14 pre-built roles, or design your own. Maya, Marcus, Priya, or someone you design from scratch.",
+    preview: "Step 1 preview screen",
+  },
+  {
+    number: "2",
+    label: "STEP TWO",
+    title: "Connect the tools.",
+    description:
+      "Authorize the systems your agent can touch. Xero, HubSpot, Slack, WhatsApp, whatever your team already uses. Toggle off what should stay off-limits.",
+    preview: "Step 2 preview screen",
+  },
+  {
+    number: "3",
+    label: "STEP THREE",
+    title: "Set the guardrails.",
+    description:
+      "Decide what needs your approval, what gets logged, and what stays off-limits. Set it once, enforced everywhere your agent works.",
+    preview: "Step 3 preview screen",
+  },
+  {
+    number: "4",
+    label: "STEP FOUR",
+    title: "Start working.",
+    description:
+      "Your agent lives in the apps your team already uses. WhatsApp, Telegram, Slack, Teams. Message it like a coworker. It gets things done.",
+    preview: "Step 4 preview screen",
+  },
+] as const;
+
+export const trustSectionIntro = {
+  kicker: "WHY ENTERPRISES TRUST US",
+  titleTop: "Useful on day one.",
+  titleBottom: "Controlled on day two hundred.",
+  description:
+    "Two years of research. Built with enterprises across the globe. Every governance question they asked, we answered.",
+};
+
+export const auditStreamRows = [
+  {
+    time: "14:32:08",
+    actor: "maya.finance",
+    action: "drafted_email",
+    detail: "user.rachel",
+    status: "APPROVED",
+    statusVariant: "approved",
+  },
+  {
+    time: "14:31:51",
+    actor: "marcus.sales",
+    action: "searched_linkedin",
+    detail: "47 results",
+    status: "OK",
+    statusVariant: "ok",
+  },
+  {
+    time: "14:28:14",
+    actor: "priya.talent",
+    action: "exported_csv",
+    detail: "230 candidates",
+    status: "OK",
+    statusVariant: "ok",
+  },
+  {
+    time: "14:21:02",
+    actor: "david.ops",
+    action: "blocked_action",
+    detail: "policy:external_api",
+    status: "BLOCKED",
+    statusVariant: "blocked",
+  },
+  {
+    time: "14:14:39",
+    actor: "elena.support",
+    action: "resolved_ticket",
+    detail: "ticket#4471",
+    status: "OK",
+    statusVariant: "ok",
+  },
+  {
+    time: "14:09:22",
+    actor: "james.marketing",
+    action: "drafted_post",
+    detail: "awaiting_approval",
+    status: "PENDING",
+    statusVariant: "pending",
+  },
+] as const;
+
+export const approvalsQueue = [
+  {
+    title: "External email to acme-corp.com",
+    meta: "Marcus · Sales agent · 2m ago",
+  },
+  {
+    title: "Spend £87 on Apollo credits",
+    meta: "Priya · Recruiter agent · 12m ago",
+  },
+] as const;
+
+export const trustPillars = [
+  {
+    label: "PILLAR 01",
+    icon: "shield",
+    title: "Governed by default.",
+    description:
+      "Every action logged. Sensitive ones held for approval. Nothing happens that you didn't authorize.",
+  },
+  {
+    label: "PILLAR 02",
+    icon: "eye",
+    title: "Fully observable.",
+    description:
+      "Live dashboard. Real-time activity. Spend visibility. Drill into any action your agent has ever taken.",
+  },
+  {
+    label: "PILLAR 03",
+    icon: "switch",
+    title: "Not tied to one LLM.",
+    description:
+      "Use Claude, GPT, Gemini, or open-source models. The right brain for every job. Switch any time.",
+  },
+  {
+    label: "PILLAR 04",
+    icon: "chat",
+    title: "Lives where your team works.",
+    description:
+      "WhatsApp, Telegram, Slack, Teams today. Email, voice, and Google Meet next.",
+  },
+] as const;
+
+export const finalCtaContent = {
+  headline: "Two years of research. Built with enterprises across the globe. Available today.",
+  subhead: "Launch your first governed agent in 10 minutes. No card required.",
+  primary: { href: "/signup", label: "Start now" },
+  secondary: { href: `mailto:${"hello@neuralnetworkgroup.com"}`, label: "Talk to sales" },
+};
+
+export const productSystemIntro = {
+  kicker: "Why Saint AGI",
+  title: "AI agents only matter when a company can trust them at work.",
+  description:
+    "Saint AGI gives teams useful agents while giving operators the controls needed for real adoption.",
+};
+
+export const productSystemPillars = [
+  {
+    title: "Control for operators",
+    description:
+      "Create agents, assign access, approve sensitive actions, and monitor activity without exposing infrastructure to employees.",
+    proof: "Agents, channels, approvals, audit trails, spend, model policy, and runtime health.",
+  },
+  {
+    title: "A simple workspace",
+    description:
+      "Give employees one place to use approved agents with the right company context and clear handoffs.",
+    proof: "Assigned agents, workspace chat, starter prompts, profile context, and role boundaries.",
+  },
+  {
+    title: "Managed operations",
+    description:
+      "Keep runtime setup, logs, gateways, updates, and health checks governed as usage grows.",
+    proof: "Gateway setup, admin console, log tail, health checks, and environment readiness.",
+  },
+] as const;
+
+export const connectorMaturityCards = [
+  {
+    title: "Available now",
+    channels: "Workspace chat, Slack, Telegram",
+    description: "Launch the first rollout through channels with clear setup paths.",
+  },
+  {
+    title: "Enterprise channels",
+    channels: "WhatsApp, Google Chat, Microsoft Teams, email",
+    description: "Add deeper channels with credentials, approvals, diagnostics, and ownership defined.",
+  },
+  {
+    title: "Advanced runtime",
+    channels: "Google Meet, voice, telephony",
+    description: "Extend into meeting, voice, and telephony workflows with stronger operational controls.",
+  },
+] as const;
 
 export const capabilitiesIntro = {
   kicker: "Capabilities",
-  title: "What your company needs to put AI to work.",
+  title: "Everything needed to move from AI trials to governed execution.",
   description:
-    "SaintClaw gives every team governed agents that can plan, act, and follow through across the systems your employees already use.",
-  supportingCopy: "Company-wide adoption. Centralized control.",
+    "Provision agents, connect them to work, and keep policy, visibility, and runtime operations aligned.",
+  supportingCopy: "Useful on day one. Controlled on day two hundred.",
   cta: {
     href: "/capabilities",
     label: "Explore all capabilities",
@@ -31,45 +320,45 @@ export const capabilitiesIntro = {
 export const capabilityCards = [
   {
     title: "Autonomous execution",
-    badge: "Work that gets completed",
+    badge: "Follow-through",
     description:
-      "Give employees agents that can break work into steps, act across tools, adapt to results, and keep moving without constant supervision.",
-    proof: "Multi-step execution that keeps momentum across real workflows.",
+      "Agents plan, act, check results, and keep work moving inside approved boundaries.",
+    proof: "Multi-step work for support, sales, meetings, operations, IT, and research.",
   },
   {
     title: "Channels and presence",
-    badge: "Where employees already work",
+    badge: "Where teams work",
     description:
-      "Deploy agents through chat, inbox, voice, and shared workstreams so teams can use AI inside the channels they already rely on.",
-    proof: "Slack, WhatsApp, Telegram, Teams, email, and voice-ready surfaces.",
+      "Start in the workspace, then extend agents into approved messaging and collaboration channels.",
+    proof: "Slack and Telegram today, with WhatsApp, Teams, Google Chat, Meet, email, and voice as enterprise lanes.",
   },
   {
     title: "Tools and automation",
-    badge: "Turns intent into output",
+    badge: "Action",
     description:
-      "Connect agents to browser automation, files, shell, GitHub, calendar, search, and scheduled actions so work actually gets done.",
-    proof: "Browser, files, shell, GitHub, search, cron, and external triggers.",
+      "Connect agents to tools so requests turn into completed work, not another prompt.",
+    proof: "Browser, files, search, GitHub, cron, external triggers, and governed terminal paths.",
   },
   {
     title: "Memory and routing",
-    badge: "Context that scales cleanly",
+    badge: "Context",
     description:
-      "Keep sessions, memory, activation rules, and model routing aligned so each team gets continuity without operational sprawl.",
-    proof: "Isolated workspaces, persistent sessions, pruning, and multi-model routing.",
+      "Keep company knowledge, memory, assignments, and model routing aligned across teams.",
+    proof: "Org-scoped workspaces, assigned sessions, persistent memory, pruning, and model routing.",
   },
   {
     title: "Governance and trust",
-    badge: "Roll out with confidence",
+    badge: "Admin control",
     description:
-      "Apply approvals, allowlists, sandboxing, audit visibility, and runtime monitoring so adoption can spread without losing control.",
-    proof: "Approvals, audit trails, health checks, allowlists, and sandbox controls.",
+      "Give admins the guardrails required before agents touch real business systems.",
+    proof: "Approvals, audit events, health checks, role gates, allowlists, and sandbox controls.",
   },
   {
-    title: "Local-first runtime",
-    badge: "Closer to your systems",
+    title: "Runtime governance",
+    badge: "Reliability",
     description:
-      "Keep credentials, files, and execution close to your company while extending reach through managed gateways when needed.",
-    proof: "Runs on local devices with optional persistent cloud reach.",
+      "Keep credentials, logs, origins, updates, and tenant runtime behavior under platform-owner control.",
+    proof: "Hosted gateway paths, local runtime options, persistent cloud reach, and managed console access.",
   },
 ] as const;
 
@@ -83,16 +372,16 @@ export const companyRoles = [
     detail: "Resolve Tier 1 fast. Escalate with context.",
   },
   {
+    title: "Meetings",
+    detail: "Summarize calls. Extract decisions. Draft follow-ups.",
+  },
+  {
     title: "Operations",
-    detail: "Route requests. Manage handoffs. Keep moving.",
+    detail: "Route requests. Manage handoffs. Keep work moving.",
   },
   {
-    title: "Marketing",
-    detail: "Generate ideas. Personalize campaigns. Analyze results.",
-  },
-  {
-    title: "HR",
-    detail: "Screen candidates. Draft offers. Handle queries.",
+    title: "IT",
+    detail: "Resolve common issues. Escalate risky requests.",
   },
   {
     title: "Finance",
@@ -110,38 +399,38 @@ export const companyRoles = [
 
 export const modelsIntro = {
   kicker: "Models",
-  title: "Model range your company can actually put to work.",
+  title: "Use the right model without losing control.",
   description:
-    "Give each team the right mix of power, speed, cost control, and deployment flexibility while policy, memory, and runtime behavior stay consistent across the business.",
+    "Route work across stronger, faster, or more controlled models while policy, memory, and audit behavior stay consistent.",
 };
 
 export const pricingIntro = {
   kicker: "Pricing",
-  title: "Roll out AI agents across your company with control from day one.",
+  title: "Start small. Scale when the value is proven.",
   description:
-    "Start with one team, prove value quickly, then expand across the business with approvals, shared knowledge, audit visibility, and clear spend controls.",
+    "Launch one governed agent, prove the workflow, then expand across teams with shared controls and clear spend visibility.",
 };
 
 export const modelCoverageCards = [
   {
     title: "Deep reasoning",
     badge: "Complex work",
-    description: "Handle planning-heavy analysis, long chains of thought, and high-stakes work that needs stronger judgment.",
+    description: "Use stronger reasoning for planning, analysis, and work that needs better judgment.",
   },
   {
     title: "Fast execution",
     badge: "High volume",
-    description: "Keep drafting, triage, routing, and repetitive workflows moving with low-latency models built for throughput.",
+    description: "Keep drafting, triage, routing, and repetitive workflows moving quickly.",
   },
   {
     title: "Open and sovereign",
     badge: "Control",
-    description: "Support deployment paths that stay closer to your infrastructure when data residency and operational control matter.",
+    description: "Support deployment choices for teams with stricter control or residency needs.",
   },
   {
     title: "Governed premium access",
     badge: "Spend control",
-    description: "Unlock stronger models with approvals, guardrails, and budget-aware routing instead of opening the floodgates.",
+    description: "Unlock premium capability with approvals, guardrails, and budget-aware routing.",
   },
 ];
 
@@ -158,16 +447,16 @@ export const modelsSectionCta = {
 
 export const newsIntro = {
   kicker: "Latest news",
-  title: "What matters for companies putting AI to work",
+  title: "Signals for companies operationalizing AI",
   description:
-    "Frontier shifts that affect execution, governance, and rollout across real teams.",
+    "Model, security, and runtime shifts that affect how enterprises adopt agents.",
 };
 
 export const articleCta = {
-  kicker: "Build with SaintClaw",
-  title: "Make your company AI-powered with governed agents.",
+  kicker: "Build with Saint AGI",
+  title: "Turn AI ambition into governed execution.",
   description:
-    "Start free, equip teams with the right agents for the job, and keep approvals, visibility, and policy enforcement in one place.",
+    "Launch agents from proven recipes, connect them to work, and keep approvals, visibility, runtime health, and policy in one place.",
   primary: {
     href: "/signup",
     label: "Start free",
@@ -182,6 +471,7 @@ export const footerLinkGroups = [
   {
     title: "Product",
     links: [
+      { href: "/#platform", label: "Platform" },
       { href: "/#capabilities", label: "Product" },
       { href: "/capabilities", label: "Capabilities" },
       { href: "/models", label: "Models" },
@@ -229,7 +519,7 @@ export type AnnouncementCard = {
 export const announcementCards = [
   {
     slug: "gpt-5-4-thinking-signals-a-new-standard-for-ai-work",
-    source: "SaintClaw desk",
+    source: "Saint AGI desk",
     category: "Models",
     publishedAt: "Mar 2026",
     readTime: "5 min read",
@@ -249,7 +539,7 @@ export const announcementCards = [
       {
         title: "Why control matters more as models improve",
         paragraphs: [
-          "For SaintClaw, stronger models create more upside only when they are wrapped in policy, approvals, and visibility. Better reasoning expands the range of tasks companies are willing to delegate. It also increases the need for clear oversight because more capable agents can touch more sensitive workflows.",
+          "For Saint AGI, stronger models create more upside only when they are wrapped in policy, approvals, and visibility. Better reasoning expands the range of tasks companies are willing to delegate. It also increases the need for clear oversight because more capable agents can touch more sensitive workflows.",
           "That is why the control plane matters as much as the model choice. If operators cannot see where work ran, which tools were used, or when approval was requested, reliability gains at the model layer do not translate into organizational trust.",
         ],
       },
@@ -264,7 +554,7 @@ export const announcementCards = [
   },
   {
     slug: "claude-opus-4-6-keeps-the-pressure-on-production-coding",
-    source: "SaintClaw desk",
+    source: "Saint AGI desk",
     category: "Models",
     publishedAt: "Mar 2026",
     readTime: "4 min read",
@@ -285,7 +575,7 @@ export const announcementCards = [
         title: "Routing should be a platform decision",
         paragraphs: [
           "The strongest operating model is centralized routing with decentralized usage. Employees should not need to understand every trade-off between reasoning depth, latency, price, and deployment pattern before they can get value from an agent.",
-          "SaintClaw treats routing as part of the product layer. The best model for the task can change in the background while policies, approvals, audit visibility, and memory behavior stay consistent from one workflow to the next.",
+          "Saint AGI treats routing as part of the product layer. The best model for the task can change in the background while policies, approvals, audit visibility, and memory behavior stay consistent from one workflow to the next.",
         ],
       },
       {
@@ -299,7 +589,7 @@ export const announcementCards = [
   },
   {
     slug: "gemini-3-1-pro-preview-expands-the-frontier-model-playbook",
-    source: "SaintClaw desk",
+    source: "Saint AGI desk",
     category: "Models",
     publishedAt: "Mar 2026",
     readTime: "5 min read",
@@ -334,7 +624,7 @@ export const announcementCards = [
   },
   {
     slug: "trinity-large-preview-shows-why-range-matters-more-than-one-best-model",
-    source: "SaintClaw desk",
+    source: "Saint AGI desk",
     category: "Models",
     publishedAt: "Mar 2026",
     readTime: "4 min read",
@@ -355,7 +645,7 @@ export const announcementCards = [
         title: "Coverage without chaos",
         paragraphs: [
           "That is especially true once AI spreads beyond a few power users. Different teams, tasks, and channels generate different requirements. The platform has to let companies mix and match without introducing chaos at the policy layer.",
-          "SaintClaw is built around that reality. Employees should benefit from the full range of available capability while operators keep a clear handle on policy, spend, and model selection.",
+          "Saint AGI is built around that reality. Employees should benefit from the full range of available capability while operators keep a clear handle on policy, spend, and model selection.",
         ],
       },
       {
@@ -369,7 +659,7 @@ export const announcementCards = [
   },
   {
     slug: "codex-security-makes-the-case-for-tighter-agent-governance",
-    source: "SaintClaw desk",
+    source: "Saint AGI desk",
     category: "Security",
     publishedAt: "Mar 2026",
     readTime: "5 min read",
@@ -396,7 +686,7 @@ export const announcementCards = [
       {
         title: "Trust is now an operational outcome",
         paragraphs: [
-          "For SaintClaw, that is part of the product promise. Better AI execution only matters when the company can see it, govern it, and trust it. Trust becomes more durable when the system makes its own behavior inspectable.",
+          "For Saint AGI, that is part of the product promise. Better AI execution only matters when the company can see it, govern it, and trust it. Trust becomes more durable when the system makes its own behavior inspectable.",
           "The broader implication is straightforward. As agents become continuous, runtime monitoring will define the next security frontier for AI operations inside real companies.",
         ],
       },
@@ -404,7 +694,7 @@ export const announcementCards = [
   },
   {
     slug: "stateful-runtime-momentum-points-to-a-bigger-shift-in-agent-infrastructure",
-    source: "SaintClaw desk",
+    source: "Saint AGI desk",
     category: "Infrastructure",
     publishedAt: "Feb 2026",
     readTime: "4 min read",
@@ -424,7 +714,7 @@ export const announcementCards = [
       {
         title: "Continuity is part of product quality",
         paragraphs: [
-          "This trend matters directly to SaintClaw because the product sits in the operational layer between people, models, and the work itself. If the runtime is weak, the experience breaks down before model quality can deliver its full value.",
+          "This trend matters directly to Saint AGI because the product sits in the operational layer between people, models, and the work itself. If the runtime is weak, the experience breaks down before model quality can deliver its full value.",
           "Persistent state, recoverable sessions, and clear execution history are not background details. They shape whether an agent feels dependable enough to keep inside live workflows across the company.",
         ],
       },

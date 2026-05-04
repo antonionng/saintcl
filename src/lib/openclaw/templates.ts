@@ -41,9 +41,9 @@ export function renderTenantOpenClawConfig(
 }
 
 export function renderTenantAgentsMd(runtime: OpenClawRuntimeDescriptor) {
-  return `# SaintClaw Tenant Runtime
+  return `# Saint AGI Tenant Runtime
 
-You are running inside SaintClaw's managed OpenClaw runtime for org \`${runtime.orgId}\`.
+You are running inside Saint AGI's managed runtime for org \`${runtime.orgId}\`.
 
 Follow these operating rules:
 - Keep work scoped to this tenant only.
@@ -54,12 +54,12 @@ Follow these operating rules:
 }
 
 export function renderTenantToolsMd() {
-  return `# SaintClaw Tool Policy
+  return `# Saint AGI Tool Policy
 
 - Terminal access is reserved for tenant admins.
 - Treat repo access as allowlist-bound.
 - Use sandboxed sessions for command execution whenever possible.
-- Log significant actions through the SaintClaw control plane.
+- Log significant actions through the Saint AGI control plane.
 `;
 }
 

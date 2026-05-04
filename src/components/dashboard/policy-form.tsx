@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { SettingsSectionTabs } from "@/components/dashboard/settings-section-tabs";
 
 type PolicyModelEntry = {
   id: string;
@@ -284,315 +285,342 @@ export function PolicyForm({
   }
 
   return (
-    <div className="space-y-6">
-      <PolicySection
-        title="Mission and purpose"
-        description="Capture the business mission and why autonomous agents should exist in this workspace."
-      >
-        <div className="grid gap-4 xl:grid-cols-2">
-          <div className="space-y-2">
-            <label className="app-field-label">Company mission</label>
-            <Textarea
-              value={nextMission}
-              onChange={(event) => setNextMission(event.target.value)}
-              readOnly={readOnly}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="app-field-label">Why agents exist here</label>
-            <Textarea
-              value={nextReason}
-              onChange={(event) => setNextReason(event.target.value)}
-              readOnly={readOnly}
-            />
-          </div>
-        </div>
-      </PolicySection>
+    <div className="space-y-5">
+      <SettingsSectionTabs
+        defaultTabId="models"
+        tabs={[
+          {
+            id: "mission",
+            label: "Mission",
+            content: (
+              <PolicySection
+                title="Mission and purpose"
+                description="Capture the business mission and why autonomous agents should exist in this workspace."
+              >
+                <div className="grid gap-4 xl:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="app-field-label">Company mission</label>
+                    <Textarea
+                      value={nextMission}
+                      onChange={(event) => setNextMission(event.target.value)}
+                      readOnly={readOnly}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="app-field-label">Why agents exist here</label>
+                    <Textarea
+                      value={nextReason}
+                      onChange={(event) => setNextReason(event.target.value)}
+                      readOnly={readOnly}
+                    />
+                  </div>
+                </div>
+              </PolicySection>
+            ),
+          },
+          {
+            id: "models",
+            label: "Models",
+            content: (
+              <PolicySection
+                title="Model access"
+                description="Set the default model and define the approved and blocked model catalog for the organization."
+              >
+                <div className="space-y-2">
+                  <label className="app-field-label">Default model</label>
+                  <select
+                    value={nextDefaultModel}
+                    onChange={(event) => setNextDefaultModel(event.target.value)}
+                    disabled={readOnly}
+                    className="flex h-9 w-full rounded-sm border border-border bg-transparent px-3 text-[length:var(--text-sm)] text-white"
+                  >
+                    <option value="">Select a default model</option>
+                    {nextApprovedModels.map((entry) => (
+                      <option key={entry.id} value={entry.id}>
+                        {entry.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-      <PolicySection
-        title="Model access"
-        description="Set the default model and define the approved and blocked model catalog for the organization."
-      >
-        <div className="space-y-2">
-          <label className="app-field-label">Default model</label>
-          <select
-            value={nextDefaultModel}
-            onChange={(event) => setNextDefaultModel(event.target.value)}
-            disabled={readOnly}
-            className="flex h-9 w-full rounded-sm border border-border bg-transparent px-3 text-[length:var(--text-sm)] text-white"
-          >
-            <option value="">Select a default model</option>
-            {nextApprovedModels.map((entry) => (
-              <option key={entry.id} value={entry.id}>
-                {entry.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-3 rounded-md border border-border p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[length:var(--text-sm)] font-medium text-white">Approved model catalog</p>
-              <p className="text-[length:var(--text-xs)] text-white/55">Admins control the allowlist users can pick from.</p>
-            </div>
-            <span className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/45">
-              {nextApprovedModels.length} approved
-            </span>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Input
-              value={customModel}
-              onChange={(event) => setCustomModel(event.target.value)}
-              placeholder="Add custom OpenRouter model ref"
-              readOnly={readOnly}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="default"
-              onClick={addCustomApprovedModel}
-              disabled={readOnly}
-            >
-              Add
-            </Button>
-          </div>
-          <Input
-            value={searchInput}
-            onChange={(event) => setSearchInput(event.target.value)}
-            placeholder="Search full OpenRouter catalog"
-          />
-          <div className="flex items-center justify-between gap-3 text-xs text-zinc-500">
-            <p>
-              {catalogLoading
-                ? "Loading OpenRouter catalog..."
-                : `${discoveryState?.total ?? 0} model${(discoveryState?.total ?? 0) === 1 ? "" : "s"} found`}
-            </p>
-            <div className="flex items-center gap-3">
-              <CatalogSourceBadge source={catalogSource} loading={catalogLoading} />
-              <p>
-                Page {discoveryState?.page ?? discoveryPage}
-                {discoveryState?.total ? ` of ${Math.max(1, Math.ceil(discoveryState.total / discoveryState.pageSize))}` : ""}
-              </p>
-            </div>
-          </div>
-          <div className="space-y-2">
-            {catalogError ? <p className="text-sm text-red-400">{catalogError}</p> : null}
-            {!catalogError && !catalogLoading && discoveryModels.length === 0 ? (
-              <p className="text-sm text-zinc-500">No OpenRouter models matched this search.</p>
-            ) : null}
-            {discoveryModels.map((entry) => {
-              const isApproved = nextApprovedModels.some((model) => model.id === entry.id);
-              const isBlocked = nextBlockedModels.includes(entry.id);
-
-              return (
-                <div key={entry.id} className="rounded-sm border border-border-subtle p-3">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="space-y-1 min-w-0">
-                      <p className="text-[length:var(--text-sm)] font-medium text-white">{entry.label}</p>
-                      <p className="text-[length:var(--text-xs)] text-white/45">{entry.id}</p>
-                      {entry.description ? (
-                        <p className="text-[length:var(--text-xs)] text-white/60">{entry.description}</p>
-                      ) : null}
-                      <p className="text-[length:var(--text-xs)] text-white/45">
-                        {entry.isFree ? "Free or zero-rated" : "Paid"}
-                        {entry.isPremium ? " · Premium" : ""}
-                        {entry.contextWindow ? ` · ${entry.contextWindow.toLocaleString()} ctx` : ""}
-                        {formatPricing(entry)}
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[length:var(--text-sm)] font-medium text-white">Approved model catalog</p>
+                      <p className="text-[length:var(--text-xs)] text-white/55">Admins control the allowlist users can pick from.</p>
+                    </div>
+                    <span className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/45">
+                      {nextApprovedModels.length} approved
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Input
+                      value={customModel}
+                      onChange={(event) => setCustomModel(event.target.value)}
+                      placeholder="Add custom OpenRouter model ref"
+                      readOnly={readOnly}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="default"
+                      onClick={addCustomApprovedModel}
+                      disabled={readOnly}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  <Input
+                    value={searchInput}
+                    onChange={(event) => setSearchInput(event.target.value)}
+                    placeholder="Search full OpenRouter catalog"
+                  />
+                  <div className="flex items-center justify-between gap-3 text-xs text-zinc-500">
+                    <p>
+                      {catalogLoading
+                        ? "Loading OpenRouter catalog..."
+                        : `${discoveryState?.total ?? 0} model${(discoveryState?.total ?? 0) === 1 ? "" : "s"} found`}
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <CatalogSourceBadge source={catalogSource} loading={catalogLoading} />
+                      <p>
+                        Page {discoveryState?.page ?? discoveryPage}
+                        {discoveryState?.total ? ` of ${Math.max(1, Math.ceil(discoveryState.total / discoveryState.pageSize))}` : ""}
                       </p>
                     </div>
-                    <div className="flex gap-1">
-                      <Button
-                        type="button"
-                        variant={isApproved ? "outline" : "default"}
-                        size="sm"
-                        onClick={() => upsertApprovedModel(entry)}
+                  </div>
+                  <div className="divide-y divide-border-subtle">
+                    {catalogError ? <p className="py-3 text-sm text-red-400">{catalogError}</p> : null}
+                    {!catalogError && !catalogLoading && discoveryModels.length === 0 ? (
+                      <p className="py-3 text-sm text-zinc-500">No OpenRouter models matched this search.</p>
+                    ) : null}
+                    {discoveryModels.map((entry) => {
+                      const isApproved = nextApprovedModels.some((model) => model.id === entry.id);
+                      const isBlocked = nextBlockedModels.includes(entry.id);
+
+                      return (
+                        <div key={entry.id} className="flex flex-wrap items-start justify-between gap-3 py-3">
+                          <div className="min-w-0 space-y-1">
+                            <p className="text-[length:var(--text-sm)] font-medium text-white">{entry.label}</p>
+                            <p className="text-[length:var(--text-xs)] text-white/45">{entry.id}</p>
+                            {entry.description ? (
+                              <p className="text-[length:var(--text-xs)] text-white/60">{entry.description}</p>
+                            ) : null}
+                            <p className="text-[length:var(--text-xs)] text-white/45">
+                              {entry.isFree ? "Free or zero-rated" : "Paid"}
+                              {entry.isPremium ? " · Premium" : ""}
+                              {entry.contextWindow ? ` · ${entry.contextWindow.toLocaleString()} ctx` : ""}
+                              {formatPricing(entry)}
+                            </p>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              type="button"
+                              variant={isApproved ? "outline" : "default"}
+                              size="sm"
+                              onClick={() => upsertApprovedModel(entry)}
+                              disabled={readOnly}
+                            >
+                              {isApproved ? "Remove" : "Approve"}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleBlockedModel(entry.id)}
+                              disabled={readOnly}
+                            >
+                              {isBlocked ? "Unblock" : "Block"}
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex items-center justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setDiscoveryPage((current) => Math.max(1, current - 1))}
+                      disabled={catalogLoading || discoveryPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setDiscoveryPage((current) => current + 1)}
+                      disabled={catalogLoading || !discoveryState?.hasMore}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                  <div className="space-y-2 border-t border-border-subtle pt-4">
+                    <p className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/45">Approved models</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {nextApprovedModels.map((entry) => (
+                        <button
+                          key={entry.id}
+                          type="button"
+                          onClick={() => !readOnly && upsertApprovedModel(entry)}
+                          className="rounded-sm bg-white/[0.06] px-2 py-0.5 text-[length:var(--text-xs)] text-white/80 hover:bg-white/[0.09]"
+                        >
+                          {entry.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {nextBlockedModels.length > 0 ? (
+                    <div className="space-y-2">
+                      <p className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/45">Blocked models</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {nextBlockedModels.map((entry) => (
+                          <button
+                            key={entry}
+                            type="button"
+                            onClick={() => !readOnly && toggleBlockedModel(entry)}
+                            className="rounded-sm bg-amber-500/10 px-2 py-0.5 text-[length:var(--text-xs)] text-amber-300"
+                          >
+                            {entry}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </PolicySection>
+            ),
+          },
+          {
+            id: "approvals",
+            label: "Approvals",
+            content: (
+              <PolicySection
+                title="Approvals and overrides"
+                description="Control when spend thresholds trigger approval and whether agents or live sessions may override the default model policy."
+              >
+                <div className="flex items-center gap-3 text-sm text-zinc-300">
+                  <input
+                    type="checkbox"
+                    checked={nextRequireApproval}
+                    onChange={(event) => setNextRequireApproval(event.target.checked)}
+                    disabled={readOnly}
+                    className="app-checkbox"
+                  />
+                  Require approval when wallet thresholds are crossed
+                </div>
+                <div className="space-y-3 border-t border-border-subtle pt-4">
+                  <p className="text-[length:var(--text-sm)] font-medium text-white">Model guardrails</p>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <label className="flex items-center gap-3 text-sm text-zinc-300">
+                      <input
+                        type="checkbox"
+                        checked={nextModelGuardrails.allowAgentOverride}
+                        onChange={(event) =>
+                          setNextModelGuardrails((current) => ({
+                            ...current,
+                            allowAgentOverride: event.target.checked,
+                          }))
+                        }
                         disabled={readOnly}
-                      >
-                        {isApproved ? "Remove" : "Approve"}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleBlockedModel(entry.id)}
+                        className="app-checkbox"
+                      />
+                      Allow agent-level model overrides
+                    </label>
+                    <label className="flex items-center gap-3 text-sm text-zinc-300">
+                      <input
+                        type="checkbox"
+                        checked={nextModelGuardrails.allowSessionOverride}
+                        onChange={(event) =>
+                          setNextModelGuardrails((current) => ({
+                            ...current,
+                            allowSessionOverride: event.target.checked,
+                          }))
+                        }
                         disabled={readOnly}
-                      >
-                        {isBlocked ? "Unblock" : "Block"}
-                      </Button>
+                        className="app-checkbox"
+                      />
+                      Allow session-level model overrides
+                    </label>
+                    <label className="flex items-center gap-3 text-sm text-zinc-300">
+                      <input
+                        type="checkbox"
+                        checked={nextModelGuardrails.requireApprovalForPremiumModels}
+                        onChange={(event) =>
+                          setNextModelGuardrails((current) => ({
+                            ...current,
+                            requireApprovalForPremiumModels: event.target.checked,
+                          }))
+                        }
+                        disabled={readOnly}
+                        className="app-checkbox"
+                      />
+                      Require approval for premium-priced models
+                    </label>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="app-field-label">Prompt cost cap (cents per 1M)</label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={String(nextModelGuardrails.premiumInputCostPerMillionCents)}
+                        onChange={(event) =>
+                          setNextModelGuardrails((current) => ({
+                            ...current,
+                            premiumInputCostPerMillionCents: event.target.value,
+                          }))
+                        }
+                        readOnly={readOnly}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="app-field-label">Completion cost cap (cents per 1M)</label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={String(nextModelGuardrails.premiumOutputCostPerMillionCents)}
+                        onChange={(event) =>
+                          setNextModelGuardrails((current) => ({
+                            ...current,
+                            premiumOutputCostPerMillionCents: event.target.value,
+                          }))
+                        }
+                        readOnly={readOnly}
+                      />
                     </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-          <div className="flex items-center justify-end gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setDiscoveryPage((current) => Math.max(1, current - 1))}
-              disabled={catalogLoading || discoveryPage === 1}
-            >
-              Previous
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setDiscoveryPage((current) => current + 1)}
-              disabled={catalogLoading || !discoveryState?.hasMore}
-            >
-              Next
-            </Button>
-          </div>
-          <div className="space-y-2">
-            <p className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/45">Approved models</p>
-            <div className="flex flex-wrap gap-1.5">
-              {nextApprovedModels.map((entry) => (
-                <button
-                  key={entry.id}
-                  type="button"
-                  onClick={() => !readOnly && upsertApprovedModel(entry)}
-                  className="rounded-sm border border-border px-2 py-0.5 text-[length:var(--text-xs)] text-white/80 hover:border-border-strong"
-                >
-                  {entry.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          {nextBlockedModels.length > 0 ? (
-            <div className="space-y-2">
-              <p className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/45">Blocked models</p>
-              <div className="flex flex-wrap gap-1.5">
-                {nextBlockedModels.map((entry) => (
-                  <button
-                    key={entry}
-                    type="button"
-                    onClick={() => !readOnly && toggleBlockedModel(entry)}
-                    className="rounded-sm border border-amber-500/30 px-2 py-0.5 text-[length:var(--text-xs)] text-amber-300"
-                  >
-                    {entry}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </div>
-      </PolicySection>
-
-      <PolicySection
-        title="Approvals and overrides"
-        description="Control when spend thresholds trigger approval and whether agents or live sessions may override the default model policy."
-      >
-        <div className="flex items-center gap-3 text-sm text-zinc-300">
-          <input
-            type="checkbox"
-            checked={nextRequireApproval}
-            onChange={(event) => setNextRequireApproval(event.target.checked)}
-            disabled={readOnly}
-            className="app-checkbox"
-          />
-          Require approval when wallet thresholds are crossed
-        </div>
-        <div className="space-y-3 rounded-md border border-border p-4">
-          <p className="text-[length:var(--text-sm)] font-medium text-white">Model guardrails</p>
-          <div className="flex items-center gap-3 text-sm text-zinc-300">
-            <input
-              type="checkbox"
-              checked={nextModelGuardrails.allowAgentOverride}
-              onChange={(event) =>
-                setNextModelGuardrails((current) => ({
-                  ...current,
-                  allowAgentOverride: event.target.checked,
-                }))
-              }
-              disabled={readOnly}
-              className="app-checkbox"
-            />
-            Allow agent-level model overrides
-          </div>
-          <div className="flex items-center gap-3 text-sm text-zinc-300">
-            <input
-              type="checkbox"
-              checked={nextModelGuardrails.allowSessionOverride}
-              onChange={(event) =>
-                setNextModelGuardrails((current) => ({
-                  ...current,
-                  allowSessionOverride: event.target.checked,
-                }))
-              }
-              disabled={readOnly}
-              className="app-checkbox"
-            />
-            Allow session-level model overrides
-          </div>
-          <div className="flex items-center gap-3 text-sm text-zinc-300">
-            <input
-              type="checkbox"
-              checked={nextModelGuardrails.requireApprovalForPremiumModels}
-              onChange={(event) =>
-                setNextModelGuardrails((current) => ({
-                  ...current,
-                  requireApprovalForPremiumModels: event.target.checked,
-                }))
-              }
-              disabled={readOnly}
-              className="app-checkbox"
-            />
-            Require approval for premium-priced models
-          </div>
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="space-y-2">
-              <label className="app-field-label">Prompt cost cap (cents per 1M)</label>
-              <Input
-                type="number"
-                min="0"
-                value={String(nextModelGuardrails.premiumInputCostPerMillionCents)}
-                onChange={(event) =>
-                  setNextModelGuardrails((current) => ({
-                    ...current,
-                    premiumInputCostPerMillionCents: event.target.value,
-                  }))
-                }
-                readOnly={readOnly}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="app-field-label">Completion cost cap (cents per 1M)</label>
-              <Input
-                type="number"
-                min="0"
-                value={String(nextModelGuardrails.premiumOutputCostPerMillionCents)}
-                onChange={(event) =>
-                  setNextModelGuardrails((current) => ({
-                    ...current,
-                    premiumOutputCostPerMillionCents: event.target.value,
-                  }))
-                }
-                readOnly={readOnly}
-              />
-            </div>
-          </div>
-        </div>
-      </PolicySection>
-
-      <PolicySection
-        title="Advanced"
-        description="Most teams won't need this. Add raw JSON for guardrails not exposed in the form above."
-      >
-        <details className="rounded-md border border-border p-4">
-          <summary className="cursor-pointer text-[length:var(--text-xs)] font-medium uppercase tracking-[0.08em] text-white/55 hover:text-white">
-            Show guardrails JSON
-          </summary>
-          <div className="mt-3 space-y-2">
-            <Textarea
-              value={nextGuardrails}
-              onChange={(event) => setNextGuardrails(event.target.value)}
-              className="min-h-48 font-mono text-[length:var(--text-xs)]"
-              readOnly={readOnly}
-            />
-            <p className="text-[length:var(--text-xs)] text-white/45">Invalid JSON blocks saving.</p>
-          </div>
-        </details>
-      </PolicySection>
+              </PolicySection>
+            ),
+          },
+          {
+            id: "advanced",
+            label: "Advanced",
+            content: (
+              <PolicySection
+                title="Advanced"
+                description="Most teams won't need this. Add raw JSON for guardrails not exposed in the form above."
+              >
+                <details>
+                  <summary className="cursor-pointer text-[length:var(--text-xs)] font-medium uppercase tracking-[0.08em] text-white/55 hover:text-white">
+                    Show guardrails JSON
+                  </summary>
+                  <div className="mt-3 space-y-2">
+                    <Textarea
+                      value={nextGuardrails}
+                      onChange={(event) => setNextGuardrails(event.target.value)}
+                      className="min-h-48 font-mono text-[length:var(--text-xs)]"
+                      readOnly={readOnly}
+                    />
+                    <p className="text-[length:var(--text-xs)] text-white/45">Invalid JSON blocks saving.</p>
+                  </div>
+                </details>
+              </PolicySection>
+            ),
+          },
+        ]}
+      />
 
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
       {success ? <p className="text-sm text-emerald-300">{success}</p> : null}
@@ -616,13 +644,13 @@ function PolicySection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="settings-panel p-5 space-y-4">
+    <section className="space-y-4 p-5">
       <div className="space-y-1">
         <p className="text-[length:var(--text-sm)] font-medium text-white">{title}</p>
         <p className="text-[length:var(--text-xs)] text-white/55">{description}</p>
       </div>
       {children}
-    </div>
+    </section>
   );
 }
 

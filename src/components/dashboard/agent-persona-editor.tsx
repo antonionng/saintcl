@@ -70,7 +70,7 @@ export function AgentPersonaEditor({
       />
       {canEdit ? (
         <div className="flex items-center gap-3">
-          <Button type="button" size="sm" onClick={handleSave} disabled={saving || !dirty}>
+          <Button type="button" variant="secondary" size="sm" onClick={handleSave} disabled={saving || !dirty}>
             {saving ? <Loader2 className="mr-2 size-3.5 animate-spin" /> : null}
             {saving ? "Saving..." : "Save persona"}
           </Button>

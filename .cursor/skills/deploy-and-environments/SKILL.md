@@ -1,6 +1,6 @@
 ---
 name: deploy-and-environments
-description: Work within SaintClaw's split deployment model across local dev, Vercel, Supabase, and Railway-hosted OpenClaw. Use when changing environment variables, startup assumptions, deployment behavior, or infrastructure-sensitive code paths.
+description: Work within SaintAGI's split deployment model across local dev, Vercel, Supabase, and Railway-hosted OpenClaw. Use when changing environment variables, startup assumptions, deployment behavior, or infrastructure-sensitive code paths.
 ---
 
 # Deploy And Environments
@@ -16,14 +16,14 @@ Use this skill when a task touches runtime deployment or environment-driven beha
 
 ## Deployment Model
 
-- SaintClaw app: Next.js app, typically on Vercel.
+- SaintAGI app: Next.js app, typically on Vercel.
 - Data and auth: Supabase.
 - Persistent OpenClaw gateway: Railway.
 - Local dev: app root plus optional `openclaw-vendored` watch/build loop.
 
 ## Key Rules
 
-- Do not collapse SaintClaw app deployment and hosted gateway deployment by accident.
+- Do not collapse SaintAGI app deployment and hosted gateway deployment by accident.
 - Keep hosted gateway token handling explicit.
 - Preserve origin handling and workspace/state directory setup in Railway bootstrap.
 - Prefer configuration changes over hard-coded environment fallbacks.

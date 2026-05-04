@@ -71,8 +71,13 @@ export async function recordAppInstall(params: {
     .single();
 
   if (error) {
+    const isMissingAppStoreTable =
+      error.code === "42P01" ||
+      error.code === "PGRST205" ||
+      /does not exist/i.test(error.message) ||
+      /schema cache/i.test(error.message);
     const friendly =
-      error.code === "42P01" || /does not exist/i.test(error.message)
+      isMissingAppStoreTable
         ? "App store database not initialised. Run `supabase db push` (or apply migration 00019_agent_apps.sql)."
         : error.message;
     return { row: null, error: friendly };

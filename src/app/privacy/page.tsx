@@ -4,8 +4,11 @@ import { legalDocuments } from "@/components/legal/content";
 import { LegalPage } from "@/components/legal/legal-page";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | SaintClaw",
+  title: "Privacy Policy",
   description: legalDocuments.privacy.description,
+  alternates: {
+    canonical: "/privacy",
+  },
 };
 
 export default function PrivacyPage() {

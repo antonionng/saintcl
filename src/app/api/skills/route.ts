@@ -56,7 +56,7 @@ export async function POST(request: Request) {
   }
   if (!isOpenClawConfigured()) {
     return NextResponse.json(
-      { error: { message: "OpenClaw gateway is not configured." } },
+      { error: { message: "Runtime gateway is not configured." } },
       { status: 503 },
     );
   }

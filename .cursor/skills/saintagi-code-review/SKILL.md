@@ -1,9 +1,9 @@
 ---
-name: saintclaw-code-review
-description: Review SaintClaw changes for correctness, tenant isolation, auth safety, billing integrity, runtime governance, and missing verification. Use when the user asks for a review or when examining risky app, schema, or runtime changes.
+name: saintagi-code-review
+description: Review SaintAGI changes for correctness, tenant isolation, auth safety, billing integrity, runtime governance, and missing verification. Use when the user asks for a review or when examining risky app, schema, or runtime changes.
 ---
 
-# SaintClaw Code Review
+# SaintAGI Code Review
 
 ## Review Priorities
 

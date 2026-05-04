@@ -6,7 +6,6 @@ import {
   Boxes,
   Brain,
   Check,
-  Cpu,
   Loader2,
   MessageSquare,
   Plug,
@@ -27,7 +26,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Wizard } from "@/components/ui/wizard";
-import { CATEGORY_LABELS, type AppCategory, type CatalogApp } from "@/lib/apps/catalog";
+import {
+  CATEGORY_LABELS,
+  SORTED_APP_CATEGORIES,
+  sortCatalogApps,
+  type AppCategory,
+  type CatalogApp,
+} from "@/lib/apps/catalog";
 
 const CATEGORY_ICON: Record<AppCategory, React.ComponentType<{ className?: string }>> = {
   channel: MessageSquare,
@@ -36,7 +41,6 @@ const CATEGORY_ICON: Record<AppCategory, React.ComponentType<{ className?: strin
   memory: Brain,
   tool: Wrench,
   mcp: Plug,
-  model: Cpu,
 };
 
 function AppLogo({ app, size = 32 }: { app: CatalogApp; size?: number }) {
@@ -85,13 +89,7 @@ type Props = {
 
 const FILTERS: Array<{ id: AppCategory | "all"; label: string }> = [
   { id: "all", label: "All" },
-  { id: "channel", label: CATEGORY_LABELS.channel },
-  { id: "skill", label: CATEGORY_LABELS.skill },
-  { id: "search", label: CATEGORY_LABELS.search },
-  { id: "memory", label: CATEGORY_LABELS.memory },
-  { id: "tool", label: CATEGORY_LABELS.tool },
-  { id: "model", label: CATEGORY_LABELS.model },
-  { id: "mcp", label: CATEGORY_LABELS.mcp },
+  ...SORTED_APP_CATEGORIES.map((category) => ({ id: category, label: CATEGORY_LABELS[category] })),
 ];
 
 export function AppsCatalog({ apps, installedAppIds, agents, defaultAgentId }: Props) {
@@ -102,6 +100,7 @@ export function AppsCatalog({ apps, installedAppIds, agents, defaultAgentId }: P
     (searchParams.get("category") as AppCategory) ?? "all",
   );
   const [search, setSearch] = useState(searchParams.get("q") ?? "");
+  const [showRoadmap, setShowRoadmap] = useState(searchParams.get("roadmap") === "1");
   const [activeApp, setActiveApp] = useState<CatalogApp | null>(null);
   const [recentlyInstalled, setRecentlyInstalled] = useState<string[]>([]);
 
@@ -111,7 +110,7 @@ export function AppsCatalog({ apps, installedAppIds, agents, defaultAgentId }: P
   );
 
   const filteredApps = useMemo(() => {
-    let items = apps;
+    let items = showRoadmap ? apps : apps.filter((app) => app.install !== "oauth-soon");
     if (filter !== "all") items = items.filter((app) => app.category === filter);
     if (search) {
       const q = search.toLowerCase();
@@ -123,8 +122,13 @@ export function AppsCatalog({ apps, installedAppIds, agents, defaultAgentId }: P
           app.tags?.some((tag) => tag.toLowerCase().includes(q)),
       );
     }
-    return items;
-  }, [apps, filter, search]);
+    return sortCatalogApps(items);
+  }, [apps, filter, search, showRoadmap]);
+
+  const roadmapCount = useMemo(
+    () => apps.filter((app) => app.install === "oauth-soon").length,
+    [apps],
+  );
 
   return (
     <div className="space-y-6">
@@ -145,20 +149,30 @@ export function AppsCatalog({ apps, installedAppIds, agents, defaultAgentId }: P
             </button>
           ))}
         </div>
-        <div className="relative w-full sm:w-64">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search apps"
-            className="h-9 pl-8"
-          />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Button
+            type="button"
+            variant={showRoadmap ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setShowRoadmap((current) => !current)}
+          >
+            {showRoadmap ? "Hide roadmap" : `Show roadmap (${roadmapCount})`}
+          </Button>
+          <div className="relative w-full sm:w-64">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search apps"
+              className="h-9 pl-8"
+            />
+          </div>
         </div>
       </div>
 
       {filteredApps.length === 0 ? (
         <div className="rounded-md border border-dashed border-border p-10 text-center text-[length:var(--text-sm)] text-white/55">
-          No apps match this filter.
+          No available apps match this filter.
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -179,7 +193,7 @@ export function AppsCatalog({ apps, installedAppIds, agents, defaultAgentId }: P
                       Installed
                     </Badge>
                   ) : app.install === "oauth-soon" ? (
-                    <Badge variant="default">Coming soon</Badge>
+                    <Badge variant="default">Enterprise setup</Badge>
                   ) : null}
                 </div>
                 <div className="flex-1">
@@ -272,8 +286,8 @@ function InstallAppDialog({
               {app.description ?? app.oneLiner}
             </p>
             <p className="mt-3 text-[length:var(--text-xs)] text-white/55">
-              This connector is on the roadmap. Register interest and we will reach out when it
-              ships.
+              This connector needs enterprise setup before self-serve install. Request access so an admin or platform
+              operator can confirm credentials, runtime requirements, and rollout timing.
             </p>
             {error ? (
               <p className="mt-3 rounded-sm border border-rose-500/30 px-3 py-2 text-[length:var(--text-xs)] text-rose-300">

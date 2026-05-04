@@ -2,8 +2,15 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { BookOpen, Bot, LoaderCircle } from "lucide-react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  BookOpen,
+  Bot,
+  LoaderCircle,
+  MessageSquareText,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 
 import { RequestLogTable, type RequestLogItem } from "@/components/dashboard/request-log-table";
 import { SessionLogTail } from "@/components/dashboard/session-log-tail";
@@ -13,14 +20,22 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 const OPENCLAW_CONTROL_SETTINGS_KEY = "openclaw.control.settings.v1";
+const WORKSPACE_AGENT_NOTICE_DISMISSED_KEY = "saintagi.workspace.agentNoticeDismissed.v1";
 
 type WorkspaceShellProps = {
   embeddedConsoleUrl?: string;
   gatewayUrl?: string;
+  sessionKey?: string;
   error?: string;
   requiresOnboarding?: boolean;
   hasProvisionedAgent?: boolean;
   canProvisionAgent?: boolean;
+  canManageAgents?: boolean;
+  agentName?: string | null;
+  orgName?: string | null;
+  trialActive?: boolean;
+  trialMessageCount?: number;
+  trialMessageLimit?: number;
   initialProfile: {
     displayName: string;
     whatIDo: string;
@@ -30,11 +45,13 @@ type WorkspaceShellProps = {
 
 type PersistedControlUiSettings = {
   gatewayUrl?: string;
+  sessionKey?: string;
+  lastActiveSessionKey?: string;
   [key: string]: unknown;
 };
 
-function seedManagedGatewayUrl(gatewayUrl?: string) {
-  if (!gatewayUrl || typeof window === "undefined") {
+function seedManagedWorkspaceSettings(gatewayUrl?: string, sessionKey?: string) {
+  if ((!gatewayUrl && !sessionKey) || typeof window === "undefined") {
     return;
   }
 
@@ -47,32 +64,64 @@ function seedManagedGatewayUrl(gatewayUrl?: string) {
         ? parsed
         : {};
 
-    if (next.gatewayUrl === gatewayUrl) {
+    const seeded = {
+      ...next,
+      ...(gatewayUrl ? { gatewayUrl } : {}),
+      ...(sessionKey ? { sessionKey, lastActiveSessionKey: sessionKey } : {}),
+    };
+
+    if (
+      next.gatewayUrl === seeded.gatewayUrl &&
+      next.sessionKey === seeded.sessionKey &&
+      next.lastActiveSessionKey === seeded.lastActiveSessionKey
+    ) {
       return;
     }
 
     window.localStorage.setItem(
       OPENCLAW_CONTROL_SETTINGS_KEY,
-      JSON.stringify({ ...next, gatewayUrl }),
+      JSON.stringify(seeded),
     );
   } catch {
-    window.localStorage.setItem(
-      OPENCLAW_CONTROL_SETTINGS_KEY,
-      JSON.stringify({ gatewayUrl }),
-    );
+    window.localStorage.setItem(OPENCLAW_CONTROL_SETTINGS_KEY, JSON.stringify({
+      ...(gatewayUrl ? { gatewayUrl } : {}),
+      ...(sessionKey ? { sessionKey, lastActiveSessionKey: sessionKey } : {}),
+    }));
+  }
+}
+
+function hideManagedSessionControls(iframe: HTMLIFrameElement | null) {
+  try {
+    const doc = iframe?.contentDocument;
+    if (!doc || doc.getElementById("saintagi-managed-workspace-style")) return;
+
+    const style = doc.createElement("style");
+    style.id = "saintagi-managed-workspace-style";
+    style.textContent = ".chat-controls__session{display:none!important}";
+    doc.head.appendChild(style);
+  } catch {
+    // The workspace still loads if the browser blocks parent access to iframe contents.
   }
 }
 
 export function WorkspaceShell({
   embeddedConsoleUrl,
   gatewayUrl,
+  sessionKey,
   error,
   requiresOnboarding = false,
   hasProvisionedAgent = true,
   canProvisionAgent = false,
+  canManageAgents = false,
+  agentName,
+  orgName,
+  trialActive = false,
+  trialMessageCount = 0,
+  trialMessageLimit = 0,
   initialProfile,
 }: WorkspaceShellProps) {
   const router = useRouter();
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [ready, setReady] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [items, setItems] = useState<RequestLogItem[]>([]);
@@ -85,6 +134,8 @@ export function WorkspaceShell({
   const [onboardingError, setOnboardingError] = useState<string | null>(null);
   const [provisioning, setProvisioning] = useState(false);
   const [provisioningError, setProvisioningError] = useState<string | null>(null);
+  const [guideOpen, setGuideOpen] = useState(true);
+  const [agentNoticeOpen, setAgentNoticeOpen] = useState(true);
 
   const normalizedOnboardingProfile = useMemo(
     () => ({
@@ -96,11 +147,27 @@ export function WorkspaceShell({
   );
   const onboardingActive = !onboardingComplete;
   const showProvisioningState = !onboardingActive && !hasProvisionedAgent;
+  const displayAgentName = agentName?.trim() || "Your company agent";
+  const displayOrgName = orgName?.trim() || "your company";
+  const trialUsageRatio = trialMessageLimit > 0 ? trialMessageCount / trialMessageLimit : 0;
+  const showTrialUsageWarning = trialActive && trialUsageRatio >= 0.8;
+  const agentNoticeStorageKey = useMemo(
+    () => `${WORKSPACE_AGENT_NOTICE_DISMISSED_KEY}:${displayOrgName}:${displayAgentName}`,
+    [displayAgentName, displayOrgName],
+  );
 
   useLayoutEffect(() => {
-    seedManagedGatewayUrl(gatewayUrl);
+    seedManagedWorkspaceSettings(gatewayUrl, sessionKey);
     setReady(true);
-  }, [gatewayUrl]);
+  }, [gatewayUrl, sessionKey]);
+
+  useLayoutEffect(() => {
+    try {
+      setAgentNoticeOpen(window.localStorage.getItem(agentNoticeStorageKey) !== "true");
+    } catch {
+      setAgentNoticeOpen(true);
+    }
+  }, [agentNoticeStorageKey]);
 
   useEffect(() => {
     setOnboardingProfile(initialProfile);
@@ -242,13 +309,25 @@ export function WorkspaceShell({
     }
   }
 
+  function dismissAgentNotice() {
+    setAgentNoticeOpen(false);
+
+    try {
+      window.localStorage.setItem(agentNoticeStorageKey, "true");
+    } catch {
+      // Dismissing should still work for the current view when storage is unavailable.
+    }
+  }
+
   return (
     <div className="relative min-h-screen bg-[#05060a]">
       {ready && !onboardingActive && hasProvisionedAgent && embeddedConsoleUrl ? (
         <iframe
+          ref={iframeRef}
           src={embeddedConsoleUrl}
-          title="SaintClaw Workspace"
+          title="Saint AGI Workspace"
           className="min-h-screen w-full border-0 bg-[#05060a]"
+          onLoad={() => hideManagedSessionControls(iframeRef.current)}
         />
       ) : (
         <div className="min-h-screen w-full bg-[#05060a]" aria-hidden="true" />
@@ -258,22 +337,100 @@ export function WorkspaceShell({
           {error}
         </div>
       ) : null}
+      {showTrialUsageWarning && !error ? (
+        <div className="fixed bottom-4 left-4 z-10 max-w-md rounded-2xl border border-amber-400/30 bg-black/80 px-4 py-3 text-sm text-amber-100 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur">
+          Trial usage: {trialMessageCount} of {trialMessageLimit} messages used. Upgrade and top up before the trial
+          workspace locks.
+        </div>
+      ) : null}
       {!onboardingActive && hasProvisionedAgent ? (
-        <div className="fixed right-4 top-4 z-20 flex items-center gap-3">
-          <Button type="button" variant="secondary" asChild>
-            <Link href="/workspace/knowledge">
-              <BookOpen className="size-4" />
-              <span>Knowledge</span>
-            </Link>
-          </Button>
-          <Button type="button" variant="secondary" onClick={() => setPanelOpen((current) => !current)}>
-            {panelOpen ? "Hide activity" : "View activity"}
-          </Button>
+        <div className="fixed left-4 right-4 top-4 z-20 flex flex-wrap items-start justify-between gap-3">
+          {agentNoticeOpen ? (
+            <div className="max-w-xl rounded-2xl border border-white/10 bg-black/70 px-4 py-3 text-white shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
+                  <Bot className="size-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium uppercase tracking-[0.12em] text-white/55">Assigned company agent</p>
+                  <h1 className="mt-1 truncate text-sm font-semibold text-white">{displayAgentName}</h1>
+                  <p className="mt-1 text-xs leading-5 text-white/65">
+                    This workspace is scoped to {displayOrgName}. Use the assigned agent for approved company work and
+                    ask an admin when you need more tools, channels, or permissions.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="-mr-2 -mt-2 size-8 text-white/55 hover:text-white"
+                  aria-label="Dismiss assigned agent notice"
+                  onClick={dismissAgentNotice}
+                >
+                  <X className="size-4" aria-hidden="true" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div aria-hidden="true" />
+          )}
+          <div className="flex items-center gap-3">
+            <Button type="button" variant="secondary" onClick={() => setGuideOpen((current) => !current)}>
+              {guideOpen ? "Hide guide" : "Show guide"}
+            </Button>
+            <Button type="button" variant="secondary" asChild>
+              <Link href="/workspace/knowledge">
+                <BookOpen className="size-4" />
+                <span>Knowledge</span>
+              </Link>
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => setPanelOpen((current) => !current)}>
+              {panelOpen ? "Hide activity" : "View activity"}
+            </Button>
+          </div>
+        </div>
+      ) : null}
+      {guideOpen && !onboardingActive && hasProvisionedAgent ? (
+        <div className="fixed bottom-4 left-4 z-20 w-[min(92vw,28rem)] rounded-[1.5rem] border border-white/10 bg-[#090b10]/95 p-4 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.12em] text-white/55">Workspace guide</p>
+              <h2 className="mt-1 text-sm font-semibold text-white">Start with a concrete business request.</h2>
+            </div>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setGuideOpen(false)}>
+              Dismiss
+            </Button>
+          </div>
+
+          <div className="mt-4 grid gap-2">
+            <StarterPrompt text="Summarize what you can help me with in this company workspace." />
+            <StarterPrompt text="Help me turn this task into next steps, owners, and a follow-up message." />
+            <StarterPrompt text="What company knowledge or channel access would make this workflow stronger?" />
+          </div>
+
+          <div className="mt-4 grid gap-2 border-t border-white/10 pt-4 text-xs leading-5 text-white/65 sm:grid-cols-3">
+            <WorkspaceHint icon={MessageSquareText} title="Chat" text="Ask the agent to plan, draft, summarize, or route work." />
+            <WorkspaceHint icon={BookOpen} title="Knowledge" text="Add personal context or docs when the answer needs grounding." />
+            <WorkspaceHint
+              icon={ShieldCheck}
+              title="Control"
+              text={canManageAgents ? "Use admin setup for tools and channels." : "Ask an admin for tools and channels."}
+            />
+          </div>
         </div>
       ) : null}
       {panelOpen && !onboardingActive && hasProvisionedAgent ? (
         <div className="fixed inset-y-4 right-4 z-20 w-[min(92vw,32rem)] overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#090b10]/95 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur">
           <div className="flex h-full flex-col gap-4 overflow-hidden p-4">
+            <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.12em] text-white/45">Activity</p>
+                <p className="mt-1 text-sm font-medium text-white">Workspace telemetry</p>
+              </div>
+              <Button type="button" variant="ghost" size="icon" onClick={() => setPanelOpen(false)} aria-label="Close activity panel">
+                <X className="size-4" />
+              </Button>
+            </div>
             {activityError ? <p className="text-sm text-amber-200">{activityError}</p> : null}
             <div className="grid min-h-0 flex-1 gap-4 overflow-hidden lg:grid-rows-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
               <div className="min-h-0 overflow-auto">
@@ -299,8 +456,8 @@ export function WorkspaceShell({
               <CardTitle>{canProvisionAgent ? "Create your first agent" : "Waiting for your agent"}</CardTitle>
               <CardDescription>
                 {canProvisionAgent
-                  ? "Your workspace stays empty until you explicitly provision an agent. We will create a starter agent, assign it to you, and then open chat."
-                  : "Your workspace will activate once an admin provisions and assigns an agent to you."}
+                  ? "Your workspace stays empty until you explicitly provision one default agent. Additional agents are created from Agents and follow your plan limits and billing rules."
+                  : "Your workspace will activate once an admin provisions and assigns a company agent to you."}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
@@ -312,18 +469,18 @@ export function WorkspaceShell({
                   <div className="space-y-1">
                     {canProvisionAgent ? (
                       <>
-                        <p className="font-medium text-white">Provisioning creates one default workspace agent</p>
+                        <p className="font-medium text-white">Provisioning creates one default agent</p>
                         <p className="text-zinc-400">
-                          The starter agent uses your profile context, inherits current org guidance, and becomes your
-                          default chat session.
+                          This uses your included agent allowance when available. Model, tool, and channel activity are
+                          still recorded as usage for billing and audit history.
                         </p>
                       </>
                     ) : (
                       <>
-                        <p className="font-medium text-white">Agent provisioning is admin-managed</p>
+                        <p className="font-medium text-white">Agent access is admin-managed</p>
                         <p className="text-zinc-400">
-                          Ask a workspace admin to create an agent for you from the provisioning wizard or the dashboard.
-                          Once assigned, your workspace will load automatically.
+                          Ask a workspace admin to create or assign a business agent for your role. Once assigned, this
+                          workspace will load automatically.
                         </p>
                       </>
                     )}
@@ -427,6 +584,34 @@ export function WorkspaceShell({
           </Card>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function StarterPrompt({ text }: { text: string }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm leading-6 text-white/80">
+      {text}
+    </div>
+  );
+}
+
+function WorkspaceHint({
+  icon: Icon,
+  title,
+  text,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="rounded-xl bg-white/[0.03] p-3">
+      <div className="flex items-center gap-2 text-white">
+        <Icon className="size-3.5" />
+        <span className="font-medium">{title}</span>
+      </div>
+      <p className="mt-1 text-white/55">{text}</p>
     </div>
   );
 }

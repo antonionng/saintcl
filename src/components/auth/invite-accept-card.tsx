@@ -40,7 +40,7 @@ export function InviteAcceptCard({
         throw new Error(body.error?.message || "Unable to accept invite.");
       }
 
-      router.push("/dashboard");
+      router.push("/workspace");
       router.refresh();
     } catch (acceptError) {
       setError(acceptError instanceof Error ? acceptError.message : "Unable to accept invite.");

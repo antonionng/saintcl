@@ -7,7 +7,7 @@ import { bootstrapTenantRuntime } from "@/lib/openclaw/bootstrap";
 import { env } from "@/lib/env";
 import { recordSessionActivityEvent } from "@/lib/observability";
 import { buildRuntimeDescriptor } from "@/lib/openclaw/paths";
-import { upsertRuntimeMetadata } from "@/lib/openclaw/runtime-store";
+import { listAllocatedRuntimePorts, upsertRuntimeMetadata } from "@/lib/openclaw/runtime-store";
 import type {
   BootstrapTenantOptions,
   OpenClawRuntimeDescriptor,
@@ -16,6 +16,37 @@ import type {
 
 function makeGatewayToken() {
   return randomBytes(24).toString("hex");
+}
+
+function isProcessAlive(pid: number | undefined) {
+  if (!pid) {
+    return false;
+  }
+
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return error instanceof Error && "code" in error && error.code === "EPERM";
+  }
+}
+
+async function resolveAvailableGatewayPort(orgId: string) {
+  const preferredPort = buildRuntimeDescriptor(orgId).gatewayPort;
+  const allocatedPorts = new Set(await listAllocatedRuntimePorts(orgId));
+  if (!allocatedPorts.has(preferredPort)) {
+    return preferredPort;
+  }
+
+  const preferredOffset = preferredPort - env.openClawBasePort;
+  for (let offset = 1; offset < 1000; offset += 1) {
+    const candidatePort = env.openClawBasePort + ((preferredOffset + offset) % 1000);
+    if (!allocatedPorts.has(candidatePort)) {
+      return candidatePort;
+    }
+  }
+
+  throw new Error("No available runtime gateway ports remain in the configured range.");
 }
 
 async function writeRuntimeState(runtime: OpenClawRuntimeDescriptor, state: Partial<OpenClawRuntimeState>) {
@@ -78,8 +109,13 @@ export async function ensureTenantRuntime(
   orgId: string,
   options: BootstrapTenantOptions = { orgId },
 ) {
+  const currentState = await readRuntimeState(orgId);
   const runtime = buildRuntimeDescriptor(orgId, {
-    gatewayToken: makeGatewayToken(),
+    gatewayPort: currentState?.gatewayPort ?? await resolveAvailableGatewayPort(orgId),
+    gatewayToken: currentState?.gatewayToken ?? makeGatewayToken(),
+    status: currentState?.status,
+    pid: currentState?.pid,
+    lastHeartbeatAt: currentState?.lastHeartbeatAt,
   });
 
   await bootstrapTenantRuntime(runtime, {
@@ -88,9 +124,9 @@ export async function ensureTenantRuntime(
     approvedModels: options.approvedModels,
   });
 
-  const currentState = await readRuntimeState(orgId);
   if (!currentState) {
     const nextRuntime = buildRuntimeDescriptor(orgId, {
+      gatewayPort: runtime.gatewayPort,
       status: "stopped",
       gatewayToken: runtime.gatewayToken,
     });
@@ -100,6 +136,7 @@ export async function ensureTenantRuntime(
   }
 
   const nextRuntime = buildRuntimeDescriptor(orgId, {
+    gatewayPort: runtime.gatewayPort,
     status: currentState.status,
     pid: currentState.pid,
     gatewayToken: currentState.gatewayToken,
@@ -118,13 +155,27 @@ export async function startTenantRuntime(
 
   if (currentState?.pid && currentState.status === "online") {
     const activeRuntime = buildRuntimeDescriptor(orgId, {
+      gatewayPort: currentState.gatewayPort,
       status: currentState.status,
       pid: currentState.pid,
       gatewayToken: currentState.gatewayToken,
       lastHeartbeatAt: currentState.lastHeartbeatAt,
     });
-    await recordRuntimeLifecycleEvent(activeRuntime, "runtime.reused", "Reused an existing online runtime.");
-    return activeRuntime;
+    if (isProcessAlive(currentState.pid)) {
+      await recordRuntimeLifecycleEvent(activeRuntime, "runtime.reused", "Reused an existing online runtime.");
+      return activeRuntime;
+    }
+
+    const staleRuntime = buildRuntimeDescriptor(orgId, {
+      gatewayPort: currentState.gatewayPort,
+      status: "stopped",
+      gatewayToken: currentState.gatewayToken,
+      lastHeartbeatAt: currentState.lastHeartbeatAt,
+    });
+    await persistRuntime(staleRuntime, { status: "stopped" });
+    await recordRuntimeLifecycleEvent(staleRuntime, "runtime.stale_pid", "Cleared stale runtime pid before restart.", {
+      stalePid: currentState.pid,
+    });
   }
 
   await mkdir(runtime.paths.logsDir, { recursive: true });
@@ -170,14 +221,13 @@ export async function startTenantRuntime(
 export async function stopTenantRuntime(orgId: string) {
   const currentState = await readRuntimeState(orgId);
   if (currentState?.pid) {
-    try {
+    if (isProcessAlive(currentState.pid)) {
       process.kill(currentState.pid);
-    } catch {
-      // Ignore stale pid state.
     }
   }
 
   const runtime = buildRuntimeDescriptor(orgId, {
+    gatewayPort: currentState?.gatewayPort,
     status: "stopped",
     gatewayToken: currentState?.gatewayToken,
   });

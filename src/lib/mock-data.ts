@@ -69,7 +69,7 @@ export const channels: ChannelRecord[] = [
     agentId: "agt_sales_01",
     type: "telegram",
     status: "connected",
-    identifier: "@saintclaw_sales_bot",
+    identifier: "@saintagi_sales_bot",
     connectedAt: "Mar 08, 2026",
   },
   {
@@ -77,7 +77,7 @@ export const channels: ChannelRecord[] = [
     agentId: "agt_sales_01",
     type: "slack",
     status: "connected",
-    identifier: "saintclaw-workspace",
+    identifier: "saintagi-workspace",
     connectedAt: "Mar 07, 2026",
   },
   {
@@ -120,7 +120,7 @@ export const logs: LogRecord[] = [
     agentId: "agt_ops_02",
     level: "error",
     source: "gateway",
-    message: "OpenClaw heartbeat missed. Provisioner is retrying workspace bootstrap.",
+    message: "Runtime heartbeat missed. Provisioner is retrying workspace bootstrap.",
     timestamp: "14:53 UTC",
   },
 ];
@@ -186,7 +186,7 @@ export const repoAllowlists: RepoAllowlistRecord[] = [
   {
     id: "allow_1",
     orgId: "org_001",
-    pattern: "github.com/saintclaw",
+    pattern: "github.com/saintagi",
     createdBy: "antonio",
     createdAt: "Mar 08, 2026",
   },

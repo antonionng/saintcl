@@ -50,7 +50,7 @@ export function AgentDeleteButton({
   }
 
   return (
-    <Button type="button" variant="outline" size="sm" onClick={handleDelete} disabled={deleting}>
+    <Button type="button" variant="secondary" size="sm" onClick={handleDelete} disabled={deleting}>
       {deleting ? <LoaderCircle className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
       <span>{deleting ? "Deleting..." : "Delete"}</span>
     </Button>

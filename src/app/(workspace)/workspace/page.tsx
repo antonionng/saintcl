@@ -1,8 +1,15 @@
 import { WorkspaceShell } from "@/components/workspace/workspace-shell";
-import { getCurrentOrg, getCurrentUserProfile, getPreferredAgentForSession } from "@/lib/dal";
+import { getCurrentOrg, getCurrentUserProfile, getPreferredAgentForSession, getTrialMessageUsageCount } from "@/lib/dal";
 import { isOpenClawConfigured } from "@/lib/env";
 import { ensureCurrentControlUiOrigin } from "@/lib/openclaw/control-ui-origins";
+import { buildAgentSessionKey } from "@/lib/openclaw/session-keys";
 import { buildGatewayWorkspaceProxyPath, resolveTenantGatewayTarget } from "@/lib/openclaw/tenant-gateway";
+import {
+  getTrialMessageLimitMessage,
+  hasTrialMessageCapacity,
+  isTrialModelRestrictionActive,
+  TRIAL_MESSAGE_LIMIT,
+} from "@/lib/plans";
 
 function profileNeedsOnboarding(profile: {
   displayName?: string | null;
@@ -66,13 +73,24 @@ export default async function WorkspacePage() {
   const requiresOnboarding = profileNeedsOnboarding(profile);
   const preferredAgent = await getPreferredAgentForSession(session);
   const hasProvisionedAgent = Boolean(preferredAgent);
-  const preferredSession = preferredAgent ? `agent:${preferredAgent.openclaw_agent_id}:main` : undefined;
+  const preferredSession = preferredAgent ? buildAgentSessionKey(preferredAgent.openclaw_agent_id, "main") : undefined;
+  const trialMessageCount = await getTrialMessageUsageCount(session.org.id);
+  const trialActive = isTrialModelRestrictionActive({
+    trialStatus: session.org.trial_status,
+    trialEndsAt: session.org.trial_ends_at,
+    isSuperAdmin: session.isSuperAdmin,
+  });
+  const trialHasCapacity = hasTrialMessageCapacity(trialMessageCount, {
+    trialStatus: session.org.trial_status,
+    trialEndsAt: session.org.trial_ends_at,
+    isSuperAdmin: session.isSuperAdmin,
+  });
 
   if (hasProvisionedAgent) {
     await ensureCurrentControlUiOrigin(session.org.id).catch(() => null);
   }
 
-  const surface = hasProvisionedAgent
+  const surface = hasProvisionedAgent && trialHasCapacity
     ? await getWorkspaceSurface(session.org.id, preferredSession)
     : ({ configured: false, healthy: false } as const);
   const embeddedConsoleUrl =
@@ -80,16 +98,23 @@ export default async function WorkspacePage() {
       ? surface.embeddedConsoleUrl
       : undefined;
   const gatewayUrl = "gatewayUrl" in surface ? surface.gatewayUrl : undefined;
-  const error = "error" in surface ? surface.error : undefined;
+  const error = trialHasCapacity ? ("error" in surface ? surface.error : undefined) : getTrialMessageLimitMessage();
 
   return (
     <WorkspaceShell
       embeddedConsoleUrl={embeddedConsoleUrl}
       gatewayUrl={gatewayUrl}
+      sessionKey={preferredSession}
       error={error}
       requiresOnboarding={requiresOnboarding}
       hasProvisionedAgent={hasProvisionedAgent}
       canProvisionAgent={session.capabilities.canManageAgents}
+      canManageAgents={session.capabilities.canManageAgents}
+      agentName={preferredAgent?.name}
+      orgName={session.org.name}
+      trialActive={trialActive}
+      trialMessageCount={trialMessageCount}
+      trialMessageLimit={TRIAL_MESSAGE_LIMIT}
       initialProfile={initialProfile}
     />
   );

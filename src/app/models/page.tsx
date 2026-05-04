@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import placeholderLogo from "../../../public/saintclaw-placeholder-logo.png";
+import placeholderLogo from "../../../public/saintagi-placeholder-logo.png";
 
 import { UserDropdownMenu } from "@/components/account/user-dropdown-menu";
 import { CtaBanner } from "@/components/landing/cta-banner";
@@ -13,9 +13,12 @@ import { Button } from "@/components/ui/button";
 import { getCurrentOrg, getCurrentUserProfile, getCurrentUserWorkspaces } from "@/lib/dal";
 
 export const metadata: Metadata = {
-  title: "Models | SaintClaw",
+  title: "Governed AI Model Routing",
   description:
-    "Explore SaintClaw's model range across deep reasoning, fast execution, open deployment options, and governed routing for company-wide AI adoption.",
+    "Explore Saint AGI's model range across deep reasoning, fast execution, open deployment options, and governed routing for company-wide AI adoption.",
+  alternates: {
+    canonical: "/models",
+  },
 };
 
 export default async function ModelsPage() {
@@ -30,7 +33,7 @@ export default async function ModelsPage() {
           <Link href="/" className="inline-flex h-10 items-center">
             <Image
               src={placeholderLogo}
-              alt="SaintClaw"
+              alt="Saint AGI"
               className="h-10 w-auto object-contain opacity-95"
               priority
             />

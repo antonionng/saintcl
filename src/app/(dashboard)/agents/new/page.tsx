@@ -14,10 +14,27 @@ import { getBuiltInPersonaById } from "@/lib/personas";
 import { cn } from "@/lib/utils";
 
 const SCOPE_OPTIONS = [
-  { value: "employee", label: "Just for me", description: "Only you can see and chat with this agent." },
-  { value: "team", label: "For a team", description: "Shared with a specific team." },
-  { value: "org", label: "For everyone", description: "Available across the whole organization." },
+  { value: "employee", label: "Individual workspace", description: "Assign one person a focused company agent." },
+  { value: "team", label: "Team rollout", description: "Share the recipe with a specific team." },
+  { value: "org", label: "Company-wide", description: "Make the agent available across the organization." },
 ] as const;
+
+const SUGGESTED_APP_LABELS: Record<string, string> = {
+  "telegram-channel": "Telegram",
+  "slack-channel": "Slack",
+  "brave-search": "Brave Search",
+  browser: "Browser",
+  diffs: "Diffs",
+};
+
+const KNOWLEDGE_TYPE_LABELS: Record<NonNullable<AgentTemplate["suggestedKnowledgeType"]>, string> = {
+  "support-docs": "Support docs",
+  "sales-collateral": "Sales collateral",
+  "internal-docs": "Internal docs",
+  "code-repos": "Code repositories",
+  "marketing-assets": "Marketing assets",
+  "hr-policies": "HR policies",
+};
 
 type Team = { id: string; name: string; description: string };
 
@@ -137,14 +154,30 @@ function NewAgentInner() {
     return (
       <div className="space-y-8">
         <PageHeader
-          title="New agent"
-          description="Pick a template tuned for the job. You can change anything later."
+          eyebrow="Recipe center"
+          title="Choose the next business agent to provision"
+          description="Create a new provisioned agent only when the customer needs another distinct worker. Conversations and channels should stay attached to an existing agent when possible."
           action={
             <Button asChild variant="ghost">
               <Link href="/agents">Cancel</Link>
             </Button>
           }
         />
+
+        <div className="grid gap-3 md:grid-cols-3">
+          <RecipeSignal
+            title="1. Business outcome"
+            description="Pick the workflow this agent should improve first."
+          />
+          <RecipeSignal
+            title="2. Rollout scope"
+            description="Assign it to yourself, a team, or the whole company."
+          />
+          <RecipeSignal
+            title="3. Governed launch"
+            description="Keep model, knowledge, channel, and policy choices visible to admins."
+          />
+        </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {AGENT_TEMPLATES.map((entry) => {
@@ -167,6 +200,12 @@ function NewAgentInner() {
                     {entry.tagline}
                   </p>
                 </div>
+                <div className="mt-auto flex flex-wrap gap-1.5 pt-2">
+                  <RecipeChip>{entry.category}</RecipeChip>
+                  {entry.suggestedKnowledgeType ? (
+                    <RecipeChip>{KNOWLEDGE_TYPE_LABELS[entry.suggestedKnowledgeType]}</RecipeChip>
+                  ) : null}
+                </div>
               </button>
             );
           })}
@@ -180,8 +219,9 @@ function NewAgentInner() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Create your ${template.agentName}`}
-        description={template.description}
+        eyebrow="Provision agent"
+        title={`Create ${template.agentName}`}
+        description={`${template.description} Confirm who can use it, then launch it as a governed agent resource.`}
         action={
           <Button variant="ghost" onClick={() => setStep("pick")}>
             <ArrowLeft className="h-4 w-4" />
@@ -208,7 +248,7 @@ function NewAgentInner() {
 
           <div className="space-y-1.5">
             <label className="text-[length:var(--text-xs)] font-medium text-white/70">
-              Who can use this agent
+              Rollout scope
             </label>
             <div className="grid gap-2 sm:grid-cols-3">
               {SCOPE_OPTIONS.map((opt) => (
@@ -237,7 +277,7 @@ function NewAgentInner() {
           {scope !== "org" ? (
             <div className="space-y-1.5">
               <label className="text-[length:var(--text-xs)] font-medium text-white/70">
-                {scope === "team" ? "Team" : "Person"}
+                {scope === "team" ? "Assign to team" : "Assign to person"}
               </label>
               <select
                 value={assignee}
@@ -269,7 +309,7 @@ function NewAgentInner() {
             className="rounded-sm border border-border-subtle bg-transparent p-3"
           >
             <summary className="cursor-pointer select-none text-[length:var(--text-sm)] font-medium text-white">
-              Advanced settings
+              Governance and advanced settings
             </summary>
             <div className="mt-3 space-y-3">
               <div className="space-y-1.5">
@@ -342,20 +382,61 @@ function NewAgentInner() {
           </div>
           <div className="space-y-2 text-[length:var(--text-sm)] leading-5 text-white/65">
             <p>{template.description}</p>
+            <div>
+              <p className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/45">
+                Suggested knowledge
+              </p>
+              <p className="mt-1 text-[length:var(--text-xs)] text-white/55">
+                {template.suggestedKnowledgeType
+                  ? KNOWLEDGE_TYPE_LABELS[template.suggestedKnowledgeType]
+                  : "Define manually"}
+              </p>
+            </div>
             {template.suggestedAppIds.length > 0 ? (
               <div>
                 <p className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/45">
-                  Suggested apps
+                  Suggested channels and tools
                 </p>
                 <p className="mt-1 text-[length:var(--text-xs)] text-white/55">
-                  {template.suggestedAppIds.join(" · ")}
+                  {template.suggestedAppIds.map((id) => SUGGESTED_APP_LABELS[id] ?? id).join(", ")}
                 </p>
               </div>
             ) : null}
+            <div className="rounded-sm border border-border-subtle bg-white/[0.02] p-3">
+              <p className="text-[length:var(--text-xs)] font-medium text-white">Billing note</p>
+              <p className="mt-1 text-[length:var(--text-xs)] leading-5 text-white/55">
+                This creates a new agent against the workspace plan. Runtime model, tool, and channel activity are
+                tracked separately as usage.
+              </p>
+            </div>
+            <div className="rounded-sm border border-border-subtle bg-white/[0.02] p-3">
+              <p className="text-[length:var(--text-xs)] font-medium text-white">Admin note</p>
+              <p className="mt-1 text-[length:var(--text-xs)] leading-5 text-white/55">
+                After launch, connect channels in Connect, review activity in Observability, and adjust policy in
+                Settings.
+              </p>
+            </div>
           </div>
         </aside>
       </div>
     </div>
+  );
+}
+
+function RecipeSignal({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="rounded-md border border-border-subtle bg-white/[0.02] p-4">
+      <p className="text-[length:var(--text-sm)] font-medium text-white">{title}</p>
+      <p className="mt-1 text-[length:var(--text-xs)] leading-5 text-white/55">{description}</p>
+    </div>
+  );
+}
+
+function RecipeChip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded-full border border-border-subtle px-2 py-0.5 text-[length:var(--text-xs)] text-white/50">
+      {children}
+    </span>
   );
 }
 

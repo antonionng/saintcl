@@ -4,7 +4,6 @@
     "dockerfilePath": "/Dockerfile.railway-openclaw"
   },
   "deploy": {
-    "healthcheckPath": "/",
     "restartPolicyType": "on_failure",
     "restartPolicyMaxRetries": 10
   }

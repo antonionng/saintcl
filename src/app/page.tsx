@@ -1,17 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
-import placeholderLogo from "../../public/saintclaw-placeholder-logo.png";
+import placeholderLogo from "../../public/saintagi-placeholder-logo.png";
 
 import { UserDropdownMenu } from "@/components/account/user-dropdown-menu";
+import { AgentsSection } from "@/components/landing/agents-section";
 import { CtaBanner } from "@/components/landing/cta-banner";
 import { headerLinks } from "@/components/landing/content";
-import { FeatureGrid } from "@/components/landing/feature-grid";
 import { HeroSection } from "@/components/landing/hero";
-import { ModelsSection } from "@/components/landing/models-section";
-import { NewsSection } from "@/components/landing/news-section";
+import { HowItWorksSection } from "@/components/landing/how-it-works-section";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { SiteFooter } from "@/components/landing/site-footer";
-import { UseCaseGrid } from "@/components/landing/use-case-grid";
+import { TrustSection } from "@/components/landing/trust-section";
 import { Button } from "@/components/ui/button";
 import { getCurrentOrg, getCurrentUserProfile, getCurrentUserWorkspaces } from "@/lib/dal";
 
@@ -22,24 +21,31 @@ export default async function HomePage() {
 
   return (
     <main className="landing-page min-h-screen bg-black text-white">
-      <header className="sticky top-0 z-20 bg-black">
-        <div className="site-shell flex items-center justify-between py-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
-          <Link href="/" className="inline-flex h-10 items-center">
+      <header className="sticky top-0 z-20 border-b border-[#1f1f23] bg-black/95 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-4 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:px-14">
+          <Link href="/" className="inline-flex items-center gap-2.5">
             <Image
               src={placeholderLogo}
-              alt="SaintClaw"
-              className="h-10 w-auto object-contain opacity-95"
+              alt="Saint AGI"
+              className="h-[18px] w-auto object-contain opacity-95"
               priority
             />
+            <span className="text-[15px] font-semibold tracking-[-0.015em] text-white">
+              Saint AGI
+            </span>
           </Link>
-          <nav className="hidden items-center justify-center gap-8 text-sm text-zinc-400 lg:flex">
+          <nav className="hidden items-center justify-center gap-[30px] text-[14px] font-medium tracking-[-0.005em] text-[#b5b5bd] lg:flex">
             {headerLinks.map((item) => (
-              <Link key={item.href} className="transition-colors hover:text-white" href={item.href}>
+              <Link
+                key={item.href}
+                className="transition-colors hover:text-white"
+                href={item.href}
+              >
                 {item.label}
               </Link>
             ))}
           </nav>
-          <div className="flex items-center gap-2.5 sm:gap-3 lg:justify-self-end">
+          <div className="flex items-center gap-3 lg:justify-self-end">
             {session ? (
               <UserDropdownMenu
                 email={profile?.email ?? session.email}
@@ -51,9 +57,12 @@ export default async function HomePage() {
               />
             ) : (
               <>
-                <Button asChild variant="ghost" size="sm">
-                  <Link href="/login">Log in</Link>
-                </Button>
+                <Link
+                  href="/login"
+                  className="text-[14px] font-medium text-[#b5b5bd] transition-colors hover:text-white"
+                >
+                  Log in
+                </Link>
                 <Button asChild size="sm">
                   <Link href="/signup">Start</Link>
                 </Button>
@@ -64,11 +73,10 @@ export default async function HomePage() {
       </header>
       <div className="relative isolate">
         <HeroSection />
-        <FeatureGrid />
-        <ModelsSection />
+        <AgentsSection />
+        <HowItWorksSection />
+        <TrustSection />
         <PricingSection />
-        <UseCaseGrid />
-        <NewsSection />
         <CtaBanner />
       </div>
       <SiteFooter />

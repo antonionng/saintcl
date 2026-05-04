@@ -12,7 +12,7 @@ const SOURCE_OPTIONS = [
 ] as const;
 
 const TRUST_OPTIONS = [
-  { id: "official", label: "Official", description: "Published and maintained by the OpenClaw team" },
+  { id: "official", label: "Official", description: "Published and maintained by the Saint AGI team" },
   { id: "curated", label: "Curated", description: "Reviewed and approved by trusted community maintainers" },
   { id: "community", label: "Community", description: "Community-contributed, not formally reviewed" },
 ] as const;

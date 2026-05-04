@@ -23,7 +23,11 @@ export async function GET(request: Request) {
 
   const params = Object.fromEntries(new URL(request.url).searchParams.entries());
   const query = querySchema.parse(params);
-  const { snapshot } = await getOrgModelCatalogState(session.org.id);
+  const { snapshot } = await getOrgModelCatalogState(session.org.id, {
+    trialStatus: session.org.trial_status,
+    trialEndsAt: session.org.trial_ends_at,
+    isSuperAdmin: session.isSuperAdmin,
+  });
   const includeDiscovery = query.includeDiscovery === "true";
   const discoveryCatalog = includeDiscovery ? await fetchOpenRouterDiscoveryCatalogWithSource(null) : null;
   const discoveryPage = discoveryCatalog

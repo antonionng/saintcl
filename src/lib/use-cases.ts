@@ -2,6 +2,7 @@ import type { PersonaRecord } from "@/types";
 import { getBuiltInPersonas } from "@/lib/personas";
 
 export type UseCaseId =
+  | "meeting-agent"
   | "customer-support"
   | "sales-sdr"
   | "internal-ops"
@@ -21,8 +22,17 @@ export type UseCase = {
 
 export const USE_CASES: readonly UseCase[] = [
   {
+    id: "meeting-agent",
+    label: "Meeting Agent",
+    tagline: "Summarize calls, capture decisions, and draft follow-ups.",
+    agentName: "Meeting Agent",
+    personaId: "operations-coordinator",
+    suggestedAppIds: ["slack-channel"],
+    description: "A reliable meeting operator that turns conversations into decisions, owners, and next steps.",
+  },
+  {
     id: "customer-support",
-    label: "Customer support",
+    label: "Support Agent",
     tagline: "Answer customer questions, deflect tickets, escalate when needed.",
     agentName: "Support Agent",
     personaId: "customer-support",
@@ -31,7 +41,7 @@ export const USE_CASES: readonly UseCase[] = [
   },
   {
     id: "sales-sdr",
-    label: "Sales SDR",
+    label: "Sales Agent",
     tagline: "Qualify leads, send follow-ups, push the pipeline forward.",
     agentName: "Sales Agent",
     personaId: "sales-representative",
@@ -40,7 +50,7 @@ export const USE_CASES: readonly UseCase[] = [
   },
   {
     id: "internal-ops",
-    label: "Internal operations",
+    label: "Ops Agent",
     tagline: "Coordinate work, summarize updates, keep teams in sync.",
     agentName: "Operations Agent",
     personaId: "operations-coordinator",
@@ -49,7 +59,7 @@ export const USE_CASES: readonly UseCase[] = [
   },
   {
     id: "engineering",
-    label: "Engineering helper",
+    label: "Engineering Agent",
     tagline: "Code review, debugging, technical research, and docs.",
     agentName: "Engineering Agent",
     personaId: "software-engineer",
@@ -58,7 +68,7 @@ export const USE_CASES: readonly UseCase[] = [
   },
   {
     id: "marketing",
-    label: "Marketing copilot",
+    label: "Marketing Agent",
     tagline: "Draft copy, plan campaigns, position your product.",
     agentName: "Marketing Agent",
     personaId: "marketing-specialist",
@@ -67,7 +77,7 @@ export const USE_CASES: readonly UseCase[] = [
   },
   {
     id: "executive-assistant",
-    label: "Executive assistant",
+    label: "Executive Assistant",
     tagline: "Calendars, communications, follow-ups, and brain offloads.",
     agentName: "EA Agent",
     personaId: "executive-assistant",
