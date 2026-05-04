@@ -12,6 +12,7 @@ import {
   getVisibleAgentsForSession,
   loadCurrentUserProfile,
 } from "@/lib/dal";
+import { sendAgentIntroductionEmail } from "@/lib/email/service";
 import { recordSetupAuditEvent, recordFunnelStep } from "@/lib/setup-audit";
 import { getBuiltInPersonaById } from "@/lib/personas";
 import { normalizeAgentTerminalRepoPaths } from "@/lib/openclaw/agent-terminal";
@@ -21,6 +22,7 @@ import {
   insertAgentMetadata,
   replaceAgentTerminalRepoAllowlists,
   upsertAgentAssignment,
+  upsertRuntimeMetadata,
 } from "@/lib/openclaw/runtime-store";
 import { writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
 import { resolveModelSelection } from "@/lib/openclaw/model-governance";
@@ -83,6 +85,7 @@ function getProvisionErrorStatus(message: string) {
   if (normalized.includes("disabled by organization policy")) return 403;
   if (normalized.includes("requires additional approval")) return 403;
   if (normalized.includes("upgrade your plan")) return 403;
+  if (normalized.includes("paid models are locked")) return 402;
   if (normalized.includes("insufficient wallet balance")) return 402;
   if (normalized.includes("wallet is unavailable")) return 503;
   if (normalized.includes("already exists")) return 409;
@@ -201,7 +204,7 @@ export async function POST(request: Request) {
 
   if (!isOpenClawConfigured()) {
     return NextResponse.json(
-      { error: { message: "OpenClaw gateway is not configured for this environment." } },
+      { error: { message: "Runtime gateway is not configured for this environment." } },
       { status: 503 },
     );
   }
@@ -281,11 +284,13 @@ export async function POST(request: Request) {
       orgId,
       userId,
       isSuperAdmin: session.isSuperAdmin,
+      trialStatus: session.org.trial_status,
+      trialEndsAt: session.org.trial_ends_at,
       requestedModel: payload.model,
       context: "agent",
     });
 
-    const { client, source } = await getTenantOpenClawClient(orgId, {
+    const { client, runtime, source } = await getTenantOpenClawClient(orgId, {
       orgId,
       defaultModel: snapshot.defaultModel,
       approvedModels: snapshot.approvedModels.map((entry) => ({
@@ -293,60 +298,78 @@ export async function POST(request: Request) {
         label: entry.label,
       })),
     });
+    const runtimeMetadata = runtime ? await upsertRuntimeMetadata(runtime) : null;
     const workspacePath = getAgentWorkspacePath(orgId, slug, { source });
     const terminalRepoPaths = normalizeAgentTerminalRepoPaths(payload.terminalRepoPaths ?? []);
-    await client.applyModelGovernance({
-      defaultModel: snapshot.defaultModel,
-      approvedModels: snapshot.approvedModels.map((entry) => ({
-        id: entry.id,
-        label: entry.label,
-      })),
-    });
-    await client.provisionAgent({
-      agentId: slug,
-      workspace: workspacePath,
-      model,
-    });
-    await writeAgentBootstrapFiles({
-      orgId,
-      agentId: slug,
-      name,
-      model,
-      persona: basePersona,
-      org: {
-        name: session.org.name,
-        website: session.org.website,
-        companySummary: session.org.company_summary,
-        agentBrief: session.org.agent_brief,
-      },
-      profile: profile
-        ? {
-            displayName: profile.displayName,
-            email: profile.email,
-            role: profile.role,
-            whatIDo: profile.whatIDo,
-            agentBrief: profile.agentBrief,
-          }
-        : null,
-    });
-
-    const agentRow = await insertAgentMetadata({
-      orgId,
-      userId,
-      name,
-      slug,
-      model,
-      persona: basePersona,
-      workspacePath,
-      metadata: {
-        personaTemplateId: payload.personaTemplateId ?? null,
-        scope: payload.scope,
-        assignee: employeeAssignment?.assigneeLabel ?? payload.assignee ?? null,
-        terminal: {
-          enabled: payload.terminalEnabled === true,
+    await client.withSession(async (rpc) => {
+      await client.applyModelGovernance(
+        {
+          defaultModel: snapshot.defaultModel,
+          approvedModels: snapshot.approvedModels.map((entry) => ({
+            id: entry.id,
+            label: entry.label,
+          })),
         },
-      },
+        rpc,
+      );
+      await client.provisionAgent(
+        {
+          agentId: slug,
+          workspace: workspacePath,
+          model,
+          name,
+        },
+        rpc,
+      );
     });
+    let agentRow: Awaited<ReturnType<typeof insertAgentMetadata>>;
+    try {
+      await writeAgentBootstrapFiles({
+        orgId,
+        agentId: slug,
+        name,
+        model,
+        persona: basePersona,
+        org: {
+          name: session.org.name,
+          website: session.org.website,
+          companySummary: session.org.company_summary,
+          agentBrief: session.org.agent_brief,
+        },
+        profile: profile
+          ? {
+              displayName: profile.displayName,
+              email: profile.email,
+              role: profile.role,
+              whatIDo: profile.whatIDo,
+              agentBrief: profile.agentBrief,
+            }
+          : null,
+      });
+
+      agentRow = await insertAgentMetadata({
+        orgId,
+        userId,
+        runtimeDbId: runtimeMetadata?.id,
+        name,
+        slug,
+        model,
+        persona: basePersona,
+        workspacePath,
+        metadata: {
+          personaTemplateId: payload.personaTemplateId ?? null,
+          scope: payload.scope,
+          assignee: employeeAssignment?.assigneeLabel ?? payload.assignee ?? null,
+          runtimeSource: source,
+          terminal: {
+            enabled: payload.terminalEnabled === true,
+          },
+        },
+      });
+    } catch (error) {
+      await client.deleteAgent({ agentId: slug, deleteFiles: true }).catch(() => null);
+      throw error;
+    }
 
     if (agentRow?.id) {
       const assignmentRef =
@@ -410,6 +433,30 @@ export async function POST(request: Request) {
       metadata: { agentId: agentRow?.id ?? slug, name },
     }).catch(() => null);
 
+    if (
+      payload.scope === "employee" &&
+      employeeAssignment?.assigneeRef &&
+      typeof employeeAssignment.assigneeRef === "string" &&
+      /^[0-9a-f-]{36}$/i.test(employeeAssignment.assigneeRef) &&
+      agentRow?.id
+    ) {
+      const assignerName = session.email ?? null;
+      sendAgentIntroductionEmail({
+        orgId,
+        orgName: session.org.name,
+        orgWebsite: session.org.website ?? null,
+        orgLogoUrl: session.org.logoUrl ?? null,
+        agentId: agentRow.id,
+        agentName: name,
+        agentScope: payload.scope,
+        agentModel: model,
+        agentPersona: basePersona,
+        recipientUserId: employeeAssignment.assigneeRef,
+        assignerName,
+        trigger: "agent_provisioned",
+      }).catch(() => null);
+    }
+
     return NextResponse.json({
       data: {
         id: agentRow?.id ?? slug,
@@ -418,7 +465,7 @@ export async function POST(request: Request) {
         openclawAgentId: slug,
         scope: payload.scope,
         assignee: employeeAssignment?.assigneeLabel ?? payload.assignee,
-        status: "provisioning",
+        status: "online",
       },
     });
   } catch (err) {

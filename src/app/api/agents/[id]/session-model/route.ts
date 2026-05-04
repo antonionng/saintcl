@@ -19,6 +19,7 @@ function getSessionModelErrorStatus(message: string) {
   if (normalized.includes("not approved")) return 403;
   if (normalized.includes("disabled by organization policy")) return 403;
   if (normalized.includes("requires additional approval")) return 403;
+  if (normalized.includes("paid models are locked")) return 402;
   if (normalized.includes("insufficient wallet balance")) return 402;
   if (normalized.includes("hard spend limit")) return 402;
   return 500;
@@ -49,7 +50,11 @@ export async function PATCH(
 
   try {
     const [{ snapshot }, admin] = await Promise.all([
-      getOrgModelCatalogState(session.org.id),
+      getOrgModelCatalogState(session.org.id, {
+        trialStatus: session.org.trial_status,
+        trialEndsAt: session.org.trial_ends_at,
+        isSuperAdmin: session.isSuperAdmin,
+      }),
       Promise.resolve(createAdminClient()),
     ]);
     if (!admin) {
@@ -60,6 +65,8 @@ export async function PATCH(
       orgId: session.org.id,
       userId: session.userId,
       isSuperAdmin: session.isSuperAdmin,
+      trialStatus: session.org.trial_status,
+      trialEndsAt: session.org.trial_ends_at,
       model: payload.model,
       context: "session",
     });
@@ -73,17 +80,25 @@ export async function PATCH(
         label: entry.label,
       })),
     });
-    await client.applyModelGovernance({
-      defaultModel: snapshot.defaultModel,
-      approvedModels: snapshot.approvedModels.map((entry) => ({
-        id: entry.id,
-        label: entry.label,
-      })),
-    });
+    const result = await client.withSession(async (rpc) => {
+      await client.applyModelGovernance(
+        {
+          defaultModel: snapshot.defaultModel,
+          approvedModels: snapshot.approvedModels.map((entry) => ({
+            id: entry.id,
+            label: entry.label,
+          })),
+        },
+        rpc,
+      );
 
-    const result = await client.patchSession({
-      key: sessionKey,
-      model: payload.model,
+      return client.patchSession(
+        {
+          key: sessionKey,
+          model: payload.model,
+        },
+        rpc,
+      );
     });
 
     await admin.from("session_model_overrides").insert({

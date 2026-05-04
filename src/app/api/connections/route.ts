@@ -53,7 +53,7 @@ export async function POST(request: Request) {
   }
   if (!isOpenClawConfigured()) {
     return NextResponse.json(
-      { error: { message: "OpenClaw gateway is not configured for this environment." } },
+      { error: { message: "Runtime gateway is not configured for this environment." } },
       { status: 503 },
     );
   }
@@ -69,7 +69,11 @@ export async function POST(request: Request) {
   if (!session.isSuperAdmin) {
     await assertCanSpend(payload.orgId, usagePricing.channelConnect);
   }
-  const { snapshot } = await getOrgModelCatalogState(payload.orgId);
+  const { snapshot } = await getOrgModelCatalogState(payload.orgId, {
+    trialStatus: session.org.trial_status,
+    trialEndsAt: session.org.trial_ends_at,
+    isSuperAdmin: session.isSuperAdmin,
+  });
   const { client: openClaw, runtime } = await getTenantOpenClawClient(payload.orgId, {
     orgId: payload.orgId,
     defaultModel: snapshot.defaultModel,
@@ -78,16 +82,31 @@ export async function POST(request: Request) {
       label: entry.label,
     })),
   });
-  await openClaw.applyModelGovernance({
-    defaultModel: snapshot.defaultModel,
-    approvedModels: snapshot.approvedModels.map((entry) => ({
-      id: entry.id,
-      label: entry.label,
-    })),
+  await openClaw.withSession(async (rpc) => {
+    await openClaw.applyModelGovernance(
+      {
+        defaultModel: snapshot.defaultModel,
+        approvedModels: snapshot.approvedModels.map((entry) => ({
+          id: entry.id,
+          label: entry.label,
+        })),
+      },
+      rpc,
+    );
+
+    if (payload.type === "telegram") {
+      await openClaw.connectTelegram(
+        { agentId: payload.agentId, botToken: payload.botToken },
+        rpc,
+      );
+    }
+
+    if (payload.type === "slack") {
+      await openClaw.connectSlack({ agentId: payload.agentId, teamId: payload.teamId }, rpc);
+    }
   });
 
   if (payload.type === "telegram") {
-    await openClaw.connectTelegram({ agentId: payload.agentId, botToken: payload.botToken });
     await insertChannelMetadata({
       orgId: payload.orgId,
       agentId: payload.agentId,
@@ -98,7 +117,6 @@ export async function POST(request: Request) {
   }
 
   if (payload.type === "slack") {
-    await openClaw.connectSlack({ agentId: payload.agentId, teamId: payload.teamId });
     await insertChannelMetadata({
       orgId: payload.orgId,
       agentId: payload.agentId,

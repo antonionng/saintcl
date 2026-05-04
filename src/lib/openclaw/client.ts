@@ -1,6 +1,7 @@
 import WebSocket from "ws";
 
 import { env, isOpenClawConfigured } from "@/lib/env";
+import { getAgentAvatarDataUri, type AgentAvatarConfig } from "@/lib/agent-identity";
 import { recordRequestEvent } from "@/lib/observability";
 import { buildOpenClawModelAllowlist } from "@/lib/openclaw/model-catalog";
 import type { OpenClawRuntimeDescriptor } from "@/lib/openclaw/runtime-types";
@@ -76,6 +77,49 @@ function randomId() {
   return Math.random().toString(36).slice(2, 10);
 }
 
+const OPERATOR_SCOPES = ["operator.read", "operator.write", "operator.admin"] as const;
+const LEGACY_OPERATOR_SCOPES = ["operator:read", "operator:write", "operator:admin"] as const;
+
+// Connect handshake: WSS handshake plus connect frame round-trip. Hosted gateways
+// (e.g. Railway) can take several seconds when the dyno is cold.
+const GATEWAY_CONNECT_TIMEOUT_MS = 20_000;
+// Per-RPC response timeout once the session is established. The previous 10s
+// budget covered the entire socket lifecycle, which made bootstrap (4 sequential
+// RPCs each opening their own socket) easy to push past the limit.
+const GATEWAY_RPC_TIMEOUT_MS = 25_000;
+
+export type GatewayRpcRunner = <T = unknown>(
+  method: string,
+  params: Record<string, unknown>,
+) => Promise<T>;
+
+export function shouldRetryWithLegacyOperatorScopes(errorMessage: string) {
+  return /\bmissing scope:\s*operator:/i.test(errorMessage);
+}
+
+export function buildModelGovernancePatch(input: {
+  defaultModel: string;
+  approvedModels: Array<{ id: string; label?: string }>;
+}) {
+  const models = buildOpenClawModelAllowlist(
+    input.approvedModels.map((entry) => ({
+      id: entry.id,
+      label: entry.label ?? entry.id,
+      provider: "openrouter",
+      source: "policy",
+    })),
+  );
+
+  return {
+    agents: {
+      defaults: {
+        model: { primary: input.defaultModel },
+        models,
+      },
+    },
+  };
+}
+
 export class OpenClawClient {
   constructor(
     private readonly runtime?: Pick<OpenClawRuntimeDescriptor, "gatewayUrl" | "gatewayToken">,
@@ -134,8 +178,9 @@ export class OpenClawClient {
     return this.call("health", {});
   }
 
-  private async getConfigHash(): Promise<string> {
-    const result = await this.call<{ hash: string }>("config.get", {});
+  private async getConfigHash(runner?: GatewayRpcRunner): Promise<string> {
+    const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
+    const result = await exec<{ hash: string }>("config.get", {});
     return result.hash;
   }
 
@@ -145,7 +190,7 @@ export class OpenClawClient {
 
   async ensureControlUiAllowedOrigins(origins: string[]) {
     if (!isOpenClawConfigured()) {
-      throw new Error("OpenClaw gateway is not configured.");
+      throw new Error("Runtime gateway is not configured.");
     }
 
     const snapshot = await this.getConfigSnapshot();
@@ -187,28 +232,70 @@ export class OpenClawClient {
     };
   }
 
-  async provisionAgent(input: { agentId: string; workspace: string; model: string }) {
+  async provisionAgent(
+    input: { agentId: string; workspace: string; model: string; name?: string; avatar?: AgentAvatarConfig },
+    runner?: GatewayRpcRunner,
+  ) {
     if (!isOpenClawConfigured()) {
-      throw new Error("OpenClaw gateway is not configured.");
+      throw new Error("Runtime gateway is not configured.");
+    }
+
+    const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
+    const baseHash = await this.getConfigHash(exec);
+    const raw = JSON.stringify({
+      agents: {
+        list: [
+          {
+            id: input.agentId,
+            workspace: input.workspace,
+            model: input.model,
+            identity: input.name && (!input.avatar?.imagePath || input.avatar.imageDataUrl)
+              ? {
+                  name: input.name,
+                  avatar: getAgentAvatarDataUri(input.agentId, input.name, input.avatar),
+                }
+              : undefined,
+          },
+        ],
+      },
+    });
+
+    return exec("config.patch", { raw, baseHash });
+  }
+
+  async updateAgentModel(
+    input: { agentId: string; workspace: string; model: string; name?: string; avatar?: AgentAvatarConfig },
+    runner?: GatewayRpcRunner,
+  ) {
+    return this.provisionAgent(input, runner);
+  }
+
+  async updateAgentIdentity(input: { agentId: string; name: string; avatar?: AgentAvatarConfig }) {
+    if (!isOpenClawConfigured()) {
+      throw new Error("Runtime gateway is not configured.");
     }
 
     const baseHash = await this.getConfigHash();
     const raw = JSON.stringify({
       agents: {
-        list: [{ id: input.agentId, workspace: input.workspace, model: input.model }],
+        list: [
+          {
+            id: input.agentId,
+            identity: {
+              name: input.name,
+              avatar: getAgentAvatarDataUri(input.agentId, input.name, input.avatar),
+            },
+          },
+        ],
       },
     });
 
     return this.call("config.patch", { raw, baseHash });
   }
 
-  async updateAgentModel(input: { agentId: string; workspace: string; model: string }) {
-    return this.provisionAgent(input);
-  }
-
   async deleteAgent(input: { agentId: string; deleteFiles?: boolean }) {
     if (!isOpenClawConfigured()) {
-      throw new Error("OpenClaw gateway is not configured.");
+      throw new Error("Runtime gateway is not configured.");
     }
 
     return this.call<{ ok: true; agentId: string; removedBindings?: number }>("agents.delete", {
@@ -219,7 +306,7 @@ export class OpenClawClient {
 
   async setAgentFile(input: { agentId: string; name: string; content: string }) {
     if (!isOpenClawConfigured()) {
-      throw new Error("OpenClaw gateway is not configured.");
+      throw new Error("Runtime gateway is not configured.");
     }
 
     return this.call("agents.files.set", {
@@ -236,7 +323,7 @@ export class OpenClawClient {
     model?: string;
   }) {
     if (!isOpenClawConfigured()) {
-      throw new Error("OpenClaw gateway is not configured.");
+      throw new Error("Runtime gateway is not configured.");
     }
 
     const baseHash = await this.getConfigHash();
@@ -268,71 +355,60 @@ export class OpenClawClient {
     return this.call("config.patch", { raw, baseHash });
   }
 
-  async applyModelGovernance(input: {
-    defaultModel: string;
-    approvedModels: Array<{ id: string; label?: string }>;
-  }) {
+  async applyModelGovernance(
+    input: {
+      defaultModel: string;
+      approvedModels: Array<{ id: string; label?: string }>;
+    },
+    runner?: GatewayRpcRunner,
+  ) {
     if (!isOpenClawConfigured()) {
-      throw new Error("OpenClaw gateway is not configured.");
+      throw new Error("Runtime gateway is not configured.");
     }
 
-    const baseHash = await this.getConfigHash();
-    const models = buildOpenClawModelAllowlist(
-      input.approvedModels.map((entry) => ({
-        id: entry.id,
-        label: entry.label ?? entry.id,
-        provider: "openrouter",
-        source: "policy",
-      })),
-    );
-    const raw = JSON.stringify({
-      agent: {
-        model: input.defaultModel,
-      },
-      agents: {
-        defaults: {
-          model: { primary: input.defaultModel },
-          models,
-        },
-      },
-    });
+    const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
+    const baseHash = await this.getConfigHash(exec);
+    const raw = JSON.stringify(buildModelGovernancePatch(input));
 
-    return this.call("config.patch", { raw, baseHash });
+    return exec("config.patch", { raw, baseHash });
   }
 
-  async connectTelegram(input: { agentId: string; botToken: string }) {
+  async connectTelegram(input: { agentId: string; botToken: string }, runner?: GatewayRpcRunner) {
     if (!isOpenClawConfigured()) {
-      throw new Error("OpenClaw gateway is not configured.");
+      throw new Error("Runtime gateway is not configured.");
     }
 
-    const baseHash = await this.getConfigHash();
+    const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
+    const baseHash = await this.getConfigHash(exec);
     const raw = JSON.stringify({
       channels: { telegram: { botToken: input.botToken } },
       bindings: [{ agentId: input.agentId, match: { channel: "telegram", accountId: "default" } }],
     });
 
-    return this.call("config.patch", { raw, baseHash });
+    return exec("config.patch", { raw, baseHash });
   }
 
-  async connectSlack(input: { agentId: string; teamId: string }) {
+  async connectSlack(input: { agentId: string; teamId: string }, runner?: GatewayRpcRunner) {
     if (!isOpenClawConfigured()) {
-      throw new Error("OpenClaw gateway is not configured.");
+      throw new Error("Runtime gateway is not configured.");
     }
 
-    const baseHash = await this.getConfigHash();
+    const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
+    const baseHash = await this.getConfigHash(exec);
     const raw = JSON.stringify({
       bindings: [{ agentId: input.agentId, match: { channel: "slack", accountId: input.teamId } }],
     });
 
-    return this.call("config.patch", { raw, baseHash });
+    return exec("config.patch", { raw, baseHash });
   }
 
   async listModels() {
     return this.call<{ models: OpenClawGatewayModel[] }>("models.list", {});
   }
 
-  async patchSession(input: { key: string; model: string }) {
-    return this.call<{
+  async patchSession(input: { key: string; model: string }, runner?: GatewayRpcRunner) {
+    const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
+    return exec<{
       ok: true;
       key: string;
       resolved?: { modelProvider?: string; model?: string };
@@ -379,125 +455,272 @@ export class OpenClawClient {
   }
 
   async call<T = unknown>(method: string, params: Record<string, unknown>) {
+    return this.withSession((rpc) => rpc<T>(method, params));
+  }
+
+  /**
+   * Open a single WebSocket session to the runtime gateway and run the supplied
+   * callback against it. All RPC calls made through the provided `call` runner
+   * share the same socket, which avoids the per-call TLS + connect handshake
+   * overhead that otherwise turns a 4-step bootstrap into 4 cold WSS
+   * round-trips against hosted gateways like Railway.
+   *
+   * The session also handles the operator scope fallback: if the gateway
+   * rejects the modern dot-namespaced scopes, we transparently retry the entire
+   * session with the legacy colon-namespaced scopes. Callers should write the
+   * session body so it can run twice safely (config.patch is idempotent on
+   * unchanged payloads, which covers the common provisioning flows).
+   */
+  async withSession<T>(fn: (call: GatewayRpcRunner) => Promise<T>): Promise<T> {
+    try {
+      return await this.openSession(OPERATOR_SCOPES, fn);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      if (!shouldRetryWithLegacyOperatorScopes(message)) {
+        throw error;
+      }
+      return this.openSession(LEGACY_OPERATOR_SCOPES, fn);
+    }
+  }
+
+  private async openSession<T>(
+    scopes: readonly string[],
+    fn: (call: GatewayRpcRunner) => Promise<T>,
+  ): Promise<T> {
     const gatewayUrl = this.runtime?.gatewayUrl || env.openClawGatewayUrl;
     const token = this.runtime?.gatewayToken || env.openClawGatewayToken;
 
     if (!gatewayUrl) {
-      throw new Error("OpenClaw gateway URL is not configured.");
+      throw new Error("Runtime gateway URL is not configured.");
     }
 
-    const requestId = randomId();
-    const startedAt = Date.now();
+    type Pending = {
+      method: string;
+      params: Record<string, unknown>;
+      requestId: string;
+      startedAt: number;
+      timer: ReturnType<typeof setTimeout>;
+      resolve: (value: unknown) => void;
+      reject: (error: Error) => void;
+    };
 
-    return new Promise<T>((resolve, reject) => {
-      const socket = new WebSocket(gatewayUrl);
-      const timeout = setTimeout(() => {
+    const socket = new WebSocket(gatewayUrl);
+    const pending = new Map<string, Pending>();
+    let connected = false;
+    let connectResolve: (() => void) | null = null;
+    let connectReject: ((error: Error) => void) | null = null;
+    let sessionError: Error | null = null;
+    let socketClosed = false;
+
+    const closeSocket = () => {
+      if (socketClosed) return;
+      socketClosed = true;
+      try {
         socket.close();
+      } catch {
+        // Closing an already-closed socket is fine; the close handler covers cleanup.
+      }
+    };
+
+    const failSession = (error: Error) => {
+      if (!sessionError) {
+        sessionError = error;
+      }
+      const reason = sessionError;
+      for (const entry of pending.values()) {
+        clearTimeout(entry.timer);
         this.observeGatewayCall({
-          requestId,
-          method,
-          params,
+          requestId: entry.requestId,
+          method: entry.method,
+          params: entry.params,
           status: "failed",
-          latencyMs: Date.now() - startedAt,
-          errorMessage: "OpenClaw gateway timeout",
+          latencyMs: Date.now() - entry.startedAt,
+          errorMessage: reason.message,
         });
-        reject(new Error("OpenClaw gateway timeout"));
-      }, 10000);
+        entry.reject(reason);
+      }
+      pending.clear();
+      if (connectReject) {
+        const reject = connectReject;
+        connectReject = null;
+        connectResolve = null;
+        reject(reason);
+      }
+      closeSocket();
+    };
 
-      let connected = false;
+    socket.on("open", () => {
+      const connectFrame: OpenClawFrame = {
+        type: "req",
+        id: randomId(),
+        method: "connect",
+        params: {
+          minProtocol: 3,
+          maxProtocol: 3,
+          client: { id: "gateway-client", version: "0.1.0", platform: "macos", mode: "backend" },
+          role: "operator",
+          scopes,
+          auth: token ? { token } : undefined,
+        },
+      };
 
-      socket.on("open", () => {
-        const connectFrame: OpenClawFrame = {
-          type: "req",
-          id: randomId(),
-          method: "connect",
-          params: {
-            minProtocol: 3,
-            maxProtocol: 3,
-            client: { id: "gateway-client", version: "0.1.0", platform: "macos", mode: "backend" },
-            role: "operator",
-            scopes: ["operator.read", "operator.write", "operator.admin"],
-            auth: token ? { token } : undefined,
-          },
-        };
-
+      try {
         socket.send(JSON.stringify(connectFrame));
-      });
+      } catch (sendError) {
+        failSession(sendError instanceof Error ? sendError : new Error(String(sendError)));
+      }
+    });
 
-      socket.on("message", (rawMessage) => {
-        const frame = JSON.parse(rawMessage.toString()) as OpenClawFrame<T>;
+    socket.on("message", (rawMessage) => {
+      let frame: OpenClawFrame;
+      try {
+        frame = JSON.parse(rawMessage.toString()) as OpenClawFrame;
+      } catch (parseError) {
+        failSession(parseError instanceof Error ? parseError : new Error("Invalid gateway frame"));
+        return;
+      }
 
-        if (frame.type === "event") {
+      if (frame.type === "event") {
+        return;
+      }
+
+      if (!connected) {
+        if (frame.type !== "res") return;
+        if (!frame.ok) {
+          const message =
+            (frame as OpenClawFrame & { error?: { message: string } }).error?.message ||
+            "Runtime connect failed";
+          failSession(new Error(message));
           return;
         }
+        connected = true;
+        if (connectResolve) {
+          const resolve = connectResolve;
+          connectResolve = null;
+          connectReject = null;
+          resolve();
+        }
+        return;
+      }
 
-        if (!connected && frame.type === "res") {
-          if (!frame.ok) {
-            clearTimeout(timeout);
-            socket.close();
-            const message =
-              (frame as OpenClawFrame & { error?: { message: string } }).error?.message || "OpenClaw connect failed";
+      if (frame.type !== "res") return;
+      const entry = pending.get(frame.id);
+      if (!entry) return;
+      clearTimeout(entry.timer);
+      pending.delete(frame.id);
+
+      if (frame.ok) {
+        this.observeGatewayCall({
+          requestId: entry.requestId,
+          method: entry.method,
+          params: entry.params,
+          status: "completed",
+          latencyMs: Date.now() - entry.startedAt,
+        });
+        entry.resolve(frame.payload ?? {});
+      } else {
+        const message = frame.error?.message || "Runtime request failed.";
+        this.observeGatewayCall({
+          requestId: entry.requestId,
+          method: entry.method,
+          params: entry.params,
+          status: "failed",
+          latencyMs: Date.now() - entry.startedAt,
+          errorMessage: message,
+        });
+        entry.reject(new Error(message));
+      }
+    });
+
+    socket.on("error", (error) => {
+      const wrapped = error instanceof Error ? error : new Error(String(error));
+      failSession(wrapped);
+    });
+
+    socket.on("close", () => {
+      socketClosed = true;
+      if (sessionError) return;
+      if (!connected || pending.size > 0) {
+        failSession(new Error("Runtime gateway connection closed unexpectedly."));
+      }
+    });
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const connectTimer = setTimeout(() => {
+          failSession(new Error("Runtime gateway timeout"));
+        }, GATEWAY_CONNECT_TIMEOUT_MS);
+
+        connectResolve = () => {
+          clearTimeout(connectTimer);
+          resolve();
+        };
+        connectReject = (error) => {
+          clearTimeout(connectTimer);
+          reject(error);
+        };
+      });
+
+      const call: GatewayRpcRunner = <TPayload = unknown>(
+        method: string,
+        params: Record<string, unknown>,
+      ) => {
+        if (sessionError) {
+          return Promise.reject(sessionError);
+        }
+
+        return new Promise<TPayload>((resolve, reject) => {
+          const requestId = randomId();
+          const startedAt = Date.now();
+          const timer = setTimeout(() => {
+            const entry = pending.get(requestId);
+            if (!entry) return;
+            pending.delete(requestId);
             this.observeGatewayCall({
               requestId,
               method,
               params,
               status: "failed",
               latencyMs: Date.now() - startedAt,
-              errorMessage: message,
+              errorMessage: "Runtime gateway timeout",
             });
-            reject(new Error(message));
-            return;
-          }
-          connected = true;
-          const requestFrame: OpenClawFrame = {
-            type: "req",
-            id: requestId,
+            entry.reject(new Error("Runtime gateway timeout"));
+          }, GATEWAY_RPC_TIMEOUT_MS);
+
+          pending.set(requestId, {
             method,
             params,
-          };
-          socket.send(JSON.stringify(requestFrame));
-          return;
-        }
+            requestId,
+            startedAt,
+            timer,
+            resolve: resolve as (value: unknown) => void,
+            reject,
+          });
 
-        if (frame.type === "res" && frame.id === requestId) {
-          clearTimeout(timeout);
-          socket.close();
-          if (frame.ok) {
-            this.observeGatewayCall({
-              requestId,
-              method,
-              params,
-              status: "completed",
-              latencyMs: Date.now() - startedAt,
-            });
-            resolve((frame.payload ?? {}) as T);
-          } else {
-            const message = frame.error?.message || "OpenClaw request failed.";
+          try {
+            socket.send(
+              JSON.stringify({ type: "req", id: requestId, method, params } satisfies OpenClawFrame),
+            );
+          } catch (sendError) {
+            clearTimeout(timer);
+            pending.delete(requestId);
+            const wrapped = sendError instanceof Error ? sendError : new Error(String(sendError));
             this.observeGatewayCall({
               requestId,
               method,
               params,
               status: "failed",
               latencyMs: Date.now() - startedAt,
-              errorMessage: message,
+              errorMessage: wrapped.message,
             });
-            reject(new Error(message));
+            reject(wrapped);
           }
-        }
-      });
-
-      socket.on("error", (error) => {
-        clearTimeout(timeout);
-        this.observeGatewayCall({
-          requestId,
-          method,
-          params,
-          status: "failed",
-          latencyMs: Date.now() - startedAt,
-          errorMessage: error.message,
         });
-        reject(error);
-      });
-    });
+      };
+
+      return await fn(call);
+    } finally {
+      closeSocket();
+    }
   }
 }

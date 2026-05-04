@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getCurrentOrg, getVisibleAgentForSession } from "@/lib/dal";
+import { normalizeAgentAvatarConfig } from "@/lib/agent-identity";
 import { resolveAgentWorkspaceFromConfig } from "@/lib/openclaw/agent-terminal";
 import { assertModelSelectionAllowed, getOrgModelCatalogState } from "@/lib/openclaw/model-governance";
 import { writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
@@ -11,8 +12,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 const patchAgentSchema = z.object({
   model: z.string().min(3).max(255).optional(),
   persona: z.string().min(3).max(8000).optional(),
-}).refine((data) => data.model || data.persona, {
-  message: "At least one of model or persona is required.",
+  avatarInitials: z.string().trim().max(3).nullable().optional(),
+  avatarTheme: z.number().int().min(0).max(32).nullable().optional(),
+}).refine((data) => data.model || data.persona || data.avatarInitials !== undefined || data.avatarTheme !== undefined, {
+  message: "At least one editable agent field is required.",
 });
 
 function getModelUpdateErrorStatus(message: string) {
@@ -22,6 +25,7 @@ function getModelUpdateErrorStatus(message: string) {
   if (normalized.includes("not approved")) return 403;
   if (normalized.includes("disabled by organization policy")) return 403;
   if (normalized.includes("requires additional approval")) return 403;
+  if (normalized.includes("paid models are locked")) return 402;
   if (normalized.includes("insufficient wallet balance")) return 402;
   if (normalized.includes("hard spend limit")) return 402;
   return 500;
@@ -64,7 +68,11 @@ export async function PATCH(
 
   try {
     const [{ snapshot }, admin] = await Promise.all([
-      getOrgModelCatalogState(session.org.id),
+      getOrgModelCatalogState(session.org.id, {
+        trialStatus: session.org.trial_status,
+        trialEndsAt: session.org.trial_ends_at,
+        isSuperAdmin: session.isSuperAdmin,
+      }),
       Promise.resolve(createAdminClient()),
     ]);
     if (!admin) {
@@ -74,11 +82,15 @@ export async function PATCH(
     const resolvedModel = payload.model ?? agent.model;
 
     if (payload.model) {
+      const nextModel = payload.model;
+
       await assertModelSelectionAllowed({
         orgId: session.org.id,
         userId: session.userId,
         isSuperAdmin: session.isSuperAdmin,
-        model: payload.model,
+        trialStatus: session.org.trial_status,
+        trialEndsAt: session.org.trial_ends_at,
+        model: nextModel,
         context: "agent",
       });
 
@@ -96,17 +108,27 @@ export async function PATCH(
           label: entry.label,
         })),
       });
-      await client.applyModelGovernance({
-        defaultModel: snapshot.defaultModel,
-        approvedModels: snapshot.approvedModels.map((entry) => ({
-          id: entry.id,
-          label: entry.label,
-        })),
-      });
-      await client.updateAgentModel({
-        agentId: agent.openclaw_agent_id,
-        workspace,
-        model: payload.model,
+      await client.withSession(async (rpc) => {
+        await client.applyModelGovernance(
+          {
+            defaultModel: snapshot.defaultModel,
+            approvedModels: snapshot.approvedModels.map((entry) => ({
+              id: entry.id,
+              label: entry.label,
+            })),
+          },
+          rpc,
+        );
+        await client.updateAgentModel(
+          {
+            agentId: agent.openclaw_agent_id,
+            workspace,
+            model: nextModel,
+            name: agent.name,
+            avatar: normalizeAgentAvatarConfig((agent.config as Record<string, unknown> | null | undefined)?.agentAvatar),
+          },
+          rpc,
+        );
       });
     }
 
@@ -118,6 +140,17 @@ export async function PATCH(
     }
     if (payload.persona) {
       configUpdate.persona = payload.persona;
+    }
+    if (payload.avatarInitials !== undefined || payload.avatarTheme !== undefined) {
+      const currentAvatar =
+        configUpdate.agentAvatar && typeof configUpdate.agentAvatar === "object" && !Array.isArray(configUpdate.agentAvatar)
+          ? (configUpdate.agentAvatar as Record<string, unknown>)
+          : {};
+      configUpdate.agentAvatar = {
+        ...currentAvatar,
+        ...(payload.avatarInitials !== undefined ? { initials: payload.avatarInitials?.trim().toUpperCase() || null } : {}),
+        ...(payload.avatarTheme !== undefined ? { theme: payload.avatarTheme } : {}),
+      };
     }
 
     const dbUpdate: Record<string, unknown> = { config: configUpdate };
@@ -151,6 +184,21 @@ export async function PATCH(
           agentBrief: session.org.agent_brief,
         },
       }).catch(() => null);
+    }
+
+    if (payload.avatarInitials !== undefined || payload.avatarTheme !== undefined) {
+      const avatarConfig = normalizeAgentAvatarConfig(configUpdate.agentAvatar);
+      if (!avatarConfig.imagePath) {
+        await getTenantOpenClawClient(session.org.id, { orgId: session.org.id })
+          .then(({ client }) =>
+            client.updateAgentIdentity({
+              agentId: agent.openclaw_agent_id,
+              name: agent.name,
+              avatar: avatarConfig,
+            }),
+          )
+          .catch(() => null);
+      }
     }
 
     return NextResponse.json({ data });
@@ -193,7 +241,7 @@ export async function DELETE(
       });
       gatewayDeleted = true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to delete agent from OpenClaw.";
+      const message = error instanceof Error ? error.message : "Unable to delete agent from the runtime.";
       if (!message.toLowerCase().includes("not found")) {
         throw error;
       }

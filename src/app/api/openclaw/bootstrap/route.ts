@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 
 import { getAgents, getCurrentOrg, loadCurrentUserProfile } from "@/lib/dal";
+import { sendAgentIntroductionEmail } from "@/lib/email/service";
 import { isOpenClawConfigured } from "@/lib/env";
 import { syncKnowledgeToAgent } from "@/lib/openclaw/knowledge-sync";
 import { getAgentWorkspacePath } from "@/lib/openclaw/paths";
 import { resolveModelSelection } from "@/lib/openclaw/model-governance";
 import { writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
-import { insertAgentMetadata, upsertAgentAssignment } from "@/lib/openclaw/runtime-store";
+import { insertAgentMetadata, upsertAgentAssignment, upsertRuntimeMetadata } from "@/lib/openclaw/runtime-store";
 import { createClient } from "@/lib/supabase/server";
 import { getAgentTemplate } from "@/lib/agent-templates";
 import { getBuiltInPersonaById } from "@/lib/personas";
@@ -89,9 +90,12 @@ export async function POST() {
     const { model, snapshot } = await resolveModelSelection({
       orgId,
       userId: session.userId,
+      isSuperAdmin: session.isSuperAdmin,
+      trialStatus: session.org.trial_status,
+      trialEndsAt: session.org.trial_ends_at,
       context: "agent",
     });
-    const { client, source } = await getTenantOpenClawClient(orgId, {
+    const { client, runtime, source } = await getTenantOpenClawClient(orgId, {
       orgId,
       defaultModel: snapshot.defaultModel,
       approvedModels: snapshot.approvedModels.map((entry) => ({
@@ -99,60 +103,78 @@ export async function POST() {
         label: entry.label,
       })),
     });
+    const runtimeMetadata = runtime ? await upsertRuntimeMetadata(runtime) : null;
     const workspacePath = getAgentWorkspacePath(orgId, slug, { source });
-    await client.applyModelGovernance({
-      defaultModel: snapshot.defaultModel,
-      approvedModels: snapshot.approvedModels.map((entry) => ({
-        id: entry.id,
-        label: entry.label,
-      })),
-    });
-    await client.provisionAgent({
-      agentId: slug,
-      workspace: workspacePath,
-      model,
-    });
-    await writeAgentBootstrapFiles({
-      orgId,
-      agentId: slug,
-      name: agentName,
-      model,
-      persona,
-      org: {
-        name: session.org.name,
-        website: session.org.website,
-        companySummary: session.org.company_summary,
-        agentBrief: session.org.agent_brief,
-      },
-      profile: profile
-        ? {
-            displayName: profile.displayName,
-            email: profile.email,
-            role: profile.role,
-            whatIDo: profile.whatIDo,
-            agentBrief: profile.agentBrief,
-          }
-        : null,
-    });
-
-    const row = await insertAgentMetadata({
-      orgId,
-      userId: session.userId,
-      name: agentName,
-      slug,
-      model,
-      persona,
-      workspacePath,
-      metadata: {
-        scope: "employee",
-        assignee: session.userId,
-        bootstrap: "auto",
-        useCase: useCaseId ?? undefined,
-        terminal: {
-          enabled: false,
+    await client.withSession(async (rpc) => {
+      await client.applyModelGovernance(
+        {
+          defaultModel: snapshot.defaultModel,
+          approvedModels: snapshot.approvedModels.map((entry) => ({
+            id: entry.id,
+            label: entry.label,
+          })),
         },
-      },
+        rpc,
+      );
+      await client.provisionAgent(
+        {
+          agentId: slug,
+          workspace: workspacePath,
+          model,
+          name: agentName,
+        },
+        rpc,
+      );
     });
+    let row: Awaited<ReturnType<typeof insertAgentMetadata>>;
+    try {
+      await writeAgentBootstrapFiles({
+        orgId,
+        agentId: slug,
+        name: agentName,
+        model,
+        persona,
+        org: {
+          name: session.org.name,
+          website: session.org.website,
+          companySummary: session.org.company_summary,
+          agentBrief: session.org.agent_brief,
+        },
+        profile: profile
+          ? {
+              displayName: profile.displayName,
+              email: profile.email,
+              role: profile.role,
+              whatIDo: profile.whatIDo,
+              agentBrief: profile.agentBrief,
+            }
+          : null,
+      });
+
+      row = await insertAgentMetadata({
+        orgId,
+        userId: session.userId,
+        runtimeDbId: runtimeMetadata?.id,
+        name: agentName,
+        slug,
+        model,
+        persona,
+        workspacePath,
+        metadata: {
+          scope: "employee",
+          assignee: session.userId,
+          bootstrap: "auto",
+          useCase: useCaseId ?? undefined,
+          runtimeSource: source,
+          terminal: {
+            enabled: false,
+          },
+        },
+      });
+    } catch (error) {
+      await client.deleteAgent({ agentId: slug, deleteFiles: true }).catch(() => null);
+      throw error;
+    }
 
     if (row?.id) {
       await upsertAgentAssignment({
@@ -168,6 +190,21 @@ export async function POST() {
           assignee_type: "employee",
           assignee_ref: session.userId,
         },
+      }).catch(() => null);
+
+      sendAgentIntroductionEmail({
+        orgId,
+        orgName: session.org.name,
+        orgWebsite: session.org.website ?? null,
+        orgLogoUrl: session.org.logoUrl ?? null,
+        agentId: row.id,
+        agentName: agentName,
+        agentScope: "employee",
+        agentModel: model,
+        agentPersona: persona,
+        recipientUserId: session.userId,
+        assignerName: session.email ?? null,
+        trigger: "bootstrap",
       }).catch(() => null);
     }
 
