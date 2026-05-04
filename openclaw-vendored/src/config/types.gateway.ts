@@ -112,6 +112,16 @@ export type GatewayControlUiConfig = {
   allowInsecureAuth?: boolean;
   /** DANGEROUS: Disable device identity checks for the Control UI (default: false). */
   dangerouslyDisableDeviceAuth?: boolean;
+  /**
+   * DANGEROUS: Trust remote backend gateway-clients that authenticate with the
+   * shared gateway token to act as full operator without requiring device
+   * pairing. Designed for hosted multi-tenant control planes where a single
+   * trusted backend (holding `OPENCLAW_GATEWAY_TOKEN`) provisions and manages
+   * tenant runtimes over the network. Browser origin or device-token auth
+   * paths are unaffected. Tenant data isolation must be enforced by workspace
+   * paths above this auth layer.
+   */
+  allowSharedTokenBackendOperator?: boolean;
 };
 
 export type GatewayAuthMode = "none" | "token" | "password" | "trusted-proxy";
@@ -363,6 +373,15 @@ export type GatewayPushConfig = {
   apns?: GatewayPushApnsConfig;
 };
 
+export type GatewayNodePairingConfig = {
+  /**
+   * Opt-in CIDR/IP allowlist for auto-approving first-time node-role pairing.
+   * Only applies to fresh node pairing requests with no requested scopes.
+   * Default: unset/disabled.
+   */
+  autoApproveCidrs?: string[];
+};
+
 export type GatewayNodesConfig = {
   /** Browser routing policy for node-hosted browser proxies. */
   browser?: {
@@ -371,6 +390,8 @@ export type GatewayNodesConfig = {
     /** Pin to a specific node id/name (optional). */
     node?: string;
   };
+  /** Pairing policy for node-role gateway clients. */
+  pairing?: GatewayNodePairingConfig;
   /** Additional node.invoke commands to allow on the gateway. */
   allowCommands?: string[];
   /** Commands to deny even if they appear in the defaults or node claims. */
@@ -440,9 +461,9 @@ export type GatewayConfig = {
    */
   channelHealthCheckMinutes?: number;
   /**
-   * Stale event threshold in minutes for the channel health monitor.
-   * A connected channel that receives no events for this duration is treated
-   * as a stale socket and restarted. Default: 30.
+   * Stale transport-activity threshold in minutes for the channel health monitor.
+   * A connected channel that reports no provider-proven transport activity for
+   * this duration is treated as a stale socket and restarted. Default: 30.
    */
   channelStaleEventThresholdMinutes?: number;
   /**

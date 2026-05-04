@@ -1,15 +1,11 @@
-import { Type } from "@sinclair/typebox";
 import type { ChannelAgentTool } from "openclaw/plugin-sdk/channel-contract";
+import { Type } from "typebox";
 import { startWebLoginWithQr, waitForWebLogin } from "../login-qr-api.js";
 
-const QR_DATA_URL_PREFIX_RE = /^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i;
+const QR_DATA_URL_MAX_LENGTH = 16_384;
 
-function parseQrDataUrl(qrDataUrl: string): { mimeType: string; base64: string } | null {
-  const match = qrDataUrl.trim().match(QR_DATA_URL_PREFIX_RE);
-  if (!match) {
-    return null;
-  }
-  return { mimeType: match[1] ?? "image/png", base64: match[2] ?? "" };
+function readOptionalString(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim() ? value : undefined;
 }
 
 export function createWhatsAppLoginTool(): ChannelAgentTool {
@@ -27,16 +23,56 @@ export function createWhatsAppLoginTool(): ChannelAgentTool {
       }),
       timeoutMs: Type.Optional(Type.Number()),
       force: Type.Optional(Type.Boolean()),
+      accountId: Type.Optional(Type.String()),
+      currentQrDataUrl: Type.Optional(
+        Type.String({
+          maxLength: QR_DATA_URL_MAX_LENGTH,
+          pattern: "^data:image/png;base64,",
+        }),
+      ),
     }),
     execute: async (_toolCallId, args) => {
+      const renderQrReply = (params: {
+        message: string;
+        qrDataUrl: string;
+        connected?: boolean;
+      }) => {
+        const text = [
+          params.message,
+          "",
+          "Open WhatsApp → Linked Devices and scan:",
+          "",
+          `![whatsapp-qr](${params.qrDataUrl})`,
+        ].join("\n");
+        return {
+          content: [{ type: "text" as const, text }],
+          details: {
+            connected: params.connected ?? false,
+            qr: true,
+          },
+        };
+      };
+
       const action = (args as { action?: string })?.action ?? "start";
+      const accountId = readOptionalString((args as { accountId?: unknown }).accountId);
       if (action === "wait") {
         const result = await waitForWebLogin({
+          accountId,
           timeoutMs:
             typeof (args as { timeoutMs?: unknown }).timeoutMs === "number"
               ? (args as { timeoutMs?: number }).timeoutMs
               : undefined,
+          currentQrDataUrl: readOptionalString(
+            (args as { currentQrDataUrl?: unknown }).currentQrDataUrl,
+          ),
         });
+        if (result.qrDataUrl) {
+          return renderQrReply({
+            message: result.message,
+            qrDataUrl: result.qrDataUrl,
+            connected: result.connected,
+          });
+        }
         return {
           content: [{ type: "text", text: result.message }],
           details: { connected: result.connected },
@@ -44,6 +80,7 @@ export function createWhatsAppLoginTool(): ChannelAgentTool {
       }
 
       const result = await startWebLoginWithQr({
+        accountId,
         timeoutMs:
           typeof (args as { timeoutMs?: unknown }).timeoutMs === "number"
             ? (args as { timeoutMs?: number }).timeoutMs
@@ -66,42 +103,11 @@ export function createWhatsAppLoginTool(): ChannelAgentTool {
         };
       }
 
-      const parsed = parseQrDataUrl(result.qrDataUrl);
-      const textLines = [
-        result.message,
-        "",
-        "Open WhatsApp → Linked Devices and scan the QR.",
-      ];
-      if (result.qrPath) {
-        textLines.push("", `QR PNG saved to: ${result.qrPath}`);
-      }
-      const text = textLines.join("\n");
-
-      // Return the QR as a structured image content block instead of an inline
-      // base64 markdown image. The chat history sanitizer truncates oversized
-      // text blocks (which would corrupt the data URL), and the markdown
-      // renderer falls back to escaped plain text on very large input. A
-      // structured image block bypasses both limits and renders inline in the
-      // embedded console. The shape mirrors the canonical agent-tool image
-      // format used by `imageResult` in src/agents/tools/common.ts.
-      const imageBlock = parsed
-        ? {
-            type: "image" as const,
-            data: parsed.base64,
-            mimeType: parsed.mimeType,
-          }
-        : null;
-
-      return {
-        content: imageBlock
-          ? [{ type: "text", text }, imageBlock]
-          : [{ type: "text", text }],
-        details: {
-          qr: true,
-          qrPath: result.qrPath ?? null,
-          accountId: result.accountId ?? null,
-        },
-      };
+      return renderQrReply({
+        message: result.message,
+        qrDataUrl: result.qrDataUrl,
+        connected: result.connected,
+      });
     },
   };
 }

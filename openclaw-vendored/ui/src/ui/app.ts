@@ -1,6 +1,5 @@
 import { LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { resolveAgentIdFromSessionKey } from "../../../src/routing/session-key.js";
 import { i18n, I18nController, isSupportedLocale } from "../i18n/index.ts";
 import {
   handleChannelConfigReload as handleChannelConfigReloadInternal,
@@ -19,6 +18,7 @@ import {
   handleAbortChat as handleAbortChatInternal,
   handleSendChat as handleSendChatInternal,
   removeQueuedMessage as removeQueuedMessageInternal,
+  steerQueuedChatMessage as steerQueuedChatMessageInternal,
 } from "./app-chat.ts";
 import { DEFAULT_CRON_FORM, DEFAULT_LOG_LEVEL_FILTERS } from "./app-defaults.ts";
 import type { EventLogEntry } from "./app-events.ts";
@@ -39,6 +39,7 @@ import {
 } from "./app-scroll.ts";
 import {
   applySettings as applySettingsInternal,
+  applyLocalUserIdentity as applyLocalUserIdentityInternal,
   loadCron as loadCronInternal,
   loadOverview as loadOverviewInternal,
   setTab as setTabInternal,
@@ -55,6 +56,7 @@ import {
 import type { AppViewState } from "./app-view-state.ts";
 import { normalizeAssistantIdentity } from "./assistant-identity.ts";
 import { exportChatMarkdown } from "./chat/export.ts";
+import { RealtimeTalkSession, type RealtimeTalkStatus } from "./chat/realtime-talk.ts";
 import type { ChatSideResult } from "./chat/side-result.ts";
 import {
   loadToolsEffective as loadToolsEffectiveInternal,
@@ -74,10 +76,12 @@ import type {
   ClawHubSkillDetail,
   SkillMessage,
 } from "./controllers/skills.ts";
+import { importCustomThemeFromUrl } from "./custom-theme.ts";
 import type { GatewayBrowserClient, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
+import { resolveAgentIdFromSessionKey } from "./session-key.ts";
 import type { SidebarContent } from "./sidebar-content.ts";
-import { loadSettings, type UiSettings } from "./storage.ts";
+import { loadLocalUserIdentity, loadSettings, type UiSettings } from "./storage.ts";
 import { VALID_THEME_NAMES, type ResolvedTheme, type ThemeMode, type ThemeName } from "./theme.ts";
 import type {
   AgentsListResult,
@@ -115,26 +119,19 @@ declare global {
 }
 
 const bootAssistantIdentity = normalizeAssistantIdentity({});
+const bootLocalUserIdentity = loadLocalUserIdentity();
 
-function resolveBooleanUrlParam(name: string): boolean {
+function resolveOnboardingMode(): boolean {
   if (!window.location.search) {
     return false;
   }
   const params = new URLSearchParams(window.location.search);
-  const raw = params.get(name);
+  const raw = params.get("onboarding");
   if (!raw) {
     return false;
   }
   const normalized = raw.trim().toLowerCase();
   return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
-}
-
-function resolveOnboardingMode(): boolean {
-  return resolveBooleanUrlParam("onboarding");
-}
-
-function resolveDebugMode(): boolean {
-  return resolveBooleanUrlParam("debug");
 }
 
 @customElement("openclaw-app")
@@ -154,12 +151,16 @@ export class OpenClawApp extends LitElement {
   @state() loginShowGatewayPassword = false;
   @state() tab: Tab = "chat";
   @state() onboarding = resolveOnboardingMode();
-  @state() debugMode = resolveDebugMode();
   @state() connected = false;
   @state() theme: ThemeName = this.settings.theme ?? "claw";
   @state() themeMode: ThemeMode = this.settings.themeMode ?? "system";
   @state() themeResolved: ResolvedTheme = "dark";
   @state() themeOrder: ThemeName[] = this.buildThemeOrder(this.theme);
+  @state() customThemeImportUrl = "";
+  @state() customThemeImportBusy = false;
+  @state() customThemeImportMessage: { kind: "success" | "error"; text: string } | null = null;
+  @state() customThemeImportExpanded = false;
+  @state() customThemeImportFocusToken = 0;
   @state() hello: GatewayHelloOk | null = null;
   @state() lastError: string | null = null;
   @state() lastErrorCode: string | null = null;
@@ -171,6 +172,8 @@ export class OpenClawApp extends LitElement {
   @state() assistantName = bootAssistantIdentity.name;
   @state() assistantAvatar = bootAssistantIdentity.avatar;
   @state() assistantAgentId = bootAssistantIdentity.agentId ?? null;
+  @state() userName = bootLocalUserIdentity.name;
+  @state() userAvatar = bootLocalUserIdentity.avatar;
   @state() localMediaPreviewRoots: string[] = [];
   @state() embedSandboxMode: "strict" | "scripts" | "trusted" = "scripts";
   @state() allowExternalEmbedUrls = false;
@@ -196,6 +199,11 @@ export class OpenClawApp extends LitElement {
   @state() chatModelCatalog: ModelCatalogEntry[] = [];
   @state() chatQueue: ChatQueueItem[] = [];
   @state() chatAttachments: ChatAttachment[] = [];
+  @state() realtimeTalkActive = false;
+  @state() realtimeTalkStatus: RealtimeTalkStatus = "idle";
+  @state() realtimeTalkDetail: string | null = null;
+  @state() realtimeTalkTranscript: string | null = null;
+  private realtimeTalkSession: RealtimeTalkSession | null = null;
   @state() chatManualRefreshInFlight = false;
   @state() navDrawerOpen = false;
 
@@ -645,6 +653,13 @@ export class OpenClawApp extends LitElement {
     applySettingsInternal(this as unknown as Parameters<typeof applySettingsInternal>[0], next);
   }
 
+  applyLocalUserIdentity(next: { name?: string | null; avatar?: string | null }) {
+    applyLocalUserIdentityInternal(
+      this as unknown as Parameters<typeof applyLocalUserIdentityInternal>[0],
+      next,
+    );
+  }
+
   setTab(next: Tab) {
     setTabInternal(this as unknown as Parameters<typeof setTabInternal>[0], next);
     this.navDrawerOpen = false;
@@ -661,6 +676,61 @@ export class OpenClawApp extends LitElement {
       next,
       context,
     );
+  }
+
+  setCustomThemeImportUrl(next: string) {
+    this.customThemeImportUrl = next;
+    if (this.customThemeImportMessage?.kind === "error") {
+      this.customThemeImportMessage = null;
+    }
+  }
+
+  openCustomThemeImport() {
+    this.customThemeImportExpanded = true;
+    this.customThemeImportFocusToken += 1;
+  }
+
+  async importCustomTheme() {
+    if (this.customThemeImportBusy) {
+      return;
+    }
+    this.customThemeImportExpanded = true;
+    this.customThemeImportBusy = true;
+    this.customThemeImportMessage = null;
+    try {
+      const customTheme = await importCustomThemeFromUrl(this.customThemeImportUrl);
+      applySettingsInternal(this as unknown as Parameters<typeof applySettingsInternal>[0], {
+        ...this.settings,
+        customTheme,
+      });
+      this.customThemeImportUrl = "";
+      this.customThemeImportMessage = {
+        kind: "success",
+        text: `Imported ${customTheme.label}.`,
+      };
+    } catch (error) {
+      this.customThemeImportMessage = {
+        kind: "error",
+        text: error instanceof Error ? error.message : "Failed to import tweakcn theme.",
+      };
+    } finally {
+      this.customThemeImportBusy = false;
+    }
+  }
+
+  clearCustomTheme() {
+    const nextTheme = this.theme === "custom" ? "claw" : this.theme;
+    this.customThemeImportExpanded = true;
+    applySettingsInternal(this as unknown as Parameters<typeof applySettingsInternal>[0], {
+      ...this.settings,
+      theme: nextTheme,
+      customTheme: undefined,
+    });
+    this.themeOrder = this.buildThemeOrder(nextTheme);
+    this.customThemeImportMessage = {
+      kind: "success",
+      text: "Cleared custom theme.",
+    };
   }
 
   setBorderRadius(value: number) {
@@ -704,6 +774,58 @@ export class OpenClawApp extends LitElement {
       this as unknown as Parameters<typeof handleSendChatInternal>[0],
       messageOverride,
       opts,
+    );
+  }
+
+  async toggleRealtimeTalk() {
+    if (this.realtimeTalkSession) {
+      this.realtimeTalkSession.stop();
+      this.realtimeTalkSession = null;
+      this.realtimeTalkActive = false;
+      this.realtimeTalkStatus = "idle";
+      this.realtimeTalkDetail = null;
+      this.realtimeTalkTranscript = null;
+      return;
+    }
+    if (!this.client || !this.connected) {
+      this.lastError = "Gateway not connected";
+      return;
+    }
+    this.realtimeTalkActive = true;
+    this.realtimeTalkStatus = "connecting";
+    this.realtimeTalkDetail = null;
+    this.realtimeTalkTranscript = null;
+    const session = new RealtimeTalkSession(this.client, this.sessionKey, {
+      onStatus: (status, detail) => {
+        this.realtimeTalkStatus = status;
+        this.realtimeTalkDetail = detail ?? null;
+        if (status === "idle" || status === "error") {
+          this.realtimeTalkActive = status !== "idle";
+        }
+      },
+      onTranscript: (entry) => {
+        this.realtimeTalkTranscript = `${entry.role === "user" ? "You" : "Saint AGI"}: ${entry.text}`;
+      },
+    });
+    this.realtimeTalkSession = session;
+    try {
+      await session.start();
+    } catch (error) {
+      session.stop();
+      if (this.realtimeTalkSession === session) {
+        this.realtimeTalkSession = null;
+      }
+      this.realtimeTalkActive = false;
+      this.realtimeTalkStatus = "error";
+      this.realtimeTalkDetail = error instanceof Error ? error.message : String(error);
+      this.lastError = this.realtimeTalkDetail;
+    }
+  }
+
+  async steerQueuedChatMessage(id: string) {
+    await steerQueuedChatMessageInternal(
+      this as unknown as Parameters<typeof steerQueuedChatMessageInternal>[0],
+      id,
     );
   }
 

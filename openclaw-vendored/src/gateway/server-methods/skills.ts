@@ -185,25 +185,7 @@ export const skillsHandlers: GatewayRequestHandlers = {
       return;
     }
     const cfg = loadConfig();
-    const agentIdParam =
-      params && typeof params === "object" && "agentId" in params && typeof params.agentId === "string"
-        ? params.agentId.trim()
-        : "";
-    const targetAgentId = agentIdParam
-      ? normalizeAgentId(agentIdParam)
-      : resolveDefaultAgentId(cfg);
-    if (agentIdParam) {
-      const knownAgents = listAgentIds(cfg);
-      if (!knownAgents.includes(targetAgentId)) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, `unknown agent id "${agentIdParam}"`),
-        );
-        return;
-      }
-    }
-    const workspaceDirRaw = resolveAgentWorkspaceDir(cfg, targetAgentId);
+    const workspaceDirRaw = resolveAgentWorkspaceDir(cfg, resolveDefaultAgentId(cfg));
     if (params && typeof params === "object" && "source" in params && params.source === "clawhub") {
       const p = params as {
         source: "clawhub";
@@ -272,7 +254,6 @@ export const skillsHandlers: GatewayRequestHandlers = {
         source: "clawhub";
         slug?: string;
         all?: boolean;
-        agentId?: string;
       };
       if (!p.slug && !p.all) {
         respond(
@@ -294,12 +275,7 @@ export const skillsHandlers: GatewayRequestHandlers = {
         return;
       }
       const cfg = loadConfig();
-      const updateAgentIdParam =
-        typeof p.agentId === "string" ? p.agentId.trim() : "";
-      const updateTargetAgentId = updateAgentIdParam
-        ? normalizeAgentId(updateAgentIdParam)
-        : resolveDefaultAgentId(cfg);
-      const workspaceDir = resolveAgentWorkspaceDir(cfg, updateTargetAgentId);
+      const workspaceDir = resolveAgentWorkspaceDir(cfg, resolveDefaultAgentId(cfg));
       const results = await updateSkillsFromClawHub({
         workspaceDir,
         slug: p.slug,

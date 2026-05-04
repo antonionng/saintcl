@@ -184,6 +184,7 @@ describe("buildAgentSystemPrompt", () => {
     expect(prompt).not.toContain("HEARTBEAT_OK");
     expect(prompt).not.toContain("Read HEARTBEAT.md");
   });
+
   it("includes safety guardrails in full prompts", () => {
     const prompt = buildAgentSystemPrompt({
       workspaceDir: "/tmp/openclaw",
@@ -319,7 +320,10 @@ describe("buildAgentSystemPrompt", () => {
     });
 
     expect(prompt).toContain(
-      'For requests like "do this in codex/claude code/cursor/gemini" or similar ACP harnesses, treat it as ACP harness intent',
+      'For requests like "do this in claude code/cursor/gemini" or similar ACP harnesses, treat it as ACP harness intent',
+    );
+    expect(prompt).toContain(
+      "For Codex conversation binding/control, prefer the native Codex app-server plugin path",
     );
     expect(prompt).toContain(
       'On Discord, default ACP harness requests to thread-bound persistent sessions (`thread: true`, `mode: "session"`)',
@@ -514,7 +518,7 @@ describe("buildAgentSystemPrompt", () => {
       workspaceDir: "/tmp/openclaw",
       modelAliasLines: [
         "- Opus: anthropic/claude-opus-4-5",
-        "- Sonnet: anthropic/claude-sonnet-4-5",
+        "- Sonnet: anthropic/claude-sonnet-4-6",
       ],
     });
 
@@ -533,9 +537,6 @@ describe("buildAgentSystemPrompt", () => {
     expect(prompt).toContain("config.schema.lookup");
     expect(prompt).toContain("config.apply");
     expect(prompt).toContain("config.patch");
-    expect(prompt).toContain(
-      "When calling config.patch, always pass a `raw` object string that contains the exact subtree to merge.",
-    );
     expect(prompt).toContain("update.run");
     expect(prompt).not.toContain("Use config.schema to");
     expect(prompt).not.toContain("config.schema, config.apply");
@@ -630,18 +631,6 @@ describe("buildAgentSystemPrompt", () => {
     expect(prompt).not.toContain("# Project Context");
   });
 
-  it("renders bootstrap truncation warning even when no context files are injected", () => {
-    const prompt = buildAgentSystemPrompt({
-      workspaceDir: "/tmp/openclaw",
-      bootstrapTruncationWarningLines: ["AGENTS.md: 200 raw -> 0 injected"],
-      contextFiles: [],
-    });
-
-    expect(prompt).toContain("# Project Context");
-    expect(prompt).toContain("⚠ Bootstrap truncation warning:");
-    expect(prompt).toContain("- AGENTS.md: 200 raw -> 0 injected");
-  });
-
   it("summarizes the message tool when available", () => {
     const prompt = buildAgentSystemPrompt({
       workspaceDir: "/tmp/openclaw",
@@ -650,7 +639,37 @@ describe("buildAgentSystemPrompt", () => {
 
     expect(prompt).toContain("message: Send messages and channel actions");
     expect(prompt).toContain("### message tool");
+    expect(prompt).toContain("Use `message` for proactive sends + channel actions");
+    expect(prompt).toContain("For `action=send`, include `target` and `message`.");
     expect(prompt).toContain(`respond with ONLY: ${SILENT_REPLY_TOKEN}`);
+  });
+
+  it("gates sub-agent orchestration guidance on available tools", () => {
+    const messagingPrompt = buildAgentSystemPrompt({
+      workspaceDir: "/tmp/openclaw",
+      toolNames: ["message", "sessions_send"],
+    });
+    const spawnOnlyPrompt = buildAgentSystemPrompt({
+      workspaceDir: "/tmp/openclaw",
+      toolNames: ["sessions_spawn"],
+    });
+    const orchestrationPrompt = buildAgentSystemPrompt({
+      workspaceDir: "/tmp/openclaw",
+      toolNames: ["sessions_spawn", "subagents"],
+    });
+
+    expect(messagingPrompt).not.toContain("Sub-agent orchestration");
+    expect(messagingPrompt).not.toContain("sessions_spawn(...)");
+    expect(messagingPrompt).not.toContain("subagents(action=list|steer|kill)");
+
+    expect(spawnOnlyPrompt).toContain(
+      '- Sub-agent orchestration → use `sessions_spawn(...)` to start delegated work; omit `context` for isolated children, set `context:"fork"` only when the child needs the current transcript.',
+    );
+    expect(spawnOnlyPrompt).not.toContain("manage already-spawned children");
+
+    expect(orchestrationPrompt).toContain(
+      '- Sub-agent orchestration → use `sessions_spawn(...)` to start delegated work; omit `context` for isolated children, set `context:"fork"` only when the child needs the current transcript; use `subagents(action=list|steer|kill)` to manage already-spawned children.',
+    );
   });
 
   it("reapplies provider prompt contributions", () => {

@@ -79,13 +79,34 @@ export function shouldAllowSilentLocalPairing(params: {
   isWebchat: boolean;
   reason: "not-paired" | "role-upgrade" | "scope-upgrade" | "metadata-upgrade";
 }): boolean {
-  return (
-    params.locality !== "remote" &&
-    (!params.hasBrowserOriginHeader || params.isControlUi || params.isWebchat) &&
-    (params.reason === "not-paired" ||
-      params.reason === "scope-upgrade" ||
-      params.reason === "role-upgrade")
-  );
+  if (params.locality === "remote") {
+    return false;
+  }
+  if (params.hasBrowserOriginHeader && !params.isControlUi && !params.isWebchat) {
+    return false;
+  }
+  if (
+    params.reason === "not-paired" ||
+    params.reason === "scope-upgrade" ||
+    params.reason === "role-upgrade"
+  ) {
+    return true;
+  }
+  // metadata-upgrade auto-approves only for shared-secret loopback CLI clients.
+  // On those paths the connection has already proved possession of a token or
+  // password over loopback, so allowing the pinned platform/deviceFamily to be
+  // refreshed on reconnect matches the "Reconnects can update access metadata"
+  // comment in message-handler.ts. Browser / Control-UI clients keep the
+  // existing approval-required flow — metadata pinning there is a real
+  // anti-tampering surface.
+  if (
+    params.reason === "metadata-upgrade" &&
+    (params.locality === "cli_container_local" ||
+      params.locality === "shared_secret_loopback_local")
+  ) {
+    return true;
+  }
+  return false;
 }
 
 function isCliContainerLocalEquivalent(params: {
@@ -120,8 +141,7 @@ function isSharedSecretLoopbackLocalEquivalent(params: {
   sharedAuthOk: boolean;
   authMethod: GatewayAuthResult["method"];
 }): boolean {
-  const usesSharedSecretAuth =
-    params.authMethod === "token" || params.authMethod === "password";
+  const usesSharedSecretAuth = params.authMethod === "token" || params.authMethod === "password";
   return (
     params.sharedAuthOk &&
     usesSharedSecretAuth &&
@@ -232,6 +252,7 @@ export function shouldSkipLocalBackendSelfPairing(params: {
   hasBrowserOriginHeader: boolean;
   sharedAuthOk: boolean;
   authMethod: GatewayAuthResult["method"];
+  allowRemoteBackendOperator?: boolean;
 }): boolean {
   const isBackendClient =
     params.connectParams.client.id === GATEWAY_CLIENT_IDS.GATEWAY_CLIENT &&
@@ -241,9 +262,19 @@ export function shouldSkipLocalBackendSelfPairing(params: {
   }
   const usesSharedSecretAuth = params.authMethod === "token" || params.authMethod === "password";
   const usesDeviceTokenAuth = params.authMethod === "device-token";
+  // Opt-in extension for hosted multi-tenant deployments where a single trusted
+  // backend (e.g. SaintAGI control plane) holds the shared gateway token and
+  // connects across the network. The flag widens the existing direct-local
+  // backend exemption to remote backend gateway-clients that authenticated with
+  // the shared token. Browser origin or device-token auth are still required to
+  // go through the standard pairing path. Tenant data isolation is handled at
+  // the workspace/path layer above this auth check.
+  const allowsRemoteSharedSecret =
+    params.allowRemoteBackendOperator === true && params.sharedAuthOk && usesSharedSecretAuth;
+  const isLocalEquivalent = params.locality === "direct_local";
   return (
-    params.locality === "direct_local" &&
     !params.hasBrowserOriginHeader &&
+    (isLocalEquivalent || allowsRemoteSharedSecret) &&
     ((params.sharedAuthOk && usesSharedSecretAuth) || usesDeviceTokenAuth)
   );
 }

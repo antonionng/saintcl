@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createStorageMock } from "../test-helpers/storage.ts";
 import { loadDeviceAuthToken, storeDeviceAuthToken } from "./device-auth.ts";
@@ -463,45 +464,6 @@ describe("GatewayBrowserClient", () => {
     expect(wsInstances).toHaveLength(1);
 
     vi.useRealTimers();
-  });
-
-  it("sends periodic health keepalives after connect succeeds", async () => {
-    vi.useFakeTimers();
-
-    const client = new GatewayBrowserClient({
-      url: "ws://127.0.0.1:18789",
-      token: "shared-auth-token",
-    });
-
-    client.start();
-    const ws = getLatestWebSocket();
-    ws.emitOpen();
-    ws.emitMessage({
-      type: "event",
-      event: "connect.challenge",
-      payload: { nonce: "nonce-1" },
-    });
-    await vi.waitFor(() => expect(ws.sent.length).toBeGreaterThan(0));
-
-    const connectFrame = JSON.parse(ws.sent.at(-1) ?? "{}") as { id?: string };
-    ws.emitMessage({
-      type: "res",
-      id: connectFrame.id,
-      ok: true,
-      payload: {
-        type: "hello-ok",
-        protocol: 3,
-      },
-    });
-
-    await vi.advanceTimersByTimeAsync(25_000);
-
-    const healthFrame = JSON.parse(ws.sent.at(-1) ?? "{}") as {
-      method?: string;
-      params?: { probe?: boolean };
-    };
-    expect(healthFrame.method).toBe("health");
-    expect(healthFrame.params).toEqual({ probe: false });
   });
 });
 

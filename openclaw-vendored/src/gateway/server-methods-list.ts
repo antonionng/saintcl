@@ -3,6 +3,7 @@ import { GATEWAY_EVENT_UPDATE_AVAILABLE } from "./events.js";
 
 const BASE_METHODS = [
   "health",
+  "diagnostics.stability",
   "doctor.memory.status",
   "doctor.memory.dreamDiary",
   "doctor.memory.backfillDreamDiary",
@@ -47,6 +48,7 @@ const BASE_METHODS = [
   "wizard.cancel",
   "wizard.status",
   "talk.config",
+  "talk.realtime.session",
   "talk.speak",
   "talk.mode",
   "commands.list",
@@ -129,11 +131,6 @@ const BASE_METHODS = [
   "agent",
   "agent.identity.get",
   "agent.wait",
-  "browser.request",
-  "terminal.start",
-  "terminal.input",
-  "terminal.resize",
-  "terminal.kill",
   // WebChat WebSocket-native chat methods
   "chat.history",
   "chat.abort",
@@ -169,8 +166,5 @@ export const GATEWAY_EVENTS = [
   "exec.approval.resolved",
   "plugin.approval.requested",
   "plugin.approval.resolved",
-  "terminal.data",
-  "terminal.exit",
-  "terminal.error",
   GATEWAY_EVENT_UPDATE_AVAILABLE,
 ];

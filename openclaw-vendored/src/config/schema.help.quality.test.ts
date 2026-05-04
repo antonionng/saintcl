@@ -118,6 +118,7 @@ const TARGET_KEYS = [
   "gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback",
   "gateway.controlUi.allowInsecureAuth",
   "gateway.controlUi.dangerouslyDisableDeviceAuth",
+  "gateway.controlUi.allowSharedTokenBackendOperator",
   "gateway.controlUi.embedSandbox",
   "cron",
   "cron.enabled",
@@ -352,6 +353,7 @@ const TARGET_KEYS = [
   "plugins.entries.*.enabled",
   "plugins.entries.*.hooks",
   "plugins.entries.*.hooks.allowPromptInjection",
+  "plugins.entries.*.hooks.allowConversationAccess",
   "plugins.entries.*.subagent",
   "plugins.entries.*.subagent.allowModelOverride",
   "plugins.entries.*.subagent.allowedModels",
@@ -763,6 +765,11 @@ describe("config help copy quality", () => {
     expect(pluginPromptPolicy.includes("before_prompt_build")).toBe(true);
     expect(pluginPromptPolicy.includes("before_agent_start")).toBe(true);
     expect(pluginPromptPolicy.includes("modelOverride")).toBe(true);
+
+    const pluginConversationPolicy = FIELD_HELP["plugins.entries.*.hooks.allowConversationAccess"];
+    expect(pluginConversationPolicy.includes("llm_input")).toBe(true);
+    expect(pluginConversationPolicy.includes("llm_output")).toBe(true);
+    expect(pluginConversationPolicy.includes("agent_end")).toBe(true);
   });
 
   it("documents auth/model root semantics and provider secret handling", () => {
