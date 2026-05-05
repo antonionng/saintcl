@@ -6,6 +6,7 @@ import { normalizeAgentAvatarConfig } from "@/lib/agent-identity";
 import { resolveAgentWorkspaceFromConfig } from "@/lib/openclaw/agent-terminal";
 import { assertModelSelectionAllowed, getOrgModelCatalogState } from "@/lib/openclaw/model-governance";
 import { writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
+import { RuntimeRateLimitError } from "@/lib/openclaw/client";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -109,6 +110,7 @@ export async function PATCH(
         })),
       });
       await client.withSession(async (rpc) => {
+        const currentSnapshot = await client.getConfigSnapshot(rpc);
         await client.applyModelGovernance(
           {
             defaultModel: snapshot.defaultModel,
@@ -118,6 +120,7 @@ export async function PATCH(
             })),
           },
           rpc,
+          { currentSnapshot },
         );
         await client.updateAgentModel(
           {
@@ -128,6 +131,7 @@ export async function PATCH(
             avatar: normalizeAgentAvatarConfig((agent.config as Record<string, unknown> | null | undefined)?.agentAvatar),
           },
           rpc,
+          { currentSnapshot },
         );
       });
     }
@@ -203,6 +207,20 @@ export async function PATCH(
 
     return NextResponse.json({ data });
   } catch (error) {
+    if (error instanceof RuntimeRateLimitError) {
+      const retryAfterSeconds = Math.max(1, Math.ceil(error.retryAfterMs / 1000));
+      return NextResponse.json(
+        {
+          error: {
+            message: `Too many setup changes in the last minute. Please try again in ${retryAfterSeconds} seconds.`,
+          },
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": String(retryAfterSeconds) },
+        },
+      );
+    }
     const message = error instanceof Error ? error.message : "Unable to update agent.";
     return NextResponse.json({ error: { message } }, { status: getModelUpdateErrorStatus(message) });
   }

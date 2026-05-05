@@ -7,6 +7,7 @@ import { syncKnowledgeToAgent } from "@/lib/openclaw/knowledge-sync";
 import { getAgentWorkspacePath } from "@/lib/openclaw/paths";
 import { resolveModelSelection } from "@/lib/openclaw/model-governance";
 import { writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
+import { RuntimeRateLimitError } from "@/lib/openclaw/client";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { insertAgentMetadata, upsertAgentAssignment, upsertRuntimeMetadata } from "@/lib/openclaw/runtime-store";
 import { createClient } from "@/lib/supabase/server";
@@ -106,6 +107,12 @@ export async function POST() {
     const runtimeMetadata = runtime ? await upsertRuntimeMetadata(runtime) : null;
     const workspacePath = getAgentWorkspacePath(orgId, slug, { source });
     await client.withSession(async (rpc) => {
+      // Fetch the gateway snapshot exactly once per bootstrap session and pass
+      // it to both governance and provisioning helpers. They each use it to
+      // skip their `config.patch` when the desired state is already in place,
+      // which keeps us under the gateway's 3-per-60s control-plane write cap
+      // when users retry the create-agent button.
+      const currentSnapshot = await client.getConfigSnapshot(rpc);
       await client.applyModelGovernance(
         {
           defaultModel: snapshot.defaultModel,
@@ -115,6 +122,7 @@ export async function POST() {
           })),
         },
         rpc,
+        { currentSnapshot },
       );
       await client.provisionAgent(
         {
@@ -124,6 +132,7 @@ export async function POST() {
           name: agentName,
         },
         rpc,
+        { currentSnapshot },
       );
     });
     let row: Awaited<ReturnType<typeof insertAgentMetadata>>;
@@ -216,6 +225,20 @@ export async function POST() {
       },
     });
   } catch (error) {
+    if (error instanceof RuntimeRateLimitError) {
+      const retryAfterSeconds = Math.max(1, Math.ceil(error.retryAfterMs / 1000));
+      return NextResponse.json(
+        {
+          error: {
+            message: `Too many setup changes in the last minute. Please try again in ${retryAfterSeconds} seconds.`,
+          },
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": String(retryAfterSeconds) },
+        },
+      );
+    }
     const message = error instanceof Error ? error.message : "Bootstrap failed";
     return NextResponse.json({ error: { message } }, { status: 500 });
   }

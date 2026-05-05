@@ -26,6 +26,7 @@ import {
 } from "@/lib/openclaw/runtime-store";
 import { writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
 import { resolveModelSelection } from "@/lib/openclaw/model-governance";
+import { RuntimeRateLimitError } from "@/lib/openclaw/client";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { canProvisionAnotherAgent, getAgentProvisionLimitMessage, getResolvedTrialStatus } from "@/lib/plans";
 
@@ -302,6 +303,7 @@ export async function POST(request: Request) {
     const workspacePath = getAgentWorkspacePath(orgId, slug, { source });
     const terminalRepoPaths = normalizeAgentTerminalRepoPaths(payload.terminalRepoPaths ?? []);
     await client.withSession(async (rpc) => {
+      const currentSnapshot = await client.getConfigSnapshot(rpc);
       await client.applyModelGovernance(
         {
           defaultModel: snapshot.defaultModel,
@@ -311,6 +313,7 @@ export async function POST(request: Request) {
           })),
         },
         rpc,
+        { currentSnapshot },
       );
       await client.provisionAgent(
         {
@@ -320,6 +323,7 @@ export async function POST(request: Request) {
           name,
         },
         rpc,
+        { currentSnapshot },
       );
     });
     let agentRow: Awaited<ReturnType<typeof insertAgentMetadata>>;
@@ -469,6 +473,20 @@ export async function POST(request: Request) {
       },
     });
   } catch (err) {
+    if (err instanceof RuntimeRateLimitError) {
+      const retryAfterSeconds = Math.max(1, Math.ceil(err.retryAfterMs / 1000));
+      return NextResponse.json(
+        {
+          error: {
+            message: `Too many setup changes in the last minute. Please try again in ${retryAfterSeconds} seconds.`,
+          },
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": String(retryAfterSeconds) },
+        },
+      );
+    }
     const message = err instanceof Error ? err.message : "Provisioning failed";
     console.error("Agent provisioning failed", {
       orgId,

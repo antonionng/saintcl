@@ -2,7 +2,15 @@ import { EventEmitter } from "node:events";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { buildModelGovernancePatch, shouldRetryWithLegacyOperatorScopes } from "./client";
+import {
+  agentMatchesSnapshot,
+  buildModelGovernancePatch,
+  governanceMatchesSnapshot,
+  parseRateLimitError,
+  RuntimeRateLimitError,
+  shouldRetryWithLegacyOperatorScopes,
+  type OpenClawConfigSnapshot,
+} from "./client";
 
 class FakeSocket extends EventEmitter {
   public sent: string[] = [];
@@ -52,6 +60,123 @@ describe("shouldRetryWithLegacyOperatorScopes", () => {
   it("does not retry unrelated gateway failures", () => {
     expect(shouldRetryWithLegacyOperatorScopes("missing scope: operator.read")).toBe(false);
     expect(shouldRetryWithLegacyOperatorScopes("Runtime gateway timeout")).toBe(false);
+  });
+});
+
+describe("parseRateLimitError", () => {
+  it("turns the gateway's structured rate-limit message into a typed error", () => {
+    const error = parseRateLimitError("rate limit exceeded for config.patch; retry after 4s");
+    expect(error).toBeInstanceOf(RuntimeRateLimitError);
+    expect(error?.method).toBe("config.patch");
+    expect(error?.retryAfterMs).toBe(4_000);
+  });
+
+  it("returns null for unrelated errors so they propagate verbatim", () => {
+    expect(parseRateLimitError("Runtime gateway timeout")).toBeNull();
+    expect(parseRateLimitError("rate limit exceeded for config.patch")).toBeNull();
+  });
+});
+
+describe("governanceMatchesSnapshot", () => {
+  function snapshotWith(defaults: Record<string, unknown>): OpenClawConfigSnapshot {
+    return { hash: "h", config: { agents: { defaults } } };
+  }
+
+  it("returns true when primary model and approved ids already match the gateway state", () => {
+    const snapshot = snapshotWith({
+      model: { primary: "openrouter/auto" },
+      models: [
+        { id: "openrouter/auto", label: "Auto" },
+        { id: "anthropic/claude-sonnet-4-6", label: "Claude" },
+      ],
+    });
+    expect(
+      governanceMatchesSnapshot(snapshot, {
+        defaultModel: "openrouter/auto",
+        approvedModels: [
+          { id: "anthropic/claude-sonnet-4-6" },
+          { id: "openrouter/auto" },
+        ],
+      }),
+    ).toBe(true);
+  });
+
+  it("returns false when the primary model differs", () => {
+    const snapshot = snapshotWith({
+      model: { primary: "openrouter/auto" },
+      models: [{ id: "openrouter/auto" }],
+    });
+    expect(
+      governanceMatchesSnapshot(snapshot, {
+        defaultModel: "anthropic/claude-sonnet-4-6",
+        approvedModels: [{ id: "openrouter/auto" }],
+      }),
+    ).toBe(false);
+  });
+
+  it("returns false when the allowlist set differs", () => {
+    const snapshot = snapshotWith({
+      model: { primary: "openrouter/auto" },
+      models: [{ id: "openrouter/auto" }],
+    });
+    expect(
+      governanceMatchesSnapshot(snapshot, {
+        defaultModel: "openrouter/auto",
+        approvedModels: [{ id: "openrouter/auto" }, { id: "anthropic/claude-sonnet-4-6" }],
+      }),
+    ).toBe(false);
+  });
+
+  it("returns false when the snapshot has no agents.defaults at all", () => {
+    expect(
+      governanceMatchesSnapshot({ hash: "h", config: {} }, {
+        defaultModel: "openrouter/auto",
+        approvedModels: [{ id: "openrouter/auto" }],
+      }),
+    ).toBe(false);
+  });
+});
+
+describe("agentMatchesSnapshot", () => {
+  function snapshotWith(list: Array<Record<string, unknown>>): OpenClawConfigSnapshot {
+    return { hash: "h", config: { agents: { list } } };
+  }
+
+  it("returns true when an agent with the same id, workspace, and model already exists", () => {
+    const snapshot = snapshotWith([
+      { id: "ant-agent", workspace: "/data/agents/ant-agent", model: "openrouter/auto" },
+    ]);
+    expect(
+      agentMatchesSnapshot(snapshot, {
+        agentId: "ant-agent",
+        workspace: "/data/agents/ant-agent",
+        model: "openrouter/auto",
+      }),
+    ).toBe(true);
+  });
+
+  it("returns false when the agent exists but the workspace was reassigned", () => {
+    const snapshot = snapshotWith([
+      { id: "ant-agent", workspace: "/data/agents/ant-agent", model: "openrouter/auto" },
+    ]);
+    expect(
+      agentMatchesSnapshot(snapshot, {
+        agentId: "ant-agent",
+        workspace: "/data/agents/ant-agent-v2",
+        model: "openrouter/auto",
+      }),
+    ).toBe(false);
+  });
+
+  it("returns false when no entry with this id exists", () => {
+    const snapshot = snapshotWith([{ id: "other-agent" }]);
+    expect(
+      agentMatchesSnapshot(snapshot, {
+        agentId: "ant-agent",
+        workspace: "/data/agents/ant-agent",
+        model: "openrouter/auto",
+      }),
+    ).toBe(false);
   });
 });
 
@@ -138,6 +263,39 @@ describe("OpenClawClient.withSession", () => {
     expect(result).toEqual({ first: { value: "hello" }, second: { ok: true } });
     expect(sockets).toHaveLength(1);
     expect(socket.closed).toBe(true);
+  });
+
+  it("rejects with a typed RuntimeRateLimitError when the gateway throttles config.patch", async () => {
+    const { OpenClawClient } = await import("./client");
+    const client = new OpenClawClient({
+      gatewayUrl: "wss://gateway.test/socket",
+      gatewayToken: "token",
+    });
+
+    const sessionPromise = client.withSession(async (rpc) =>
+      rpc<{ ok: true }>("config.patch", { raw: "{}", baseHash: "hash" }),
+    );
+
+    await flushMicrotasks();
+    const socket = sockets[0];
+    const connectFrame = parseFrame(socket.sent[0]);
+    socket.receive({ type: "res", id: connectFrame.id, ok: true });
+
+    await flushMicrotasks();
+    const patchFrame = parseFrame(socket.sent[1]);
+    expect(patchFrame.method).toBe("config.patch");
+    socket.receive({
+      type: "res",
+      id: patchFrame.id,
+      ok: false,
+      error: { message: "rate limit exceeded for config.patch; retry after 4s" },
+    });
+
+    await expect(sessionPromise).rejects.toMatchObject({
+      name: "RuntimeRateLimitError",
+      method: "config.patch",
+      retryAfterMs: 4_000,
+    });
   });
 
   it("retries the entire session with legacy operator scopes when the gateway rejects modern scopes", async () => {

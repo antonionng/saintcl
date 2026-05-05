@@ -68,7 +68,7 @@ function formatUsageDate(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-type OpenClawConfigSnapshot = {
+export type OpenClawConfigSnapshot = {
   hash: string;
   config?: Record<string, unknown>;
 };
@@ -95,6 +95,113 @@ export type GatewayRpcRunner = <T = unknown>(
 
 export function shouldRetryWithLegacyOperatorScopes(errorMessage: string) {
   return /\bmissing scope:\s*operator:/i.test(errorMessage);
+}
+
+/**
+ * The vendored gateway hard-caps control-plane writes (`config.apply`,
+ * `config.patch`, `update.run`) at 3 per 60 seconds per actor. When that
+ * budget is blown the gateway returns a structured error message with a
+ * retry-after hint. We parse it into a typed error so callers can:
+ *   1. show a friendly "you've made too many setup changes; try again in Xs"
+ *      message instead of a raw RPC name; and
+ *   2. respond with HTTP 429 + Retry-After at the API boundary.
+ *
+ * The real fix is to avoid spending the budget at all (see the idempotency
+ * checks in applyModelGovernance and provisionAgent below); this class makes
+ * the residual case observable instead of cryptic.
+ */
+export class RuntimeRateLimitError extends Error {
+  readonly method: string;
+  readonly retryAfterMs: number;
+
+  constructor(method: string, retryAfterMs: number, message?: string) {
+    super(
+      message ??
+        `Runtime is rate-limited (${method}); please retry in ${Math.ceil(retryAfterMs / 1000)}s`,
+    );
+    this.name = "RuntimeRateLimitError";
+    this.method = method;
+    this.retryAfterMs = retryAfterMs;
+  }
+}
+
+const RATE_LIMIT_MESSAGE_PATTERN = /^rate limit exceeded for ([^;]+);\s*retry after\s+(\d+)s\s*$/i;
+
+export function parseRateLimitError(message: string): RuntimeRateLimitError | null {
+  const match = RATE_LIMIT_MESSAGE_PATTERN.exec(message.trim());
+  if (!match) return null;
+  const method = match[1].trim();
+  const retryAfterMs = Number.parseInt(match[2], 10) * 1000;
+  if (!Number.isFinite(retryAfterMs) || retryAfterMs < 0) return null;
+  return new RuntimeRateLimitError(method, retryAfterMs);
+}
+
+function plainObject(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
+function readAgentsList(snapshot: OpenClawConfigSnapshot | undefined) {
+  const agents = plainObject(snapshot?.config?.agents);
+  const list = agents?.list;
+  return Array.isArray(list) ? (list as Array<Record<string, unknown>>) : [];
+}
+
+function readAgentDefaults(snapshot: OpenClawConfigSnapshot | undefined) {
+  const agents = plainObject(snapshot?.config?.agents);
+  return plainObject(agents?.defaults);
+}
+
+/**
+ * Returns true when the snapshot already encodes the desired governance state.
+ * We compare the primary model id and the set of approved model ids; the
+ * gateway expands `models` into a richer entry list, so an exact deep-equal
+ * is too strict and would force a patch on every bootstrap.
+ */
+export function governanceMatchesSnapshot(
+  snapshot: OpenClawConfigSnapshot | undefined,
+  desired: { defaultModel: string; approvedModels: Array<{ id: string }> },
+): boolean {
+  const defaults = readAgentDefaults(snapshot);
+  if (!defaults) return false;
+  const model = plainObject(defaults.model);
+  if (!model || model.primary !== desired.defaultModel) return false;
+  const currentModels = Array.isArray(defaults.models) ? defaults.models : [];
+  const currentIds = new Set(
+    currentModels
+      .map((entry) => {
+        const obj = plainObject(entry);
+        const id = obj?.id;
+        return typeof id === "string" ? id : null;
+      })
+      .filter((id): id is string => Boolean(id)),
+  );
+  if (currentIds.size !== desired.approvedModels.length) return false;
+  for (const entry of desired.approvedModels) {
+    if (!currentIds.has(entry.id)) return false;
+  }
+  return true;
+}
+
+/**
+ * Returns true when the snapshot already provisions an agent with the given
+ * id, workspace, and model. We deliberately do NOT include identity (name +
+ * avatar) in the comparison: identity changes are handled by the dedicated
+ * updateAgentIdentity flow, and skipping a same-identity-different-name patch
+ * here would silently lose user edits. For the bootstrap flow specifically,
+ * if id+workspace+model match, the patch is a no-op against the gateway and
+ * not worth burning a control-plane write token on.
+ */
+export function agentMatchesSnapshot(
+  snapshot: OpenClawConfigSnapshot | undefined,
+  desired: { agentId: string; workspace: string; model: string },
+): boolean {
+  const list = readAgentsList(snapshot);
+  const entry = list.find((candidate) => candidate.id === desired.agentId);
+  if (!entry) return false;
+  if (entry.workspace !== desired.workspace) return false;
+  if (entry.model !== desired.model) return false;
+  return true;
 }
 
 export function buildModelGovernancePatch(input: {
@@ -179,13 +286,13 @@ export class OpenClawClient {
   }
 
   private async getConfigHash(runner?: GatewayRpcRunner): Promise<string> {
-    const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
-    const result = await exec<{ hash: string }>("config.get", {});
-    return result.hash;
+    const snapshot = await this.getConfigSnapshot(runner);
+    return snapshot.hash;
   }
 
-  async getConfigSnapshot() {
-    return this.call<OpenClawConfigSnapshot>("config.get", {});
+  async getConfigSnapshot(runner?: GatewayRpcRunner) {
+    const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
+    return exec<OpenClawConfigSnapshot>("config.get", {});
   }
 
   async ensureControlUiAllowedOrigins(origins: string[]) {
@@ -235,13 +342,22 @@ export class OpenClawClient {
   async provisionAgent(
     input: { agentId: string; workspace: string; model: string; name?: string; avatar?: AgentAvatarConfig },
     runner?: GatewayRpcRunner,
-  ) {
+    options?: { currentSnapshot?: OpenClawConfigSnapshot },
+  ): Promise<{ changed: boolean }> {
     if (!isOpenClawConfigured()) {
       throw new Error("Runtime gateway is not configured.");
     }
 
     const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
-    const baseHash = await this.getConfigHash(exec);
+    const snapshot = options?.currentSnapshot ?? (await this.getConfigSnapshot(exec));
+
+    // Skip the control-plane write entirely when the gateway already encodes
+    // the requested agent. This prevents bootstrap retries from chewing
+    // through the gateway's 3-per-60s `config.patch` budget on no-op patches.
+    if (agentMatchesSnapshot(snapshot, input)) {
+      return { changed: false };
+    }
+
     const raw = JSON.stringify({
       agents: {
         list: [
@@ -260,14 +376,16 @@ export class OpenClawClient {
       },
     });
 
-    return exec("config.patch", { raw, baseHash });
+    await exec("config.patch", { raw, baseHash: snapshot.hash });
+    return { changed: true };
   }
 
   async updateAgentModel(
     input: { agentId: string; workspace: string; model: string; name?: string; avatar?: AgentAvatarConfig },
     runner?: GatewayRpcRunner,
-  ) {
-    return this.provisionAgent(input, runner);
+    options?: { currentSnapshot?: OpenClawConfigSnapshot },
+  ): Promise<{ changed: boolean }> {
+    return this.provisionAgent(input, runner, options);
   }
 
   async updateAgentIdentity(input: { agentId: string; name: string; avatar?: AgentAvatarConfig }) {
@@ -361,16 +479,26 @@ export class OpenClawClient {
       approvedModels: Array<{ id: string; label?: string }>;
     },
     runner?: GatewayRpcRunner,
-  ) {
+    options?: { currentSnapshot?: OpenClawConfigSnapshot },
+  ): Promise<{ changed: boolean }> {
     if (!isOpenClawConfigured()) {
       throw new Error("Runtime gateway is not configured.");
     }
 
     const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
-    const baseHash = await this.getConfigHash(exec);
-    const raw = JSON.stringify(buildModelGovernancePatch(input));
+    const snapshot = options?.currentSnapshot ?? (await this.getConfigSnapshot(exec));
 
-    return exec("config.patch", { raw, baseHash });
+    // Governance is the model allowlist + primary model. It rarely changes
+    // between bootstrap attempts, so checking the snapshot first lets us skip
+    // a `config.patch` that would otherwise burn one of the gateway's three
+    // 60-second control-plane write tokens for nothing.
+    if (governanceMatchesSnapshot(snapshot, input)) {
+      return { changed: false };
+    }
+
+    const raw = JSON.stringify(buildModelGovernancePatch(input));
+    await exec("config.patch", { raw, baseHash: snapshot.hash });
+    return { changed: true };
   }
 
   async connectTelegram(input: { agentId: string; botToken: string }, runner?: GatewayRpcRunner) {
@@ -628,7 +756,8 @@ export class OpenClawClient {
           latencyMs: Date.now() - entry.startedAt,
           errorMessage: message,
         });
-        entry.reject(new Error(message));
+        const rateLimit = parseRateLimitError(message);
+        entry.reject(rateLimit ?? new Error(message));
       }
     });
 

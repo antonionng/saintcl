@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { getCurrentOrg, getVisibleAgentForSession } from "@/lib/dal";
 import { assertModelSelectionAllowed, getOrgModelCatalogState } from "@/lib/openclaw/model-governance";
+import { RuntimeRateLimitError } from "@/lib/openclaw/client";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { buildAgentSessionKey, parseProviderFromModelRef } from "@/lib/openclaw/session-keys";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -81,6 +82,7 @@ export async function PATCH(
       })),
     });
     const result = await client.withSession(async (rpc) => {
+      const currentSnapshot = await client.getConfigSnapshot(rpc);
       await client.applyModelGovernance(
         {
           defaultModel: snapshot.defaultModel,
@@ -90,6 +92,7 @@ export async function PATCH(
           })),
         },
         rpc,
+        { currentSnapshot },
       );
 
       return client.patchSession(
@@ -121,6 +124,20 @@ export async function PATCH(
       },
     });
   } catch (error) {
+    if (error instanceof RuntimeRateLimitError) {
+      const retryAfterSeconds = Math.max(1, Math.ceil(error.retryAfterMs / 1000));
+      return NextResponse.json(
+        {
+          error: {
+            message: `Too many setup changes in the last minute. Please try again in ${retryAfterSeconds} seconds.`,
+          },
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": String(retryAfterSeconds) },
+        },
+      );
+    }
     const message = error instanceof Error ? error.message : "Unable to update session model.";
     return NextResponse.json({ error: { message } }, { status: getSessionModelErrorStatus(message) });
   }

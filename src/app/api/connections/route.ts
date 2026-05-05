@@ -6,6 +6,7 @@ import { getCurrentOrg } from "@/lib/dal";
 import { env, isOpenClawConfigured } from "@/lib/env";
 import { appendRuntimeAuditEvent } from "@/lib/openclaw/log-sync";
 import { getOrgModelCatalogState } from "@/lib/openclaw/model-governance";
+import { RuntimeRateLimitError } from "@/lib/openclaw/client";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { insertChannelMetadata } from "@/lib/openclaw/runtime-store";
 import { recordSetupAuditEvent, recordFunnelStep } from "@/lib/setup-audit";
@@ -82,29 +83,49 @@ export async function POST(request: Request) {
       label: entry.label,
     })),
   });
-  await openClaw.withSession(async (rpc) => {
-    await openClaw.applyModelGovernance(
-      {
-        defaultModel: snapshot.defaultModel,
-        approvedModels: snapshot.approvedModels.map((entry) => ({
-          id: entry.id,
-          label: entry.label,
-        })),
-      },
-      rpc,
-    );
-
-    if (payload.type === "telegram") {
-      await openClaw.connectTelegram(
-        { agentId: payload.agentId, botToken: payload.botToken },
+  try {
+    await openClaw.withSession(async (rpc) => {
+      const currentSnapshot = await openClaw.getConfigSnapshot(rpc);
+      await openClaw.applyModelGovernance(
+        {
+          defaultModel: snapshot.defaultModel,
+          approvedModels: snapshot.approvedModels.map((entry) => ({
+            id: entry.id,
+            label: entry.label,
+          })),
+        },
         rpc,
+        { currentSnapshot },
+      );
+
+      if (payload.type === "telegram") {
+        await openClaw.connectTelegram(
+          { agentId: payload.agentId, botToken: payload.botToken },
+          rpc,
+        );
+      }
+
+      if (payload.type === "slack") {
+        await openClaw.connectSlack({ agentId: payload.agentId, teamId: payload.teamId }, rpc);
+      }
+    });
+  } catch (error) {
+    if (error instanceof RuntimeRateLimitError) {
+      const retryAfterSeconds = Math.max(1, Math.ceil(error.retryAfterMs / 1000));
+      return NextResponse.json(
+        {
+          error: {
+            message: `Too many setup changes in the last minute. Please try again in ${retryAfterSeconds} seconds.`,
+          },
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": String(retryAfterSeconds) },
+        },
       );
     }
-
-    if (payload.type === "slack") {
-      await openClaw.connectSlack({ agentId: payload.agentId, teamId: payload.teamId }, rpc);
-    }
-  });
+    throw error;
+  }
 
   if (payload.type === "telegram") {
     await insertChannelMetadata({
