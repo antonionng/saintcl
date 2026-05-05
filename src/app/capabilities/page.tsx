@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import placeholderLogo from "../../../public/saintagi-placeholder-logo.png";
-
 import { UserDropdownMenu } from "@/components/account/user-dropdown-menu";
 import { CapabilitiesOverview } from "@/components/capabilities/capabilities-overview";
 import { CtaBanner } from "@/components/landing/cta-banner";
@@ -32,9 +30,12 @@ export default async function CapabilitiesPage() {
         <div className="site-shell flex items-center justify-between py-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
           <Link href="/" className="inline-flex h-10 items-center">
             <Image
-              src={placeholderLogo}
+              src="/saint-agi-mark.svg"
               alt="Saint AGI"
+              width={397}
+              height={238}
               className="h-10 w-auto object-contain opacity-95"
+              unoptimized
               priority
             />
           </Link>

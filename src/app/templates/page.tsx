@@ -1,8 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import placeholderLogo from "../../../public/saintagi-placeholder-logo.png";
-
 import { SiteFooter } from "@/components/landing/site-footer";
 import { Button } from "@/components/ui/button";
 import { AGENT_TEMPLATES } from "@/lib/agent-templates";
@@ -22,7 +20,14 @@ export default function PublicTemplatesPage() {
       <header className="sticky top-0 z-20 border-b border-border-subtle bg-black">
         <div className="site-shell flex items-center justify-between py-4">
           <Link href="/" className="inline-flex h-10 items-center">
-            <Image src={placeholderLogo} alt="Saint AGI" height={32} width={32} className="h-8 w-auto" />
+            <Image
+              src="/saint-agi-mark.svg"
+              alt="Saint AGI"
+              width={397}
+              height={238}
+              className="h-8 w-auto object-contain"
+              unoptimized
+            />
             <span className="ml-3 text-base font-semibold tracking-[-0.02em] text-white">Saint AGI</span>
           </Link>
           <div className="flex items-center gap-3">

@@ -1,64 +1,67 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import placeholderLogo from "../../../public/saintagi-placeholder-logo.png";
-
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-black">
-      <div className="relative mx-auto h-[920px] w-full max-w-[1440px]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-[200px] h-[700px] w-[1100px] -translate-x-1/2 rounded-full"
-          style={{
-            background:
-              "radial-gradient(50% 50% at 50% 50%, rgba(255, 240, 219, 0.10) 0%, rgba(255, 240, 219, 0.04) 45%, rgba(0, 0, 0, 0) 70%)",
-          }}
-        />
+    <section className="relative flex min-h-[calc(100svh-5rem)] items-center justify-center overflow-hidden bg-black md:min-h-[calc(100dvh-5rem)]">
+      <div className="relative mx-auto w-full max-w-[1440px] px-6 py-10 lg:px-20">
+        <div className="flex flex-col items-center gap-7">
+          <div className="relative flex h-[min(34vw,380px)] w-full min-h-[220px] max-w-[1100px] items-center justify-center sm:h-[320px]">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 h-[min(85vw,700px)] w-[min(95vw,1100px)] -translate-x-1/2 -translate-y-1/2 rounded-full"
+              style={{
+                background:
+                  "radial-gradient(50% 50% at 50% 50%, rgba(255, 240, 219, 0.10) 0%, rgba(255, 240, 219, 0.04) 45%, rgba(0, 0, 0, 0) 70%)",
+              }}
+            />
 
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-[225px] h-[213px] w-[606px] -translate-x-1/2"
-        >
-          <div
-            className="absolute inset-0 -rotate-12 rounded-full border border-white/10"
-            style={{
-              boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.04)",
-            }}
-          />
-        </div>
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-[269px] h-[154px] w-[462px] -translate-x-1/2"
-        >
-          <div className="absolute inset-0 -rotate-12 rounded-full border border-white/12" />
-        </div>
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-[295px] h-[108px] w-[324px] -translate-x-1/2"
-        >
-          <div className="absolute inset-0 -rotate-12 rounded-full border border-white/14" />
-        </div>
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 flex h-[213px] w-[606px] max-w-[90vw] -translate-x-1/2 -translate-y-1/2 items-center justify-center sm:h-[200px] sm:w-[520px]"
+            >
+              <div
+                className="h-[min(28vw,213px)] w-[min(85vw,606px)] -rotate-12 rounded-full border border-white/10"
+                style={{
+                  boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.04)",
+                }}
+              />
+            </div>
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 flex h-[154px] w-[462px] max-w-[72vw] -translate-x-1/2 -translate-y-1/2 items-center justify-center sm:h-[140px] sm:w-[400px]"
+            >
+              <div className="h-[min(20vw,154px)] w-[min(70vw,462px)] -rotate-12 rounded-full border border-white/12" />
+            </div>
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 flex h-[108px] w-[324px] max-w-[55vw] -translate-x-1/2 -translate-y-1/2 items-center justify-center sm:h-[100px] sm:w-[280px]"
+            >
+              <div className="h-[min(14vw,108px)] w-[min(55vw,324px)] -rotate-12 rounded-full border border-white/14" />
+            </div>
 
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-[395px] h-[3px] w-[1300px] -translate-x-1/2 blur-[0.75px]"
-          style={{
-            backgroundImage:
-              "linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(255, 240, 219, 0.45) 48%, rgba(255, 255, 255, 0.85) 50%, rgba(255, 240, 219, 0.45) 52%, rgba(0, 0, 0, 0) 100%)",
-          }}
-        />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 h-[3px] w-[min(95vw,1300px)] -translate-x-1/2 -translate-y-1/2 blur-[0.75px]"
+              style={{
+                backgroundImage:
+                  "linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(255, 240, 219, 0.45) 48%, rgba(255, 255, 255, 0.85) 50%, rgba(255, 240, 219, 0.45) 52%, rgba(0, 0, 0, 0) 100%)",
+              }}
+            />
 
-        <div className="absolute left-1/2 top-[240px] flex h-[120px] w-[200px] -translate-x-1/2 items-center justify-center">
-          <Image
-            src={placeholderLogo}
-            alt="Saint AGI"
-            className="h-auto w-[200px] object-contain opacity-95"
-            priority
-          />
-        </div>
+            <div className="relative z-10 flex h-[120px] w-[200px] items-center justify-center">
+              <Image
+                src="/saint-agi-mark.svg"
+                alt="Saint AGI"
+                width={397}
+                height={238}
+                className="h-auto w-[min(200px,45vw)] object-contain opacity-95"
+                unoptimized
+                priority
+              />
+            </div>
+          </div>
 
-        <div className="absolute left-0 top-[420px] flex w-full flex-col items-center gap-7 px-6">
           <div className="inline-flex items-center gap-3 rounded-full border border-[#1f1f23] bg-[rgba(10,10,10,0.7)] py-1.5 pl-1.5 pr-4">
             <span className="grid h-[22px] w-[22px] place-items-center rounded-full bg-white/[0.08]">
               <svg
@@ -94,7 +97,7 @@ export function HeroSection() {
           <div className="flex flex-wrap justify-center gap-3 pt-1">
             <Link
               href="/signup"
-              className="inline-flex items-center rounded-[10px] bg-white px-6 py-3.5 text-[15px] font-semibold text-black transition-colors hover:bg-white/90"
+              className="inline-flex items-center rounded-[10px] bg-white px-6 py-3.5 text-[15px] font-semibold !text-black transition-colors hover:bg-white/90"
             >
               Launch your first agent
             </Link>

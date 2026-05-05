@@ -132,7 +132,7 @@ function PlanCta({
       : `/signup?plan=${tier}`;
 
   const className = popular
-    ? "mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-white text-[13px] font-semibold text-black transition-colors hover:bg-white/90"
+    ? "mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-white text-[13px] font-semibold !text-black transition-colors hover:bg-white/90"
     : "mt-4 inline-flex h-10 items-center justify-center rounded-lg border border-[#2a2a30] bg-[#14141a] text-[13px] font-semibold text-white transition-colors hover:border-[#3a3a40] hover:bg-[#1a1a22]";
 
   if (href.startsWith("mailto:")) {

@@ -97,7 +97,7 @@ function AuditStatus({ status, variant }: { status: string; variant: string }) {
   }
   if (variant === "blocked") {
     return (
-      <span className="rounded bg-white px-1.5 py-0.5 text-[10px] font-bold tracking-[0.14em] text-black">
+      <span className="rounded bg-white px-1.5 py-0.5 text-[10px] font-bold tracking-[0.14em] !text-black">
         {status}
       </span>
     );
@@ -137,7 +137,7 @@ function ApprovalsQueue() {
           <div className="flex gap-2">
             <button
               type="button"
-              className="rounded-md bg-white px-3.5 py-1.5 text-[12px] font-semibold text-black transition-colors hover:bg-white/90"
+              className="rounded-md bg-white px-3.5 py-1.5 text-[12px] font-semibold !text-black transition-colors hover:bg-white/90"
             >
               Approve
             </button>

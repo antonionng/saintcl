@@ -95,7 +95,7 @@ function renderShell(input: {
   unsubscribeUrl?: string | null;
   orgLogoUrl?: string | null;
 }) {
-  const logoUrl = input.orgLogoUrl || `${getBaseUrl()}/saintagi-placeholder-logo.png`;
+  const logoUrl = input.orgLogoUrl || `${getBaseUrl()}/saint-agi-mark.svg`;
   const cta =
     input.ctaLabel && input.ctaUrl
       ? `<p style="margin:28px 0 0 0;"><a href="${escapeHtml(input.ctaUrl)}" style="display:inline-block;padding:12px 20px;border-radius:999px;background:#f4f4f5;color:#09090b;text-decoration:none;font-weight:600;">${escapeHtml(input.ctaLabel)}</a></p>`

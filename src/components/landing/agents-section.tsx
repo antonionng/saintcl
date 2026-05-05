@@ -5,7 +5,7 @@ import { agentPersonas, agentsSectionIntro } from "@/components/landing/content"
 export function AgentsSection() {
   return (
     <section id="platform" className="bg-black">
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center px-6 py-[100px] lg:px-20">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center px-6 pb-[100px] pt-[180px] lg:px-20 lg:pt-[220px]">
         <div className="flex flex-col items-center gap-[18px] pb-[60px] text-center">
           <SectionEyebrow label={agentsSectionIntro.kicker} />
           <h2 className="text-3xl font-bold leading-tight tracking-[-0.04em] text-white sm:text-5xl lg:text-[64px] lg:leading-[64px]">

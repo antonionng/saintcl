@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import placeholderLogo from "../../public/saintagi-placeholder-logo.png";
 
 import { UserDropdownMenu } from "@/components/account/user-dropdown-menu";
 import { AgentsSection } from "@/components/landing/agents-section";
@@ -25,9 +24,12 @@ export default async function HomePage() {
         <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-4 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:px-14">
           <Link href="/" className="inline-flex items-center gap-2.5">
             <Image
-              src={placeholderLogo}
+              src="/saint-agi-mark.svg"
               alt="Saint AGI"
+              width={397}
+              height={238}
               className="h-[18px] w-auto object-contain opacity-95"
+              unoptimized
               priority
             />
             <span className="text-[15px] font-semibold tracking-[-0.015em] text-white">

@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import placeholderLogo from "../../../public/saintagi-placeholder-logo.png";
 import { companyProfile, footerLinkGroups } from "@/components/landing/content";
 
 export function SiteFooter() {
@@ -14,9 +13,12 @@ export function SiteFooter() {
           <div className="flex max-w-md flex-col gap-[18px]">
             <div className="flex items-center gap-3">
               <Image
-                src={placeholderLogo}
+                src="/saint-agi-mark.svg"
                 alt="Saint AGI"
+                width={397}
+                height={238}
                 className="h-[18px] w-auto object-contain opacity-95"
+                unoptimized
               />
               <p className="text-[17px] font-semibold tracking-[-0.015em] text-white">
                 {companyProfile.brandName}

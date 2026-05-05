@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import placeholderLogo from "../../../public/saintagi-placeholder-logo.png";
 import { finalCtaContent } from "@/components/landing/content";
 
 export function CtaBanner() {
@@ -10,9 +9,12 @@ export function CtaBanner() {
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center px-6 py-[120px] lg:px-20">
         <div className="flex h-[45px] w-[75px] items-center justify-center">
           <Image
-            src={placeholderLogo}
+            src="/saint-agi-mark.svg"
             alt="Saint AGI"
+            width={397}
+            height={238}
             className="h-auto w-[75px] object-contain opacity-95"
+            unoptimized
           />
         </div>
         <div className="h-9" />
@@ -27,7 +29,7 @@ export function CtaBanner() {
         <div className="flex flex-wrap justify-center gap-3">
           <Link
             href={finalCtaContent.primary.href}
-            className="inline-flex items-center rounded-[10px] bg-white px-6 py-3.5 text-[15px] font-semibold text-black transition-colors hover:bg-white/90"
+            className="inline-flex items-center rounded-[10px] bg-white px-6 py-3.5 text-[15px] font-semibold !text-black transition-colors hover:bg-white/90"
           >
             {finalCtaContent.primary.label}
           </Link>
