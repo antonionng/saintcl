@@ -46,7 +46,7 @@ export async function recordUsageCharge(input: UsageChargeInput) {
 
   const wallet = await assertCanSpend(input.orgId, input.amountCents);
 
-  const { data, error } = await admin.schema("app_private").rpc("record_usage_charge", {
+  const { data, error } = await admin.rpc("record_usage_charge", {
     p_org_id: input.orgId,
     p_event_type: input.eventType,
     p_amount_cents: input.amountCents,

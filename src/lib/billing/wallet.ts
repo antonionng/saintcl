@@ -113,7 +113,7 @@ async function appendLedger(direction: "credit" | "debit", input: WalletMutation
     throw new Error("Supabase admin client is not configured.");
   }
 
-  const { data, error } = await admin.schema("app_private").rpc("mutate_wallet", {
+  const { data, error } = await admin.rpc("mutate_wallet", {
     p_org_id: input.orgId,
     p_amount_cents: input.amountCents,
     p_direction: direction,
