@@ -296,14 +296,29 @@ async function SettingsTabContent({
                 </div>
                 <div className="grid gap-3 md:grid-cols-4">
                   <StatusTile
-                    label="Included usage credit"
-                    value={planConfig.includedUsageCreditCents ? formatCurrency(planConfig.includedUsageCreditCents / 100) : "Custom"}
+                    label="Plan allowance"
+                    value={planConfig.includedUsageCreditCents ? `${formatCurrency(planConfig.includedUsageCreditCents / 100)} / month` : "Custom"}
+                    detail={
+                      planConfig.includedUsageCreditCents
+                        ? isSubscriptionActive(stripeSubscriptionStatus)
+                          ? "Credited to wallet at the start of each billing period."
+                          : "Not in wallet yet. Credited when a paid subscription renews."
+                        : "Custom usage and deployment terms."
+                    }
                   />
                   <StatusTile
                     label="Trial"
                     value={resolvedTrialStatus === "active" ? `Active · ${trialDaysRemaining} day${trialDaysRemaining === 1 ? "" : "s"} left` : resolvedTrialStatus}
                   />
-                  <StatusTile label="Subscription" value={stripeSubscriptionStatus ?? "Not linked"} />
+                  <StatusTile
+                    label="Subscription"
+                    value={stripeSubscriptionStatus ?? "Not linked"}
+                    detail={
+                      isSubscriptionActive(stripeSubscriptionStatus)
+                        ? `Refills monthly credit for the ${getPlanDisplayName(orgPlan)} plan.`
+                        : "Subscribe to receive monthly included usage credit."
+                    }
+                  />
                   <StatusTile
                     label="Approval mode"
                     value={policy?.require_approval_on_spend ? "Enabled" : "Disabled"}
@@ -727,9 +742,11 @@ function MetricCard({
 function StatusTile({
   label,
   value,
+  detail,
 }: {
   label: string;
   value: string;
+  detail?: string;
 }) {
   return (
     <div className="border border-border-subtle rounded-md p-3">
@@ -737,8 +754,15 @@ function StatusTile({
         {label}
       </p>
       <p className="mt-1.5 text-[length:var(--text-sm)] font-medium text-white">{value}</p>
+      {detail ? (
+        <p className="mt-1 text-[length:var(--text-xs)] text-white/45">{detail}</p>
+      ) : null}
     </div>
   );
+}
+
+function isSubscriptionActive(status: string | null | undefined) {
+  return status === "active" || status === "trialing" || status === "past_due";
 }
 
 function MiniProcessCard({

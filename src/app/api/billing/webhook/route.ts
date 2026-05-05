@@ -128,6 +128,67 @@ async function creditIncludedUsage(input: {
   });
 }
 
+// First-period plan credit is applied in `checkout.session.completed` (kind=plan).
+// Renewal credits are applied here for invoice.paid with billing_reason=subscription_cycle,
+// so we never double-credit the same period. The Stripe `event.id` idempotency fence in
+// `reserveStripeEvent` covers retries of the same renewal invoice event.
+async function creditRenewalUsage(input: {
+  orgId: string;
+  planId: string;
+  stripeSubscriptionId: string | null;
+  stripeInvoiceId: string;
+  periodStart: number | null;
+  periodEnd: number | null;
+}) {
+  const includedUsageCreditCents = getPlanConfig(input.planId).includedUsageCreditCents ?? 0;
+  if (includedUsageCreditCents <= 0) {
+    return null;
+  }
+
+  return creditWallet({
+    orgId: input.orgId,
+    amountCents: includedUsageCreditCents,
+    sourceType: "plan_usage_credit_renewal",
+    description: `${getPlanConfig(input.planId).name} renewal usage credit`,
+    metadata: {
+      planId: input.planId,
+      stripeSubscriptionId: input.stripeSubscriptionId,
+      stripeInvoiceId: input.stripeInvoiceId,
+      periodStart: input.periodStart,
+      periodEnd: input.periodEnd,
+    },
+  });
+}
+
+async function resolvePlanIdForSubscriptionId(stripe: Stripe, subscriptionId: string | null): Promise<{
+  planId: string | null;
+  subscription: Stripe.Subscription | null;
+}> {
+  if (!subscriptionId) {
+    return { planId: null, subscription: null };
+  }
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  const metadataPlanId = (subscription.metadata?.planId as string | undefined) ?? null;
+  if (metadataPlanId) {
+    return { planId: metadataPlanId, subscription };
+  }
+
+  const priceId = subscription.items.data[0]?.price.id ?? null;
+  if (!priceId) {
+    return { planId: null, subscription };
+  }
+
+  const planIdFromPriceMap: Record<string, string> = {};
+  if (env.stripeStarterMonthlyPriceId) planIdFromPriceMap[env.stripeStarterMonthlyPriceId] = "starter";
+  if (env.stripeStarterAnnualPriceId) planIdFromPriceMap[env.stripeStarterAnnualPriceId] = "starter";
+  if (env.stripeProMonthlyPriceId) planIdFromPriceMap[env.stripeProMonthlyPriceId] = "pro";
+  if (env.stripeProAnnualPriceId) planIdFromPriceMap[env.stripeProAnnualPriceId] = "pro";
+  if (env.stripeBusinessMonthlyPriceId) planIdFromPriceMap[env.stripeBusinessMonthlyPriceId] = "business";
+  if (env.stripeBusinessAnnualPriceId) planIdFromPriceMap[env.stripeBusinessAnnualPriceId] = "business";
+
+  return { planId: planIdFromPriceMap[priceId] ?? null, subscription };
+}
+
 export async function POST(request: Request) {
   const stripe = getStripeClient();
   const signature = request.headers.get("stripe-signature");
@@ -154,7 +215,8 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  const metadata = (event.data.object as Stripe.Checkout.Session).metadata ?? {};
+  const eventObject = event.data.object as { metadata?: Record<string, string> | null };
+  const metadata = eventObject.metadata ?? {};
   const orgId = metadata.orgId ?? null;
 
   const reserved = await reserveStripeEvent(event.id, orgId, event.type);
@@ -207,6 +269,59 @@ export async function POST(request: Request) {
           stripeCheckoutSessionId: session.id,
           stripeSubscriptionId: subscriptionId,
         });
+      }
+    }
+
+    if (event.type === "invoice.paid") {
+      const invoice = event.data.object as Stripe.Invoice & {
+        billing_reason?: string | null;
+        subscription?: string | Stripe.Subscription | null;
+        period_start?: number | null;
+        period_end?: number | null;
+      };
+
+      // Only handle real renewal invoices. Other reasons (subscription_create,
+      // subscription_update, manual) are either handled by the checkout flow
+      // or do not represent a new billing period.
+      if (invoice.billing_reason === "subscription_cycle") {
+        const subscriptionId =
+          typeof invoice.subscription === "string"
+            ? invoice.subscription
+            : invoice.subscription?.id ?? null;
+
+        const { planId, subscription } = await resolvePlanIdForSubscriptionId(stripe, subscriptionId);
+        const invoiceOrgId =
+          (invoice.metadata?.orgId as string | undefined) ??
+          (subscription ? await findOrgIdForSubscription(subscription) : null);
+
+        if (invoiceOrgId && planId) {
+          await creditRenewalUsage({
+            orgId: invoiceOrgId,
+            planId,
+            stripeSubscriptionId: subscriptionId,
+            stripeInvoiceId: invoice.id ?? event.id,
+            periodStart: invoice.period_start ?? null,
+            periodEnd: invoice.period_end ?? null,
+          });
+
+          if (subscription) {
+            await updateOrgSubscriptionState({
+              orgId: invoiceOrgId,
+              planId,
+              interval:
+                normalizeStripeInterval(
+                  subscription.metadata?.interval ??
+                    subscription.items.data[0]?.price.recurring?.interval,
+                ) ?? "monthly",
+              customerId: typeof subscription.customer === "string" ? subscription.customer : null,
+              subscriptionId,
+              subscriptionStatus: subscription.status,
+              priceId: subscription.items.data[0]?.price.id ?? null,
+              currentPeriodEnd: toIsoTimestamp(getSubscriptionCurrentPeriodEnd(subscription)),
+              clearTrial: subscription.status !== "canceled",
+            });
+          }
+        }
       }
     }
 
