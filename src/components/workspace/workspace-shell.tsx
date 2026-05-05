@@ -97,7 +97,11 @@ function hideManagedSessionControls(iframe: HTMLIFrameElement | null) {
 
     const style = doc.createElement("style");
     style.id = "saintagi-managed-workspace-style";
-    style.textContent = ".chat-controls__session{display:none!important}";
+    // Hide controls that don't apply to the SaintAGI managed runtime: per-session
+    // chooser and the upstream OpenClaw self-update banner (we control upgrades).
+    style.textContent =
+      ".chat-controls__session{display:none!important}" +
+      ".update-banner{display:none!important}";
     doc.head.appendChild(style);
   } catch {
     // The workspace still loads if the browser blocks parent access to iframe contents.

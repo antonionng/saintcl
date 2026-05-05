@@ -77,6 +77,7 @@ export function shouldAllowSilentLocalPairing(params: {
   hasBrowserOriginHeader: boolean;
   isControlUi: boolean;
   isWebchat: boolean;
+  isNativeAppUi?: boolean;
   reason: "not-paired" | "role-upgrade" | "scope-upgrade" | "metadata-upgrade";
 }): boolean {
   if (params.locality === "remote") {
@@ -92,16 +93,18 @@ export function shouldAllowSilentLocalPairing(params: {
   ) {
     return true;
   }
-  // metadata-upgrade auto-approves only for shared-secret loopback CLI clients.
-  // On those paths the connection has already proved possession of a token or
-  // password over loopback, so allowing the pinned platform/deviceFamily to be
-  // refreshed on reconnect matches the "Reconnects can update access metadata"
-  // comment in message-handler.ts. Browser / Control-UI clients keep the
-  // existing approval-required flow — metadata pinning there is a real
-  // anti-tampering surface.
+  // metadata-upgrade auto-approves only for non-browser local reconnects that
+  // already proved possession of local/shared credentials. Direct-local
+  // metadata refresh is limited to first-party native app UI clients, covering
+  // same-host app reconnects after OS version metadata changes while keeping
+  // node-host, Browser, and Control-UI metadata pinning on the explicit approval path.
   if (
     params.reason === "metadata-upgrade" &&
-    (params.locality === "cli_container_local" ||
+    !params.hasBrowserOriginHeader &&
+    !params.isControlUi &&
+    !params.isWebchat &&
+    ((params.locality === "direct_local" && params.isNativeAppUi === true) ||
+      params.locality === "cli_container_local" ||
       params.locality === "shared_secret_loopback_local")
   ) {
     return true;
@@ -264,14 +267,15 @@ export function shouldSkipLocalBackendSelfPairing(params: {
   const usesDeviceTokenAuth = params.authMethod === "device-token";
   // Opt-in extension for hosted multi-tenant deployments where a single trusted
   // backend (e.g. SaintAGI control plane) holds the shared gateway token and
-  // connects across the network. The flag widens the existing direct-local
-  // backend exemption to remote backend gateway-clients that authenticated with
-  // the shared token. Browser origin or device-token auth are still required to
-  // go through the standard pairing path. Tenant data isolation is handled at
-  // the workspace/path layer above this auth check.
+  // connects across the network. The flag widens the existing direct-local and
+  // shared-secret-loopback backend exemptions to remote backend gateway-clients
+  // that authenticated with the shared token. Browser origin or device-token
+  // auth are still required to go through the standard pairing path. Tenant
+  // data isolation is handled at the workspace/path layer above this auth check.
   const allowsRemoteSharedSecret =
     params.allowRemoteBackendOperator === true && params.sharedAuthOk && usesSharedSecretAuth;
-  const isLocalEquivalent = params.locality === "direct_local";
+  const isLocalEquivalent =
+    params.locality === "direct_local" || params.locality === "shared_secret_loopback_local";
   return (
     !params.hasBrowserOriginHeader &&
     (isLocalEquivalent || allowsRemoteSharedSecret) &&
@@ -344,7 +348,7 @@ export function resolveDeviceSignaturePayloadVersion(params: {
   return null;
 }
 
-export function resolveAuthProvidedKind(
+function resolveAuthProvidedKind(
   connectAuth: HandshakeConnectAuth | null | undefined,
 ): AuthProvidedKind {
   return connectAuth?.password

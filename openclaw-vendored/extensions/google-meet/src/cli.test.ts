@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { Command } from "commander";
@@ -22,9 +22,13 @@ const fetchGuardMocks = vi.hoisted(() => ({
   ),
 }));
 
-vi.mock("openclaw/plugin-sdk/ssrf-runtime", () => ({
-  fetchWithSsrFGuard: fetchGuardMocks.fetchWithSsrFGuard,
-}));
+vi.mock("openclaw/plugin-sdk/ssrf-runtime", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("openclaw/plugin-sdk/ssrf-runtime")>();
+  return {
+    ...actual,
+    fetchWithSsrFGuard: fetchGuardMocks.fetchWithSsrFGuard,
+  };
+});
 
 function captureStdout() {
   let output = "";
@@ -55,7 +59,7 @@ function requestUrl(input: RequestInfo | URL): URL {
   return new URL(input.url);
 }
 
-function stubMeetArtifactsApi() {
+function stubMeetArtifactsApi(options: { failSmartNoteDocumentBody?: boolean } = {}) {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (input: RequestInfo | URL) => {
@@ -65,6 +69,19 @@ function stubMeetArtifactsApi() {
           name: "spaces/abc-defg-hij",
           meetingCode: "abc-defg-hij",
           meetingUri: "https://meet.google.com/abc-defg-hij",
+        });
+      }
+      if (url.pathname === "/calendar/v3/calendars/primary/events") {
+        return jsonResponse({
+          items: [
+            {
+              id: "event-1",
+              summary: "Project sync",
+              hangoutLink: "https://meet.google.com/abc-defg-hij",
+              start: { dateTime: "2026-04-25T10:00:00Z" },
+              end: { dateTime: "2026-04-25T10:30:00Z" },
+            },
+          ],
         });
       }
       if (url.pathname === "/v2/conferenceRecords") {
@@ -92,7 +109,7 @@ function stubMeetArtifactsApi() {
           participants: [
             {
               name: "conferenceRecords/rec-1/participants/p1",
-              signedinUser: { displayName: "Alice" },
+              signedinUser: { user: "users/alice", displayName: "Alice" },
             },
           ],
         });
@@ -153,6 +170,21 @@ function stubMeetArtifactsApi() {
           ],
         });
       }
+      if (url.pathname === "/drive/v3/files/doc-1/export") {
+        return new Response("Transcript document body.", {
+          status: 200,
+          headers: { "Content-Type": "text/plain" },
+        });
+      }
+      if (url.pathname === "/drive/v3/files/notes-1/export") {
+        if (options.failSmartNoteDocumentBody) {
+          return new Response("insufficientPermissions", { status: 403 });
+        }
+        return new Response("Smart note document body.", {
+          status: 200,
+          headers: { "Content-Type": "text/plain" },
+        });
+      }
       return new Response("not found", { status: 404 });
     }),
   );
@@ -162,6 +194,7 @@ function setupCli(params: {
   config?: Parameters<typeof resolveGoogleMeetConfig>[0];
   runtime?: Partial<GoogleMeetRuntime>;
   ensureRuntime?: () => Promise<GoogleMeetRuntime>;
+  callGatewayFromCli?: Parameters<typeof registerGoogleMeetCli>[0]["callGatewayFromCli"];
 }) {
   const program = new Command();
   registerGoogleMeetCli({
@@ -169,6 +202,11 @@ function setupCli(params: {
     config: resolveGoogleMeetConfig(params.config ?? {}),
     ensureRuntime:
       params.ensureRuntime ?? (async () => (params.runtime ?? {}) as unknown as GoogleMeetRuntime),
+    callGatewayFromCli:
+      params.callGatewayFromCli ??
+      (vi.fn(async () => {
+        throw new Error("connect ECONNREFUSED 127.0.0.1:18789");
+      }) as NonNullable<Parameters<typeof registerGoogleMeetCli>[0]["callGatewayFromCli"]>),
   });
   return program;
 }
@@ -190,7 +228,7 @@ describe("google-meet CLI", () => {
                 {
                   id: "audio-bridge",
                   ok: true,
-                  message: "Chrome command-pair realtime audio bridge configured",
+                  message: "Chrome command-pair talk-back audio bridge configured (pcm16-24khz)",
                 },
               ],
             }),
@@ -198,7 +236,7 @@ describe("google-meet CLI", () => {
         }).parseAsync(["googlemeet", "setup"], { from: "user" });
         expect(stdout.output()).toContain("Google Meet setup: OK");
         expect(stdout.output()).toContain(
-          "[ok] audio-bridge: Chrome command-pair realtime audio bridge configured",
+          "[ok] audio-bridge: Chrome command-pair talk-back audio bridge configured (pcm16-24khz)",
         );
         expect(stdout.output()).not.toContain('"checks"');
       } finally {
@@ -292,6 +330,64 @@ describe("google-meet CLI", () => {
     }
   });
 
+  it("ends an active conference for a Meet space", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => {
+      const url = requestUrl(input);
+      if (url.pathname === "/v2/spaces/abc-defg-hij") {
+        return jsonResponse({
+          name: "spaces/space-resource-123",
+          meetingCode: "abc-defg-hij",
+          meetingUri: "https://meet.google.com/abc-defg-hij",
+        });
+      }
+      if (url.pathname === "/v2/spaces/space-resource-123:endActiveConference") {
+        return jsonResponse({});
+      }
+      return new Response("not found", { status: 404 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const stdout = captureStdout();
+    try {
+      await setupCli({}).parseAsync(
+        [
+          "googlemeet",
+          "end-active-conference",
+          "https://meet.google.com/abc-defg-hij",
+          "--access-token",
+          "token",
+          "--expires-at",
+          String(Date.now() + 120_000),
+          "--json",
+        ],
+        { from: "user" },
+      );
+      expect(JSON.parse(stdout.output())).toMatchObject({
+        space: "spaces/space-resource-123",
+        ended: true,
+        tokenSource: "cached-access-token",
+      });
+      expect(fetchMock).toHaveBeenCalledWith(
+        "https://meet.googleapis.com/v2/spaces/space-resource-123:endActiveConference",
+        expect.objectContaining({ method: "POST", body: "{}" }),
+      );
+    } finally {
+      stdout.restore();
+    }
+  });
+
+  it("rejects access policy flags when create would use browser fallback", async () => {
+    await expect(
+      setupCli({
+        runtime: {
+          createViaBrowser: vi.fn(async () => {
+            throw new Error("browser fallback should not run");
+          }),
+        },
+      }).parseAsync(["googlemeet", "create", "--access-type", "OPEN"], { from: "user" }),
+    ).rejects.toThrow("access policy options require OAuth/API room creation");
+  });
+
   it("prints the latest conference record", async () => {
     stubMeetArtifactsApi();
     const stdout = captureStdout();
@@ -312,6 +408,55 @@ describe("google-meet CLI", () => {
       );
       expect(stdout.output()).toContain("space: spaces/abc-defg-hij");
       expect(stdout.output()).toContain("conference record: conferenceRecords/rec-1");
+    } finally {
+      stdout.restore();
+    }
+  });
+
+  it("prints the latest conference record from today's calendar", async () => {
+    stubMeetArtifactsApi();
+    const stdout = captureStdout();
+
+    try {
+      await setupCli({}).parseAsync(
+        [
+          "googlemeet",
+          "latest",
+          "--access-token",
+          "token",
+          "--expires-at",
+          String(Date.now() + 120_000),
+          "--today",
+        ],
+        { from: "user" },
+      );
+      expect(stdout.output()).toContain("calendar event: Project sync");
+      expect(stdout.output()).toContain("conference record: conferenceRecords/rec-1");
+    } finally {
+      stdout.restore();
+    }
+  });
+
+  it("prints calendar event previews", async () => {
+    stubMeetArtifactsApi();
+    const stdout = captureStdout();
+
+    try {
+      await setupCli({}).parseAsync(
+        [
+          "googlemeet",
+          "calendar-events",
+          "--access-token",
+          "token",
+          "--expires-at",
+          String(Date.now() + 120_000),
+          "--today",
+        ],
+        { from: "user" },
+      );
+      expect(stdout.output()).toContain("meet events: 1");
+      expect(stdout.output()).toContain("* Project sync");
+      expect(stdout.output()).toContain("https://meet.google.com/abc-defg-hij");
     } finally {
       stdout.restore();
     }
@@ -379,19 +524,391 @@ describe("google-meet CLI", () => {
     }
   });
 
+  it("prints CSV attendance output", async () => {
+    stubMeetArtifactsApi();
+    const stdout = captureStdout();
+
+    try {
+      await setupCli({}).parseAsync(
+        [
+          "googlemeet",
+          "attendance",
+          "--access-token",
+          "token",
+          "--expires-at",
+          String(Date.now() + 120_000),
+          "--conference-record",
+          "rec-1",
+          "--format",
+          "csv",
+        ],
+        { from: "user" },
+      );
+      expect(stdout.output()).toContain("conferenceRecord,displayName,user");
+      expect(stdout.output()).toContain("conferenceRecords/rec-1,Alice,users/alice");
+    } finally {
+      stdout.restore();
+    }
+  });
+
+  it("writes an export bundle", async () => {
+    stubMeetArtifactsApi();
+    const stdout = captureStdout();
+    const tempDir = mkdtempSync(path.join(tmpdir(), "openclaw-google-meet-export-"));
+
+    try {
+      await setupCli({}).parseAsync(
+        [
+          "googlemeet",
+          "export",
+          "--access-token",
+          "token",
+          "--expires-at",
+          String(Date.now() + 120_000),
+          "--conference-record",
+          "rec-1",
+          "--include-doc-bodies",
+          "--zip",
+          "--output",
+          tempDir,
+        ],
+        { from: "user" },
+      );
+      expect(stdout.output()).toContain(`export: ${tempDir}`);
+      expect(readFileSync(path.join(tempDir, "summary.md"), "utf8")).toContain(
+        "# Google Meet Artifacts",
+      );
+      expect(readFileSync(path.join(tempDir, "attendance.csv"), "utf8")).toContain(
+        "conferenceRecords/rec-1,Alice,users/alice",
+      );
+      expect(readFileSync(path.join(tempDir, "transcript.md"), "utf8")).toContain(
+        "Hello from the transcript.",
+      );
+      expect(readFileSync(path.join(tempDir, "transcript.md"), "utf8")).toContain(
+        "Transcript document body.",
+      );
+      const manifest = JSON.parse(readFileSync(path.join(tempDir, "manifest.json"), "utf8"));
+      expect(manifest).toMatchObject({
+        request: {
+          conferenceRecord: "rec-1",
+          includeDocumentBodies: true,
+        },
+        tokenSource: "cached-access-token",
+        counts: {
+          attendanceRows: 1,
+          warnings: 0,
+        },
+        files: expect.arrayContaining([
+          "summary.md",
+          "attendance.csv",
+          "transcript.md",
+          "artifacts.json",
+          "attendance.json",
+          "manifest.json",
+        ]),
+      });
+      expect(JSON.parse(readFileSync(path.join(tempDir, "artifacts.json"), "utf8"))).toMatchObject({
+        conferenceRecords: [{ name: "conferenceRecords/rec-1" }],
+        artifacts: [{ transcripts: [{ documentText: "Transcript document body." }] }],
+      });
+      expect(readFileSync(`${tempDir}.zip`).subarray(0, 4).toString("hex")).toBe("504b0304");
+    } finally {
+      stdout.restore();
+      rmSync(tempDir, { recursive: true, force: true });
+      rmSync(`${tempDir}.zip`, { force: true });
+    }
+  });
+
+  it("includes artifact warnings in export summaries and manifests", async () => {
+    stubMeetArtifactsApi({ failSmartNoteDocumentBody: true });
+    const stdout = captureStdout();
+    const tempDir = mkdtempSync(path.join(tmpdir(), "openclaw-google-meet-export-warning-"));
+
+    try {
+      await setupCli({}).parseAsync(
+        [
+          "googlemeet",
+          "export",
+          "--access-token",
+          "token",
+          "--expires-at",
+          String(Date.now() + 120_000),
+          "--conference-record",
+          "rec-1",
+          "--include-doc-bodies",
+          "--output",
+          tempDir,
+          "--json",
+        ],
+        { from: "user" },
+      );
+      const summary = readFileSync(path.join(tempDir, "summary.md"), "utf8");
+      expect(summary).toContain("### Warnings");
+      expect(summary).toContain("Document body warning");
+      const manifest = JSON.parse(readFileSync(path.join(tempDir, "manifest.json"), "utf8"));
+      expect(manifest).toMatchObject({
+        counts: { warnings: 1 },
+        warnings: [
+          {
+            type: "smart_note_document_body",
+            conferenceRecord: "conferenceRecords/rec-1",
+            resource: "conferenceRecords/rec-1/smartNotes/sn1",
+          },
+        ],
+      });
+    } finally {
+      stdout.restore();
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it("accepts --json on session status", async () => {
+    const stdout = captureStdout();
+    try {
+      await setupCli({
+        runtime: {
+          status: async () => ({
+            found: true,
+            sessions: [
+              {
+                id: "meet_1",
+                url: "https://meet.google.com/abc-defg-hij",
+                state: "active",
+                transport: "twilio",
+                mode: "agent",
+                participantIdentity: "Twilio PSTN participant",
+                createdAt: "2026-04-25T00:00:00.000Z",
+                updatedAt: "2026-04-25T00:00:01.000Z",
+                realtime: { enabled: true, provider: "openai", toolPolicy: "safe-read-only" },
+                notes: [],
+              },
+            ],
+          }),
+        },
+      }).parseAsync(["googlemeet", "status", "--json"], { from: "user" });
+      expect(JSON.parse(stdout.output())).toMatchObject({
+        found: true,
+        sessions: [{ id: "meet_1", transport: "twilio" }],
+      });
+    } finally {
+      stdout.restore();
+    }
+  });
+
+  it("delegates session status to the gateway-owned runtime when available", async () => {
+    const callGatewayFromCli = vi.fn(async () => ({
+      found: true,
+      sessions: [
+        {
+          id: "meet_gateway",
+          url: "https://meet.google.com/abc-defg-hij",
+          state: "active",
+          transport: "chrome-node",
+          mode: "agent",
+          participantIdentity: "signed-in Google Chrome profile on a paired node",
+          createdAt: "2026-04-25T00:00:00.000Z",
+          updatedAt: "2026-04-25T00:00:01.000Z",
+          realtime: { enabled: true, provider: "openai", toolPolicy: "safe-read-only" },
+          notes: [],
+        },
+      ],
+    }));
+    const ensureRuntime = vi.fn(async () => {
+      throw new Error("local runtime should not be loaded");
+    });
+    const stdout = captureStdout();
+    try {
+      await setupCli({
+        callGatewayFromCli,
+        ensureRuntime: ensureRuntime as unknown as () => Promise<GoogleMeetRuntime>,
+      }).parseAsync(["googlemeet", "status", "--json"], { from: "user" });
+      expect(callGatewayFromCli).toHaveBeenCalledWith(
+        "googlemeet.status",
+        { json: true, timeout: "5000" },
+        { sessionId: undefined },
+        { progress: false },
+      );
+      expect(ensureRuntime).not.toHaveBeenCalled();
+      expect(JSON.parse(stdout.output())).toMatchObject({
+        found: true,
+        sessions: [{ id: "meet_gateway", transport: "chrome-node" }],
+      });
+    } finally {
+      stdout.restore();
+    }
+  });
+
+  it("delegates join to the gateway-owned runtime when available", async () => {
+    const callGatewayFromCli = vi.fn(async () => ({
+      session: {
+        id: "meet_gateway",
+        url: "https://meet.google.com/abc-defg-hij",
+        state: "active",
+        transport: "chrome-node",
+        mode: "realtime",
+        participantIdentity: "signed-in Google Chrome profile on a paired node",
+        createdAt: "2026-04-25T00:00:00.000Z",
+        updatedAt: "2026-04-25T00:00:01.000Z",
+        realtime: { enabled: true, provider: "openai", toolPolicy: "safe-read-only" },
+        notes: [],
+      },
+    }));
+    const ensureRuntime = vi.fn(async () => {
+      throw new Error("local runtime should not be loaded");
+    });
+    const stdout = captureStdout();
+    try {
+      await setupCli({
+        callGatewayFromCli,
+        ensureRuntime: ensureRuntime as unknown as () => Promise<GoogleMeetRuntime>,
+      }).parseAsync(
+        [
+          "googlemeet",
+          "join",
+          "https://meet.google.com/abc-defg-hij",
+          "--transport",
+          "chrome-node",
+          "--mode",
+          "realtime",
+          "--message",
+          "Hello meeting",
+        ],
+        { from: "user" },
+      );
+      expect(callGatewayFromCli).toHaveBeenCalledWith(
+        "googlemeet.join",
+        { json: true, timeout: expect.any(String) },
+        {
+          url: "https://meet.google.com/abc-defg-hij",
+          transport: "chrome-node",
+          mode: "realtime",
+          message: "Hello meeting",
+          dialInNumber: undefined,
+          pin: undefined,
+          dtmfSequence: undefined,
+        },
+        { progress: false },
+      );
+      expect(ensureRuntime).not.toHaveBeenCalled();
+      expect(JSON.parse(stdout.output())).toMatchObject({
+        id: "meet_gateway",
+        transport: "chrome-node",
+      });
+    } finally {
+      stdout.restore();
+    }
+  });
+
+  it("runs a listen-first health probe", async () => {
+    const testListen = vi.fn(async () => ({
+      createdSession: true,
+      listenVerified: true,
+      listenTimedOut: false,
+      transcriptLines: 1,
+      session: {
+        id: "meet_1",
+        url: "https://meet.google.com/abc-defg-hij",
+        state: "active" as const,
+        transport: "chrome-node" as const,
+        mode: "transcribe" as const,
+        participantIdentity: "signed-in Google Chrome profile on a paired node",
+        createdAt: "2026-04-25T00:00:00.000Z",
+        updatedAt: "2026-04-25T00:00:01.000Z",
+        realtime: { enabled: false, provider: "openai", toolPolicy: "safe-read-only" },
+        notes: [],
+      },
+    }));
+    const stdout = captureStdout();
+    try {
+      await setupCli({
+        runtime: { testListen },
+      }).parseAsync(
+        [
+          "googlemeet",
+          "test-listen",
+          "https://meet.google.com/abc-defg-hij",
+          "--transport",
+          "chrome-node",
+          "--timeout-ms",
+          "30000",
+        ],
+        { from: "user" },
+      );
+      expect(testListen).toHaveBeenCalledWith({
+        url: "https://meet.google.com/abc-defg-hij",
+        transport: "chrome-node",
+        timeoutMs: 30000,
+      });
+      expect(JSON.parse(stdout.output())).toMatchObject({
+        listenVerified: true,
+        transcriptLines: 1,
+      });
+    } finally {
+      stdout.restore();
+    }
+  });
+
+  it("prints a dry-run export manifest without writing files", async () => {
+    stubMeetArtifactsApi();
+    const stdout = captureStdout();
+    const parentDir = mkdtempSync(path.join(tmpdir(), "openclaw-google-meet-export-dry-run-"));
+    const outputDir = path.join(parentDir, "bundle");
+
+    try {
+      await setupCli({}).parseAsync(
+        [
+          "googlemeet",
+          "export",
+          "--access-token",
+          "token",
+          "--expires-at",
+          String(Date.now() + 120_000),
+          "--conference-record",
+          "rec-1",
+          "--include-doc-bodies",
+          "--output",
+          outputDir,
+          "--dry-run",
+        ],
+        { from: "user" },
+      );
+      const payload = JSON.parse(stdout.output());
+      expect(payload).toMatchObject({
+        dryRun: true,
+        manifest: {
+          request: {
+            conferenceRecord: "rec-1",
+            includeDocumentBodies: true,
+          },
+          counts: {
+            attendanceRows: 1,
+            transcriptEntries: 1,
+            warnings: 0,
+          },
+          files: expect.arrayContaining(["summary.md", "manifest.json"]),
+        },
+        tokenSource: "cached-access-token",
+      });
+      expect(existsSync(outputDir)).toBe(false);
+    } finally {
+      stdout.restore();
+      rmSync(parentDir, { recursive: true, force: true });
+    }
+  });
+
   it("prints human-readable session doctor output", async () => {
     const stdout = captureStdout();
     try {
       await setupCli({
         runtime: {
-          status: () => ({
+          status: async () => ({
             found: true,
             session: {
               id: "meet_1",
               url: "https://meet.google.com/abc-defg-hij",
               state: "active",
               transport: "chrome-node",
-              mode: "realtime",
+              mode: "agent",
               participantIdentity: "signed-in Google Chrome profile on a paired node",
               createdAt: "2026-04-25T00:00:00.000Z",
               updatedAt: "2026-04-25T00:00:01.000Z",
@@ -403,6 +920,11 @@ describe("google-meet CLI", () => {
                 audioBridge: { type: "node-command-pair", provider: "openai" },
                 health: {
                   inCall: true,
+                  captioning: true,
+                  transcriptLines: 2,
+                  lastCaptionAt: "2026-04-25T00:00:03.000Z",
+                  lastCaptionSpeaker: "Alice",
+                  lastCaptionText: "Can everyone hear OpenClaw?",
                   providerConnected: true,
                   realtimeReady: true,
                   audioInputActive: true,
@@ -420,8 +942,53 @@ describe("google-meet CLI", () => {
       expect(stdout.output()).toContain("session: meet_1");
       expect(stdout.output()).toContain("node: node-1");
       expect(stdout.output()).toContain("provider connected: yes");
+      expect(stdout.output()).toContain("captioning: yes");
+      expect(stdout.output()).toContain("transcript lines: 2");
+      expect(stdout.output()).toContain("last caption text: Alice: Can everyone hear OpenClaw?");
       expect(stdout.output()).toContain("audio input active: yes");
       expect(stdout.output()).toContain("audio output active: no");
+    } finally {
+      stdout.restore();
+    }
+  });
+
+  it("prints Twilio session doctor output", async () => {
+    const stdout = captureStdout();
+    try {
+      await setupCli({
+        runtime: {
+          status: async () => ({
+            found: true,
+            session: {
+              id: "meet_1",
+              url: "https://meet.google.com/abc-defg-hij",
+              state: "active",
+              transport: "twilio",
+              mode: "agent",
+              participantIdentity: "Twilio phone participant",
+              createdAt: "2026-04-25T00:00:00.000Z",
+              updatedAt: "2026-04-25T00:00:01.000Z",
+              realtime: { enabled: true, provider: "openai", toolPolicy: "safe-read-only" },
+              twilio: {
+                dialInNumber: "+15551234567",
+                pinProvided: true,
+                dtmfSequence: "ww123456#",
+                voiceCallId: "call-1",
+                dtmfSent: true,
+                introSent: true,
+              },
+              notes: [],
+            },
+          }),
+        },
+      }).parseAsync(["googlemeet", "doctor", "meet_1"], { from: "user" });
+      expect(stdout.output()).toContain("session: meet_1");
+      expect(stdout.output()).toContain("transport: twilio");
+      expect(stdout.output()).toContain("twilio dial-in: +15551234567");
+      expect(stdout.output()).toContain("voice call id: call-1");
+      expect(stdout.output()).toContain("dtmf sent: yes");
+      expect(stdout.output()).toContain("intro sent: yes");
+      expect(stdout.output()).not.toContain("audio input active:");
     } finally {
       stdout.restore();
     }
@@ -530,6 +1097,7 @@ describe("google-meet CLI", () => {
         config: { defaultTransport: "chrome-node" },
         runtime: {
           recoverCurrentTab: async () => ({
+            transport: "chrome-node",
             nodeId: "node-1",
             found: true,
             targetId: "tab-1",

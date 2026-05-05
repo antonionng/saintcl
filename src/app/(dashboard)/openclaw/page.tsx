@@ -1,4 +1,5 @@
 import { AccessDenied } from "@/components/dashboard/access-denied";
+import { AdminConsoleFrame } from "@/components/openclaw/admin-console-frame";
 import { getCurrentOrg, getPreferredAgentForSession } from "@/lib/dal";
 import { isOpenClawConfigured } from "@/lib/env";
 import { ensureCurrentControlUiOrigin } from "@/lib/openclaw/control-ui-origins";
@@ -95,11 +96,7 @@ export default async function OpenClawPage() {
         </p>
       ) : null}
       <div id="console" className="min-h-screen overflow-hidden">
-        <iframe
-          src={embeddedConsoleUrl}
-          title="Saint AGI Console"
-          className="block h-screen min-h-screen w-full bg-[#0b0b12]"
-        />
+        <AdminConsoleFrame embeddedConsoleUrl={embeddedConsoleUrl} />
       </div>
     </div>
   );
