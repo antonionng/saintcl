@@ -101,6 +101,28 @@ ${companyContext ? `\n\n${companyContext}` : ""}${contextGuidance}
 `;
 }
 
+function renderAgentIdentityMd(options: BootstrapAgentOptions) {
+  // The vendored gateway tries to materialize a starter IDENTITY.md from its
+  // packaged template at /app/docs/reference/templates/IDENTITY.md when the
+  // workspace lacks one. That fallback is fragile (depends on the docker image
+  // shipping the docs tree) and produces an empty placeholder anyway. We
+  // pre-populate IDENTITY.md from SaintAGI bootstrap with the agent's actual
+  // name and model so the gateway never reaches the template fallback for
+  // tenant-managed agents.
+  return `# IDENTITY.md - Agent Identity
+
+- **Name:** ${options.name}
+- **Creature:** AI agent
+- **Vibe:** Helpful, focused, accountable
+- **Emoji:** ✨
+- **Model:** ${options.model}
+
+---
+
+This is your identity record. Update the Vibe and Emoji fields as you settle into your role; keep the Name and Model in sync with the SaintAGI control plane.
+`;
+}
+
 export function renderAgentBootstrapFiles(options: BootstrapAgentOptions) {
   return {
     agents: `# ${options.name}
@@ -112,7 +134,8 @@ You are the dedicated agent for this seat.
 Before doing anything else:
 1. Read SOUL.md for your persona and working style.
 2. Read USER.md to understand who you are working with.
-3. Read recent memory files if they exist.
+3. Read IDENTITY.md to remember who you are.
+4. Read recent memory files if they exist.
 
 ## Rules
 
@@ -131,5 +154,6 @@ ${options.model}
 - Do not execute terminal commands in a main session.
 - Ask for admin approval when terminal or repo access is required.
 `,
+    identity: renderAgentIdentityMd(options),
   };
 }

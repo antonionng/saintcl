@@ -134,6 +134,16 @@ export async function writeAgentBootstrapFiles(input: {
       name: "TOOLS.md",
       content: files.tools,
     }),
+    // Pre-populate IDENTITY.md so the vendored gateway never falls back to its
+    // packaged template at /app/docs/reference/templates/IDENTITY.md, which is
+    // fragile (depends on the gateway docker image shipping the docs tree) and
+    // would otherwise crash the chat UI with "Missing workspace template:
+    // IDENTITY.md" the first time the agent runtime starts.
+    client.setAgentFile({
+      agentId: input.agentId,
+      name: "IDENTITY.md",
+      content: files.identity,
+    }),
   ]);
 }
 

@@ -57,4 +57,31 @@ describe("openclaw agent bootstrap templates", () => {
     expect(files.user).toContain("- Name: Antonio");
     expect(files.user).toContain("- Workspace role: owner");
   });
+
+  it("renders IDENTITY.md so the gateway never falls back to its packaged template", () => {
+    const files = renderAgentBootstrapFiles({
+      agentId: "agent-1",
+      name: "Alex Agent",
+      model: "openrouter/auto",
+      persona: "Help the user move quickly.",
+    });
+
+    expect(files.identity).toContain("# IDENTITY.md");
+    expect(files.identity).toContain("- **Name:** Alex Agent");
+    expect(files.identity).toContain("- **Model:** openrouter/auto");
+    // The vendored template uses placeholder strings like
+    // `_(pick something you like)_`. A real IDENTITY.md must not ship those.
+    expect(files.identity).not.toContain("_(pick something you like)_");
+  });
+
+  it("references IDENTITY.md from the AGENTS.md startup sequence", () => {
+    const files = renderAgentBootstrapFiles({
+      agentId: "agent-1",
+      name: "Alex Agent",
+      model: "openrouter/auto",
+      persona: "Help the user move quickly.",
+    });
+
+    expect(files.agents).toContain("Read IDENTITY.md");
+  });
 });
