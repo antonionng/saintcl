@@ -4,8 +4,11 @@ import { z } from "zod";
 import { getCurrentOrg, getOrgMembers } from "@/lib/dal";
 import { injectOrgContext, type OrgInjectionResult } from "@/lib/openclaw/context-injection";
 import { ACTIVE_ORG_COOKIE_NAME } from "@/lib/org-selection";
-import { enrichOrgWebsite } from "@/lib/org-website-enrichment";
+import { enrichOrgWebsite, type EnrichOrgWebsiteResult } from "@/lib/org-website-enrichment";
 import { createAdminClient } from "@/lib/supabase/admin";
+
+const ORG_SELECT_FIELDS =
+  "id, name, slug, plan, website, company_summary, agent_brief, website_enriched_url, website_enriched_at, logo_path, created_at";
 
 const updateOrgSchema = z.object({
   name: z.string().trim().min(2).max(120).optional(),
@@ -14,6 +17,7 @@ const updateOrgSchema = z.object({
   agentBrief: z.string().trim().max(2000).optional().default(""),
   forceEnrich: z.boolean().optional(),
   forceSync: z.boolean().optional(),
+  enrichFromWebsite: z.boolean().optional(),
 });
 
 async function runOrgContextSync(input: {
@@ -58,6 +62,23 @@ function setActiveOrgCookie(response: NextResponse, orgId: string) {
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
   });
+}
+
+function summarizeEnrichmentForClient(result: EnrichOrgWebsiteResult) {
+  if (result.enriched) {
+    return {
+      ok: true,
+      website: result.website,
+      companySummary: result.companySummary,
+      agentBrief: result.agentBrief,
+      profileFieldsWritten: result.profileFieldsWritten,
+    } as const;
+  }
+  return {
+    ok: false,
+    reason: result.reason,
+    website: result.website ?? null,
+  } as const;
 }
 
 export async function GET() {
@@ -105,13 +126,25 @@ export async function PATCH(request: Request) {
       .update({ website_enriched_url: null, website_enriched_at: null })
       .eq("id", session.org.id);
 
-    enrichOrgWebsite({
+    const enrichResult = await enrichOrgWebsite({
       orgId: session.org.id,
       website: payload.website,
       createdBy: session.userId,
-    }).catch(() => null);
+    });
 
-    const response = NextResponse.json({ data: { ok: true, enrichmentTriggered: true } });
+    const { data: orgRow } = await admin
+      .from("orgs")
+      .select(ORG_SELECT_FIELDS)
+      .eq("id", session.org.id)
+      .single();
+
+    const response = NextResponse.json({
+      data: {
+        ok: true,
+        org: orgRow,
+        enrichment: summarizeEnrichmentForClient(enrichResult),
+      },
+    });
     setActiveOrgCookie(response, session.org.id);
     return response;
   }
@@ -119,7 +152,7 @@ export async function PATCH(request: Request) {
   if (payload.forceSync) {
     const { data: orgRow, error: readError } = await admin
       .from("orgs")
-      .select("id, name, slug, plan, website, company_summary, agent_brief, logo_path, created_at")
+      .select(ORG_SELECT_FIELDS)
       .eq("id", session.org.id)
       .single();
 
@@ -155,32 +188,62 @@ export async function PATCH(request: Request) {
     .from("orgs")
     .update(updateFields)
     .eq("id", session.org.id)
-    .select("id, name, slug, plan, website, company_summary, agent_brief, logo_path, created_at")
+    .select(ORG_SELECT_FIELDS)
     .single();
 
   if (error) {
     return NextResponse.json({ error: { message: error.message } }, { status: 500 });
   }
 
-  const sync = await runOrgContextSync({
-    orgId: session.org.id,
-    org: {
-      name: data.name,
-      website: data.website,
-      companySummary: data.company_summary,
-      agentBrief: data.agent_brief,
-    },
-  });
+  const websiteValue = (data.website ?? "").trim();
+  let enrichmentForClient: ReturnType<typeof summarizeEnrichmentForClient> | undefined;
+  let finalOrgRow: typeof data = data;
 
-  if (data.website?.trim()) {
+  // When the client explicitly asks for synchronous enrichment (the website
+  // onboarding step), wait for results and return them so the UI can show an
+  // editable draft. Otherwise keep the legacy fire-and-forget behavior so
+  // routine settings saves do not block on the LLM.
+  if (websiteValue && payload.enrichFromWebsite) {
+    const enrichResult = await enrichOrgWebsite({
+      orgId: session.org.id,
+      website: websiteValue,
+      createdBy: session.userId,
+    });
+    enrichmentForClient = summarizeEnrichmentForClient(enrichResult);
+
+    const { data: refreshed } = await admin
+      .from("orgs")
+      .select(ORG_SELECT_FIELDS)
+      .eq("id", session.org.id)
+      .single();
+    if (refreshed) {
+      finalOrgRow = refreshed;
+    }
+  } else if (websiteValue) {
     enrichOrgWebsite({
       orgId: session.org.id,
-      website: data.website,
+      website: websiteValue,
       createdBy: session.userId,
     }).catch(() => null);
   }
 
-  const response = NextResponse.json({ data: { org: data, sync } });
+  const sync = await runOrgContextSync({
+    orgId: session.org.id,
+    org: {
+      name: finalOrgRow.name,
+      website: finalOrgRow.website,
+      companySummary: finalOrgRow.company_summary,
+      agentBrief: finalOrgRow.agent_brief,
+    },
+  });
+
+  const response = NextResponse.json({
+    data: {
+      org: finalOrgRow,
+      sync,
+      ...(enrichmentForClient ? { enrichment: enrichmentForClient } : {}),
+    },
+  });
   setActiveOrgCookie(response, session.org.id);
   return response;
 }

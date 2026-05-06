@@ -109,6 +109,7 @@ export function WorkspaceCompanyContextOnboarding({
           website: websiteOut,
           companySummary: summaryOut,
           agentBrief: briefOut,
+          enrichFromWebsite: mode === "website",
         }),
       });
       const body = (await res.json()) as {
