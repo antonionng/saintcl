@@ -48,6 +48,39 @@ function listConfiguredAgentIds(cfg: OpenClawConfig): string[] {
     : sorted;
 }
 
+/**
+ * Effective gateway agent IDs as exposed by listing/session routing.
+ *
+ * Returns the union of:
+ *   - configured agent IDs (`cfg.agents.list`)
+ *   - the resolved default agent ID
+ *   - the configured `session.mainKey` (when allowed)
+ *   - disk-backed agent directory IDs under `${stateDir}/agents/`
+ *
+ * Used for both gateway listing and `agents.files.*` resolution so file
+ * writes accept exactly the IDs the gateway reports as known. Without this,
+ * `agents.files.set` rejected freshly registered agents whose `config.patch`
+ * had succeeded but whose in-memory cfg snapshot lagged behind the listing
+ * surface.
+ */
+export function listEffectiveGatewayAgentIds(cfg: OpenClawConfig): string[] {
+  const defaultId = normalizeAgentId(resolveDefaultAgentId(cfg));
+  const mainKey = normalizeMainKey(cfg.session?.mainKey);
+  const explicitIds = new Set(
+    (cfg.agents?.list ?? [])
+      .map((entry) => (entry?.id ? normalizeAgentId(entry.id) : ""))
+      .filter(Boolean),
+  );
+  const allowedIds = explicitIds.size > 0 ? new Set([...explicitIds, defaultId]) : null;
+  let agentIds = listConfiguredAgentIds(cfg).filter((id) =>
+    allowedIds ? allowedIds.has(id) : true,
+  );
+  if (mainKey && !agentIds.includes(mainKey) && (!allowedIds || allowedIds.has(mainKey))) {
+    agentIds = [...agentIds, mainKey];
+  }
+  return agentIds;
+}
+
 export function listGatewayAgentsBasic(cfg: OpenClawConfig): {
   defaultId: string;
   mainKey: string;
@@ -66,18 +99,7 @@ export function listGatewayAgentsBasic(cfg: OpenClawConfig): {
       name: normalizeOptionalString(entry.name),
     });
   }
-  const explicitIds = new Set(
-    (cfg.agents?.list ?? [])
-      .map((entry) => (entry?.id ? normalizeAgentId(entry.id) : ""))
-      .filter(Boolean),
-  );
-  const allowedIds = explicitIds.size > 0 ? new Set([...explicitIds, defaultId]) : null;
-  let agentIds = listConfiguredAgentIds(cfg).filter((id) =>
-    allowedIds ? allowedIds.has(id) : true,
-  );
-  if (mainKey && !agentIds.includes(mainKey) && (!allowedIds || allowedIds.has(mainKey))) {
-    agentIds = [...agentIds, mainKey];
-  }
+  const agentIds = listEffectiveGatewayAgentIds(cfg);
   const agents = agentIds.map((id) => {
     const meta = configuredById.get(id);
     return {

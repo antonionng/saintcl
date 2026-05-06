@@ -26,6 +26,7 @@ import {
   listAgentEntries,
   pruneAgentConfig,
 } from "../../commands/agents.config.js";
+import { listEffectiveGatewayAgentIds } from "../agent-list.js";
 import { replaceConfigFile } from "../../config/config.js";
 import {
   purgeAgentSessionStoreEntries,
@@ -101,6 +102,32 @@ const MEMORY_FILE_NAMES = [DEFAULT_MEMORY_FILENAME] as const;
 
 const ALLOWED_FILE_NAMES = new Set<string>([...BOOTSTRAP_FILE_NAMES, ...MEMORY_FILE_NAMES]);
 
+// Workspace-scoped subfolders that callers may write to via `agents.files.set`
+// in addition to the explicitly named bootstrap/memory files. Path traversal
+// safety is still enforced by `writeFileWithinRoot`; this allowlist just
+// declares the *intent* that managed control planes (e.g. SaintAGI) may mirror
+// knowledge documents into the agent workspace under stable, scoped roots.
+const ALLOWED_FILE_PREFIXES = [
+  "knowledge/company/",
+  "knowledge/team/",
+  "knowledge/personal/",
+] as const;
+
+function isAllowedAgentWorkspaceFile(name: string): boolean {
+  if (ALLOWED_FILE_NAMES.has(name)) {
+    return true;
+  }
+  if (!name || name.startsWith("/") || name.includes("..")) {
+    return false;
+  }
+  if (!name.toLowerCase().endsWith(".md")) {
+    return false;
+  }
+  return ALLOWED_FILE_PREFIXES.some(
+    (prefix) => name.startsWith(prefix) && name.length > prefix.length,
+  );
+}
+
 function resolveAgentWorkspaceFileOrRespondError(
   params: Record<string, unknown>,
   respond: RespondFn,
@@ -124,7 +151,7 @@ function resolveAgentWorkspaceFileOrRespondError(
   const name = (
     typeof rawName === "string" || typeof rawName === "number" ? String(rawName) : ""
   ).trim();
-  if (!ALLOWED_FILE_NAMES.has(name)) {
+  if (!isAllowedAgentWorkspaceFile(name)) {
     respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, `unsupported file "${name}"`));
     return null;
   }
@@ -227,7 +254,13 @@ async function listAgentFiles(workspaceDir: string, options?: { hideBootstrap?: 
 
 function resolveAgentIdOrError(agentIdRaw: string, cfg: OpenClawConfig) {
   const agentId = normalizeAgentId(agentIdRaw);
-  const allowed = new Set(listAgentIds(cfg));
+  // Accept any agent ID the gateway listing/session routing surface considers
+  // known. `listAgentIds(cfg)` only sees configured `agents.list` entries, so
+  // it would reject freshly-registered agents whose `config.patch` has been
+  // committed but whose effective set (configured + default + mainKey + disk)
+  // is what the rest of the gateway exposes. Using the broader set keeps file
+  // writes consistent with `agents.list` and gateway session targeting.
+  const allowed = new Set([...listAgentIds(cfg), ...listEffectiveGatewayAgentIds(cfg)]);
   if (!allowed.has(agentId)) {
     return null;
   }

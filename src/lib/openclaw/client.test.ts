@@ -415,3 +415,91 @@ describe("OpenClawClient.withSession", () => {
     expect(secondSocket.closed).toBe(true);
   });
 });
+
+describe("OpenClawClient.verifyAgentRegistered", () => {
+  it("resolves ok when the gateway lists the agent", async () => {
+    const { OpenClawClient } = await import("./client");
+    const client = new OpenClawClient({
+      gatewayUrl: "wss://gateway.test/socket",
+      gatewayToken: "token",
+    });
+
+    const calls: Array<{ method: string }> = [];
+    const runner = async <T>(method: string) => {
+      calls.push({ method });
+      return {
+        agents: [
+          { id: "other-agent" },
+          { id: "ant-agent" },
+        ],
+      } as unknown as T;
+    };
+
+    const result = await client.verifyAgentRegistered(
+      { agentId: "ant-agent", timeoutMs: 1_000, intervalMs: 10 },
+      runner,
+    );
+    expect(result).toEqual({ ok: true });
+    expect(calls.map((c) => c.method)).toEqual(["agents.list"]);
+  });
+
+  it("polls until the agent appears, then returns ok", async () => {
+    const { OpenClawClient } = await import("./client");
+    const client = new OpenClawClient({
+      gatewayUrl: "wss://gateway.test/socket",
+      gatewayToken: "token",
+    });
+
+    let call = 0;
+    const runner = async <T>() => {
+      call += 1;
+      if (call < 3) {
+        return { agents: [{ id: "other-agent" }] } as unknown as T;
+      }
+      return { agents: [{ id: "ant-agent" }] } as unknown as T;
+    };
+
+    const result = await client.verifyAgentRegistered(
+      { agentId: "ant-agent", timeoutMs: 2_000, intervalMs: 10 },
+      runner,
+    );
+    expect(result).toEqual({ ok: true });
+    expect(call).toBe(3);
+  });
+
+  it("returns a typed reason when the timeout elapses without registration", async () => {
+    const { OpenClawClient } = await import("./client");
+    const client = new OpenClawClient({
+      gatewayUrl: "wss://gateway.test/socket",
+      gatewayToken: "token",
+    });
+
+    const runner = async <T>() => ({ agents: [] } as unknown as T);
+
+    const result = await client.verifyAgentRegistered(
+      { agentId: "missing-agent", timeoutMs: 50, intervalMs: 10 },
+      runner,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toMatch(/not yet visible|not registered/i);
+    }
+  });
+
+  it("treats agent ids as case-insensitive when matching", async () => {
+    const { OpenClawClient } = await import("./client");
+    const client = new OpenClawClient({
+      gatewayUrl: "wss://gateway.test/socket",
+      gatewayToken: "token",
+    });
+
+    const runner = async <T>() =>
+      ({ agents: [{ id: "Ant-Agent" }] }) as unknown as T;
+
+    const result = await client.verifyAgentRegistered(
+      { agentId: "ant-agent", timeoutMs: 50, intervalMs: 10 },
+      runner,
+    );
+    expect(result).toEqual({ ok: true });
+  });
+});

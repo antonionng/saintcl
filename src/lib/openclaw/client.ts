@@ -478,6 +478,53 @@ export class OpenClawClient {
     return exec<OpenClawConfigSnapshot>("config.get", {});
   }
 
+  /**
+   * Poll `agents.list` until `agentId` appears in the gateway's effective agent
+   * registry. The bootstrap flow needs this between `config.patch` (which
+   * upserts `agents.list` on disk) and `agents.files.set` (which validates
+   * against the live runtime cfg). Without it, file writes can race the
+   * gateway's reload and reject the agent with `unknown agent id` even though
+   * the patch reported success.
+   */
+  async verifyAgentRegistered(
+    input: { agentId: string; timeoutMs?: number; intervalMs?: number },
+    runner?: GatewayRpcRunner,
+  ): Promise<{ ok: true } | { ok: false; reason: string }> {
+    const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
+    const target = input.agentId.trim().toLowerCase();
+    if (!target) {
+      return { ok: false, reason: "Agent id required for verification." };
+    }
+    const timeoutMs = input.timeoutMs ?? 10_000;
+    const intervalMs = input.intervalMs ?? 500;
+    const deadline = Date.now() + timeoutMs;
+    let lastError: string | undefined;
+    while (Date.now() < deadline) {
+      try {
+        const result = await exec<{ agents?: Array<{ id?: string }> }>("agents.list", {});
+        const agents = Array.isArray(result?.agents) ? result.agents : [];
+        const present = agents.some(
+          (entry) => typeof entry?.id === "string" && entry.id.trim().toLowerCase() === target,
+        );
+        if (present) {
+          return { ok: true };
+        }
+        lastError = "agent not yet visible in gateway registry";
+      } catch (error) {
+        lastError = error instanceof Error ? error.message : String(error);
+      }
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) {
+        break;
+      }
+      await new Promise<void>((resolve) => setTimeout(resolve, Math.min(intervalMs, remaining)));
+    }
+    return {
+      ok: false,
+      reason: lastError ?? "agent not registered with gateway in time",
+    };
+  }
+
   async ensureControlUiAllowedOrigins(origins: string[]) {
     if (!isOpenClawConfigured()) {
       throw new Error("Runtime gateway is not configured.");

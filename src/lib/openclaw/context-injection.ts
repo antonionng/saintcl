@@ -161,12 +161,16 @@ function resolveKnowledgeDirectories(scope: "org" | "team" | "employee") {
 
 function isTransientGatewayBootstrapError(error: unknown) {
   const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+  // `unknown agent id` used to be retried as transient, but we now verify the
+  // agent is visible in the gateway registry before any file write, so a
+  // post-verification rejection points at a hard consistency problem rather
+  // than a propagation lag. Surfacing it lets onboarding fail fast instead of
+  // burning the BOOTSTRAP_FILE_RETRY budget on a doomed sequence of writes.
   return (
     message.includes("runtime gateway connection closed unexpectedly") ||
     message.includes("runtime gateway timeout") ||
     message.includes("socket hang up") ||
     message.includes("fetch failed") ||
-    message.includes("unknown agent id") ||
     message.includes("unexpected server response: 502") ||
     message.includes("bad gateway")
   );
@@ -198,14 +202,23 @@ async function setAgentBootstrapFileWithRetry(
   throw lastError;
 }
 
-function buildKnowledgeFilePath(scopeType: "org" | "team" | "user", docId: string, filename: string) {
+export function buildKnowledgeFilePath(
+  scopeType: "org" | "team" | "user",
+  docId: string,
+  filename: string,
+) {
   const folder =
     scopeType === "org"
       ? "knowledge/company"
       : scopeType === "team"
         ? "knowledge/team"
         : "knowledge/personal";
-  return `${folder}/${docId}-${filename.replace(/[^a-zA-Z0-9._-]+/g, "-")}.md`;
+  // Strip any existing extension, sanitize the filename, then append a single
+  // `.md`. Without stripping, an upload named `website-profile.md` produced
+  // `website-profile.md.md`, which the OpenClaw gateway file allowlist rejects.
+  const sanitized = filename.replace(/[^a-zA-Z0-9._-]+/g, "-");
+  const stem = sanitized.replace(/\.[^.]+$/, "") || "doc";
+  return `${folder}/${docId}-${stem}.md`;
 }
 
 async function loadOrgContext(orgId: string): Promise<OrgContext> {
@@ -300,6 +313,27 @@ export async function injectAgentContext(
   const writtenFileNames: string[] = [];
 
   try {
+    // Confirm the gateway has reloaded the patched cfg before we start writing
+    // workspace files. `agents.files.set` validates against the live runtime
+    // cfg, so without this gate the first writes can race a freshly-applied
+    // `config.patch` and fail with `unknown agent id`. The vendored gateway
+    // `agents.files.*` resolver is now consistent with `agents.list`, so once
+    // the agent shows up here, the workspace writes that follow can succeed.
+    const verification = await client.verifyAgentRegistered({
+      agentId: agent.openclaw_agent_id,
+    });
+    if (!verification.ok) {
+      return {
+        status: "failed",
+        message: `Gateway did not register agent "${agent.openclaw_agent_id}" in time: ${verification.reason}`,
+        plan: {
+          agentId: agent.id,
+          openclawAgentId: agent.openclaw_agent_id,
+          name: agent.name,
+        },
+      };
+    }
+
     for (const file of writes) {
       await setAgentBootstrapFileWithRetry(client, {
         agentId: agent.openclaw_agent_id,
@@ -319,21 +353,38 @@ export async function injectAgentContext(
       });
       knowledgeDocsCount = docs.length;
       for (const doc of docs) {
-        await client.setAgentFile({
-          agentId: agent.openclaw_agent_id,
-          name: buildKnowledgeFilePath(doc.scopeType, doc.id, doc.filename),
-          content: renderKnowledgeWorkspaceFile({
-            title: doc.filename,
-            scopeLabel:
-              doc.scopeType === "org"
-                ? "Company knowledge"
-                : doc.scopeType === "team"
-                  ? "Team knowledge"
-                  : "Personal knowledge",
-            filename: doc.filename,
-            contentText: doc.contentText ?? "",
-          }),
-        });
+        const knowledgePath = buildKnowledgeFilePath(doc.scopeType, doc.id, doc.filename);
+        try {
+          await client.setAgentFile({
+            agentId: agent.openclaw_agent_id,
+            name: knowledgePath,
+            content: renderKnowledgeWorkspaceFile({
+              title: doc.filename,
+              scopeLabel:
+                doc.scopeType === "org"
+                  ? "Company knowledge"
+                  : doc.scopeType === "team"
+                    ? "Team knowledge"
+                    : "Personal knowledge",
+              filename: doc.filename,
+              contentText: doc.contentText ?? "",
+            }),
+          });
+        } catch (knowledgeError) {
+          // Knowledge mirroring is best-effort: a single bad path or transient
+          // gateway error must not abort onboarding once bootstrap files are
+          // in place. The agent can still chat; the doc will be retried on
+          // the next refresh.
+          console.warn(
+            "[openclaw.injectAgentContext] knowledge sync failed",
+            JSON.stringify({
+              agentId: agent.openclaw_agent_id,
+              path: knowledgePath,
+              docId: doc.id,
+              error: knowledgeError instanceof Error ? knowledgeError.message : String(knowledgeError),
+            }),
+          );
+        }
       }
     }
 
