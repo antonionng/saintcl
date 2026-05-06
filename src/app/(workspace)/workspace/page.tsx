@@ -150,33 +150,6 @@ async function repairManagedRuntimeConfig(
         config: agent.config,
       });
 
-      // If the agent was moved to a new dedicated gateway (or the gateway was
-      // recreated), it may not exist in the current gateway's agents list yet.
-      // Re-provision it first so ensureManagedAgentRuntimeConfig has something to patch.
-      const snapshot = await client.getConfigSnapshot().catch(() => null);
-      const config = snapshot?.config;
-      const agentsConfig =
-        config?.agents && typeof config.agents === "object" && !Array.isArray(config.agents)
-          ? (config.agents as { list?: unknown })
-          : null;
-      const agentsList = Array.isArray(agentsConfig?.list) ? agentsConfig.list : [];
-      const agentExistsInGateway = agentsList.some(
-        (candidate) =>
-          candidate &&
-          typeof candidate === "object" &&
-          !Array.isArray(candidate) &&
-          (candidate as { id?: unknown }).id === agent.openclaw_agent_id,
-      );
-
-      if (!agentExistsInGateway) {
-        await client.provisionAgent({
-          agentId: agent.openclaw_agent_id,
-          workspace,
-          model: repairedModel,
-          name: agent.name,
-        });
-      }
-
       await client.ensureManagedAgentRuntimeConfig({
         agentId: agent.openclaw_agent_id,
         workspace,

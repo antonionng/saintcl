@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { getAgents, getCurrentOrg, loadCurrentUserProfile } from "@/lib/dal";
+import { getCurrentOrg, getPreferredAgentForSession, loadCurrentUserProfile } from "@/lib/dal";
 import { sendAgentIntroductionEmail } from "@/lib/email/service";
 import { isOpenClawConfigured } from "@/lib/env";
 import { injectAgentContext } from "@/lib/openclaw/context-injection";
 import { ensureTenantGatewayAssignment } from "@/lib/openclaw/gateway-assignments";
+import { resolveAgentWorkspaceFromConfig } from "@/lib/openclaw/agent-terminal";
 import { getAgentWorkspacePath } from "@/lib/openclaw/paths";
 import { resolveModelSelection } from "@/lib/openclaw/model-governance";
 import { RuntimeRateLimitError } from "@/lib/openclaw/client";
@@ -77,17 +78,87 @@ export async function POST() {
     );
   }
 
-  const orgId = session.org.id;
-  const existingAgents = await getAgents(orgId);
-  if (existingAgents.length > 0) {
-    return NextResponse.json({ data: { created: false, reason: "already_bootstrapped" } });
-  }
-
-  const { agentName, persona, useCaseId } = await resolveBootstrapTemplate();
-  const slug = slugify(`${session.userId.slice(0, 8)}-${agentName}`);
-  const profile = await loadCurrentUserProfile();
-
   try {
+    const orgId = session.org.id;
+    const existingAgent = await getPreferredAgentForSession(session);
+    const profile = await loadCurrentUserProfile();
+
+    if (existingAgent) {
+      await ensureTenantGatewayAssignment({
+        orgId,
+        reason: session.org.trial_status === "active" ? "trial" : "manual",
+        dedicated: true,
+      }).catch(() => null);
+
+      const { client, source } = await getTenantOpenClawClient(orgId, { orgId });
+      const workspacePath = resolveAgentWorkspaceFromConfig({
+        orgId,
+        openClawAgentId: existingAgent.openclaw_agent_id,
+        config: existingAgent.config,
+      });
+      await client.withSession(async (rpc) => {
+        await client.ensureManagedAgentRuntimeConfig(
+          {
+            agentId: existingAgent.openclaw_agent_id,
+            workspace: workspacePath,
+            model: existingAgent.model,
+            name: existingAgent.name,
+          },
+          rpc,
+        );
+      });
+
+      const injection = await injectAgentContext(
+        {
+          id: existingAgent.id,
+          org_id: orgId,
+          user_id: existingAgent.user_id,
+          openclaw_agent_id: existingAgent.openclaw_agent_id,
+          name: existingAgent.name,
+          model: existingAgent.model,
+          config: existingAgent.config,
+          assignment: existingAgent.assignment,
+        },
+        {
+          client,
+          org: {
+            name: session.org.name,
+            website: session.org.website,
+            companySummary: session.org.company_summary,
+            agentBrief: session.org.agent_brief,
+          },
+          profile: profile
+            ? {
+                displayName: profile.displayName,
+                email: profile.email,
+                role: profile.role,
+                whatIDo: profile.whatIDo,
+                agentBrief: profile.agentBrief,
+              }
+            : null,
+          syncKnowledge: true,
+          applySafeMemoryConfig: true,
+          writeHeartbeat: true,
+        },
+      );
+      if (injection.status === "failed") {
+        throw new Error(injection.message);
+      }
+
+      return NextResponse.json({
+        data: {
+          created: false,
+          repaired: true,
+          reason: "already_bootstrapped",
+          id: existingAgent.id,
+          openclawAgentId: existingAgent.openclaw_agent_id,
+          source,
+        },
+      });
+    }
+
+    const { agentName, persona, useCaseId } = await resolveBootstrapTemplate();
+    const slug = slugify(`${session.userId.slice(0, 8)}-${agentName}`);
     const { model, snapshot } = await resolveModelSelection({
       orgId,
       userId: session.userId,

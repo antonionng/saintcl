@@ -177,13 +177,16 @@ export function WorkspaceShell({
   const blockingOnboarding = requiresOrgCompanyOnboarding || userProfileOnboardingBlocking;
   const showCompanyContextOnboarding = requiresOrgCompanyOnboarding;
   const showUserProfileOnboarding = !requiresOrgCompanyOnboarding && requiresOnboarding && !onboardingComplete;
+  const runtimeSetupIssue = Boolean(error && /runtime|gateway|agent|configuration|closed/i.test(error));
+  const workspaceReady = hasProvisionedAgent && Boolean(embeddedConsoleUrl) && !runtimeSetupIssue;
 
-  const showProvisioningState = !blockingOnboarding && !hasProvisionedAgent;
+  const showProvisioningState =
+    !blockingOnboarding && (!workspaceReady || provisioning || Boolean(provisioningError));
   const displayAgentName = agentName?.trim() || "Your company agent";
   const displayOrgName = orgName?.trim() || "your company";
   const trialUsageRatio = trialMessageLimit > 0 ? trialMessageCount / trialMessageLimit : 0;
   const showTrialUsageWarning = trialActive && trialUsageRatio >= 0.8;
-  const showWorkspaceActions = !blockingOnboarding && hasProvisionedAgent;
+  const showWorkspaceActions = !blockingOnboarding && workspaceReady;
   const agentNoticeStorageKey = useMemo(
     () => `${WORKSPACE_AGENT_NOTICE_DISMISSED_KEY}:${displayOrgName}:${displayAgentName}`,
     [displayAgentName, displayOrgName],
@@ -327,7 +330,7 @@ export function WorkspaceShell({
       } catch {
         // ignore
       }
-      router.refresh();
+      queueMicrotask(() => void provisionAgentRef.current());
     } catch (saveError) {
       setOnboardingError(
         saveError instanceof Error ? saveError.message : "Unable to save your onboarding answers.",
@@ -430,11 +433,11 @@ export function WorkspaceShell({
   useEffect(() => {
     if (provisioningAutoStartedRef.current) return;
     if (blockingOnboarding) return;
-    if (hasProvisionedAgent) return;
+    if (workspaceReady) return;
     if (!canProvisionAgent) return;
     provisioningAutoStartedRef.current = true;
     void provisionAgent();
-  }, [blockingOnboarding, canProvisionAgent, hasProvisionedAgent, provisionAgent]);
+  }, [blockingOnboarding, canProvisionAgent, provisionAgent, workspaceReady]);
 
   function dismissAgentNotice() {
     setAgentNoticeOpen(false);
@@ -510,7 +513,7 @@ export function WorkspaceShell({
         </div>
       ) : null}
       <div className="relative min-h-0 flex-1">
-        {ready && !blockingOnboarding && hasProvisionedAgent && embeddedConsoleUrl ? (
+        {ready && !blockingOnboarding && workspaceReady && embeddedConsoleUrl ? (
           <iframe
             key={embeddedConsoleUrl}
             ref={iframeRef}
