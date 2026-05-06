@@ -907,6 +907,7 @@ export async function runEmbeddedAttempt(
             contextMode: params.bootstrapContextMode,
             runKind: params.bootstrapContextRunKind,
           });
+    prepStages.mark("bootstrap-files-preload");
     const bootstrapRouting = await resolveAttemptWorkspaceBootstrapRouting({
       isWorkspaceBootstrapPending,
       bootstrapFiles: preloadedBootstrapFiles,
@@ -919,6 +920,7 @@ export async function runEmbeddedAttempt(
       resolvedWorkspace,
       hasBootstrapFileAccess: bootstrapHasFileAccess,
     });
+    prepStages.mark("bootstrap-routing");
     const bootstrapMode = bootstrapRouting.bootstrapMode;
     const {
       bootstrapFiles: hookAdjustedBootstrapFiles,
