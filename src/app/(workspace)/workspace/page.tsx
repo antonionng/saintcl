@@ -129,12 +129,32 @@ async function repairManagedRuntimeConfig(
       normalizedModel !== TRIAL_FALLBACK_FREE_MODEL_ID
         ? TRIAL_DEFAULT_MODEL_ID
         : normalizedModel;
+
     if (agent && repairedModel) {
       const workspace = resolveAgentWorkspaceFromConfig({
         orgId,
         openClawAgentId: agent.openclaw_agent_id,
         config: agent.config,
       });
+
+      // If the agent was moved to a new dedicated gateway (or the gateway was
+      // recreated), it may not exist in the current gateway's agents list yet.
+      // Re-provision it first so ensureManagedAgentRuntimeConfig has something to patch.
+      const snapshot = await client.getConfigSnapshot().catch(() => null);
+      const agentsList = Array.isArray((snapshot as any)?.config?.agents?.list)
+        ? (snapshot as any).config.agents.list
+        : [];
+      const agentExistsInGateway = agentsList.some((a: any) => a?.id === agent.openclaw_agent_id);
+
+      if (!agentExistsInGateway) {
+        await client.provisionAgent({
+          agentId: agent.openclaw_agent_id,
+          workspace,
+          model: repairedModel,
+          name: agent.name,
+        }).catch(() => null);
+      }
+
       await client.ensureManagedAgentRuntimeConfig({
         agentId: agent.openclaw_agent_id,
         workspace,

@@ -3,6 +3,7 @@ const SUPPORTED_KNOWLEDGE_MIME_TYPES = new Set([
   "text/markdown",
   "text/csv",
   "application/json",
+  "application/pdf",
 ]);
 const SUPPORTED_KNOWLEDGE_EXTENSIONS = new Map([
   ["txt", "text/plain"],
@@ -10,6 +11,7 @@ const SUPPORTED_KNOWLEDGE_EXTENSIONS = new Map([
   ["markdown", "text/markdown"],
   ["csv", "text/csv"],
   ["json", "application/json"],
+  ["pdf", "application/pdf"],
 ]);
 
 export const KNOWLEDGE_DOCS_BUCKET = "knowledge-docs";
@@ -45,8 +47,21 @@ export function slugifyKnowledgeFilename(value: string) {
 }
 
 export async function extractKnowledgeText(file: File) {
-  if (!resolveKnowledgeMimeType(file.name, file.type)) {
-    throw new Error("Upload TXT, MD, CSV, or JSON files for now.");
+  const resolvedMime = resolveKnowledgeMimeType(file.name, file.type);
+  if (!resolvedMime) {
+    throw new Error("Upload TXT, MD, CSV, JSON, or PDF files for now.");
+  }
+
+  if (resolvedMime === "application/pdf") {
+    const mod = await import("pdf-parse");
+    const pdfParse = (mod as any).PDFParse || (mod as any).default || mod;
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const parsed = await pdfParse(buffer);
+    const text = parsed.text.trim();
+    if (!text) {
+      throw new Error("This PDF contains no extractable text.");
+    }
+    return text;
   }
 
   const text = (await file.text()).trim();

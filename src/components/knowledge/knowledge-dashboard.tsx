@@ -313,7 +313,7 @@ export function KnowledgeDashboard({
               <PickerCard
                 icon={Upload}
                 title="Upload document"
-                description="Add a TXT, MD, CSV, or JSON file to a scope."
+                description="Add a TXT, MD, CSV, JSON, or PDF file to a scope."
                 onClick={() => {
                   setPickerOpen(false);
                   setUploadOpen(true);
@@ -506,14 +506,14 @@ function UploadWizard({
             {selectedFile ? selectedFile.name : "Choose a file"}
           </p>
           <p className="text-[length:var(--text-xs)] text-white/45">
-            TXT, MD, CSV, or JSON
+            TXT, MD, CSV, JSON, or PDF
           </p>
         </button>
         <input
           ref={fileRef}
           type="file"
           className="hidden"
-          accept=".txt,.md,.markdown,.csv,.json,text/plain,text/markdown,text/csv,application/json"
+          accept=".txt,.md,.markdown,.csv,.json,.pdf,text/plain,text/markdown,text/csv,application/json,application/pdf"
           onChange={(e) => {
             setSelectedFile(e.target.files?.[0] ?? null);
             e.currentTarget.value = "";

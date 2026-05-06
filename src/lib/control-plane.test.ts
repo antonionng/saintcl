@@ -469,8 +469,8 @@ describe("knowledge file support", () => {
     expect(resolveKnowledgeMimeType("workspace-notes.md", "")).toBe("text/markdown");
   });
 
-  it("rejects unsupported file extensions", () => {
-    expect(resolveKnowledgeMimeType("brief.pdf", "application/pdf")).toBeNull();
+  it("accepts PDF files", () => {
+    expect(resolveKnowledgeMimeType("brief.pdf", "application/pdf")).toBe("application/pdf");
   });
 });
 
