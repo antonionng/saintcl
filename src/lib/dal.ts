@@ -106,6 +106,8 @@ type OrgMembershipRow = {
         website?: string;
         company_summary?: string;
         agent_brief?: string;
+        website_enriched_url?: string | null;
+        website_enriched_at?: string | null;
         logo_path?: string | null;
         created_at: string;
       }
@@ -127,6 +129,8 @@ type OrgMembershipRow = {
         website?: string;
         company_summary?: string;
         agent_brief?: string;
+        website_enriched_url?: string | null;
+        website_enriched_at?: string | null;
         logo_path?: string | null;
         created_at: string;
       }>
@@ -394,7 +398,7 @@ async function getUserWorkspaceMemberships(
 ) {
   const membershipResult = await admin
     .from("org_members")
-    .select("org_id, role, orgs(id, name, slug, plan, billing_interval, trial_status, trial_started_at, trial_ends_at, trial_plan, stripe_customer_id, stripe_subscription_id, stripe_subscription_status, stripe_price_id, stripe_current_period_end, website, company_summary, agent_brief, logo_path, created_at)")
+    .select("org_id, role, orgs(id, name, slug, plan, billing_interval, trial_status, trial_started_at, trial_ends_at, trial_plan, stripe_customer_id, stripe_subscription_id, stripe_subscription_status, stripe_price_id, stripe_current_period_end, website, company_summary, agent_brief, website_enriched_url, website_enriched_at, logo_path, created_at)")
     .eq("user_id", userId);
   let memberships = ((membershipResult.data ?? []) as OrgMembershipRow[])
     .map(mapWorkspaceMembership)
@@ -428,6 +432,8 @@ async function getUserWorkspaceMemberships(
             website: undefined,
             company_summary: undefined,
             agent_brief: undefined,
+            website_enriched_url: null,
+            website_enriched_at: null,
             logo_path: null,
           },
         ]),
