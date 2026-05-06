@@ -107,63 +107,112 @@ async function benchmarkDirectProvider({ apiKey, model, message }) {
   return performance.now() - started;
 }
 
+function randomId() {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+// OpenClaw gateway protocol:
+//   - Connect on the bare WS URL (no /v1/ws path).
+//   - Send a `connect` request frame with role=operator and auth.token.
+//   - After the connect res arrives, send `{ type: "req", id, method, params }`
+//     and receive `{ type: "res", id, ok, payload?, error? }`.
+//   - Server-pushed broadcasts arrive as `{ type: "event", method, params }`.
 function connectGateway({ gatewayUrl, token }) {
   return new Promise((resolve, reject) => {
     const url = new URL(gatewayUrl);
     if (url.protocol === "https:") url.protocol = "wss:";
     if (url.protocol === "http:") url.protocol = "ws:";
-    if (!url.pathname || url.pathname === "/") {
-      url.pathname = "/v1/ws";
-    }
-    url.searchParams.set("token", token);
     const ws = new WebSocket(url.toString());
     const pending = new Map();
-    let nextId = 1;
+    const eventListeners = new Set();
+    let connected = false;
+    let connectFrameId = randomId();
+
+    const send = (frame) => {
+      ws.send(JSON.stringify(frame));
+    };
 
     ws.on("open", () => {
-      resolve({
-        request(method, params) {
-          return new Promise((resolveCall, rejectCall) => {
-            const id = nextId++;
-            pending.set(id, { resolveCall, rejectCall, method });
-            const payload = JSON.stringify({ id, method, params });
-            ws.send(payload);
-          });
-        },
-        on(event, handler) {
-          ws.on(event, handler);
-        },
-        close() {
-          ws.close();
+      send({
+        type: "req",
+        id: connectFrameId,
+        method: "connect",
+        params: {
+          minProtocol: 3,
+          maxProtocol: 3,
+          client: {
+            id: "gateway-client",
+            version: "0.1.0",
+            platform: "macos",
+            mode: "backend",
+          },
+          role: "operator",
+          scopes: ["operator.read", "operator.write", "operator.admin"],
+          auth: token ? { token } : undefined,
         },
       });
     });
-    ws.on("error", (err) => reject(err));
+
+    ws.on("error", (err) => {
+      if (!connected) reject(err);
+    });
+
     ws.on("message", (raw) => {
+      let frame;
       try {
-        const msg = JSON.parse(raw.toString("utf8"));
-        if (typeof msg.id === "number" && pending.has(msg.id)) {
-          const entry = pending.get(msg.id);
-          pending.delete(msg.id);
-          if (msg.error) {
-            entry.rejectCall(
-              new Error(
-                `gateway ${entry.method} error: ${msg.error.message ?? JSON.stringify(msg.error)}`,
-              ),
-            );
-          } else {
-            entry.resolveCall(msg.result ?? msg.payload ?? msg);
-          }
-        }
+        frame = JSON.parse(raw.toString("utf8"));
       } catch {
-        // ignore malformed frames
+        return;
+      }
+      if (frame.type === "event") {
+        for (const listener of eventListeners) {
+          listener(frame);
+        }
+        return;
+      }
+      if (frame.type !== "res") return;
+      if (!connected) {
+        if (!frame.ok) {
+          reject(new Error(`gateway connect failed: ${frame.error?.message ?? "unknown"}`));
+          return;
+        }
+        connected = true;
+        resolve({
+          request(method, params) {
+            return new Promise((resolveCall, rejectCall) => {
+              const id = randomId();
+              pending.set(id, { resolveCall, rejectCall, method });
+              send({ type: "req", id, method, params });
+            });
+          },
+          onEvent(listener) {
+            eventListeners.add(listener);
+            return () => eventListeners.delete(listener);
+          },
+          close() {
+            ws.close();
+          },
+        });
+        return;
+      }
+      const entry = pending.get(frame.id);
+      if (!entry) return;
+      pending.delete(frame.id);
+      if (frame.ok) {
+        entry.resolveCall(frame.payload ?? {});
+      } else {
+        entry.rejectCall(
+          new Error(
+            `gateway ${entry.method} error: ${frame.error?.message ?? JSON.stringify(frame.error ?? frame)}`,
+          ),
+        );
       }
     });
   });
 }
 
 async function benchmarkChatSend({ gateway, sessionKey, message, runs }) {
-  const samples = [];
+  const totalSamples = [];
   const ackSamples = [];
   for (let i = 0; i < runs; i += 1) {
     const idempotencyKey = `bench-${Date.now()}-${i}-${Math.random().toString(36).slice(2)}`;
@@ -172,25 +221,29 @@ async function benchmarkChatSend({ gateway, sessionKey, message, runs }) {
     const done = new Promise((r) => {
       resolveDone = r;
     });
-    const handler = (raw) => {
-      try {
-        const event = JSON.parse(raw.toString("utf8"));
-        if (
-          event.method === "chat.final" ||
-          (event.method === "chat.event" && event.params?.type === "final")
-        ) {
-          if (
-            event.params?.runId === idempotencyKey ||
-            event.params?.idempotencyKey === idempotencyKey
-          ) {
-            resolveDone();
-          }
-        }
-      } catch {
-        // ignore
+    const removeListener = gateway.onEvent((frame) => {
+      // OpenClaw broadcast frame: { type: "event", event, payload, seq }
+      const eventName = frame.event ?? frame.method;
+      const payload = frame.payload ?? frame.params ?? {};
+      if (process.env.BENCH_DEBUG) {
+        console.log(
+          `    [event] event=${eventName} state=${payload.state ?? ""} runId=${payload.runId ?? ""} session=${payload.sessionKey ?? ""}`,
+        );
       }
-    };
-    gateway.on("message", handler);
+      if (eventName !== "chat" && eventName !== "chat.final") return;
+      const matchesRun =
+        payload.runId === idempotencyKey ||
+        payload.sessionKey === sessionKey ||
+        payload.payload?.sessionKey === sessionKey;
+      if (!matchesRun) return;
+      if (
+        eventName === "chat.final" ||
+        payload.state === "final" ||
+        payload.kind === "final"
+      ) {
+        resolveDone();
+      }
+    });
     try {
       await gateway.request("chat.send", {
         sessionKey,
@@ -205,16 +258,18 @@ async function benchmarkChatSend({ gateway, sessionKey, message, runs }) {
         delay(60_000).then(() => "timeout"),
       ]);
       const totalMs = performance.now() - started;
-      samples.push(totalMs);
+      totalSamples.push(totalMs);
       console.log(
         `  run ${i + 1}: ack=${fmt(ackedAt)} ${finished === "final" ? "final" : "TIMEOUT"} total=${fmt(totalMs)}`,
       );
+    } catch (err) {
+      console.log(`  run ${i + 1}: ERROR ${err.message}`);
     } finally {
-      gateway.off?.("message", handler);
+      removeListener();
     }
     await delay(500);
   }
-  return { totalSamples: samples, ackSamples };
+  return { totalSamples, ackSamples };
 }
 
 async function benchmarkGatewayRaw({ gateway, sessionKey, message, runs, model }) {

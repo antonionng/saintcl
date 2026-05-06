@@ -3131,12 +3131,14 @@ export async function runEmbeddedAttempt(
           // already tripped and abortable() would immediately reject.
           const compactionRetryWait = yieldAborted
             ? { timedOut: false }
-            : await waitForCompactionRetryWithAggregateTimeout({
-                waitForCompactionRetry,
-                abortable,
-                aggregateTimeoutMs: COMPACTION_RETRY_AGGREGATE_TIMEOUT_MS,
-                isCompactionStillInFlight: isCompactionInFlight,
-              });
+            : await withDiagnosticPhase("attempt.post-prompt-compaction-wait", () =>
+                waitForCompactionRetryWithAggregateTimeout({
+                  waitForCompactionRetry,
+                  abortable,
+                  aggregateTimeoutMs: COMPACTION_RETRY_AGGREGATE_TIMEOUT_MS,
+                  isCompactionStillInFlight: isCompactionInFlight,
+                }),
+              );
           if (compactionRetryWait.timedOut) {
             timedOutDuringCompaction = true;
             if (!isProbeSession) {
@@ -3279,33 +3281,35 @@ export async function runEmbeddedAttempt(
             lastCallUsage,
             promptCache,
           });
-          await finalizeAttemptContextEngineTurn({
-            contextEngine: activeContextEngine,
-            promptError: Boolean(promptError),
-            aborted,
-            yieldAborted,
-            sessionIdUsed,
-            sessionKey: params.sessionKey,
-            sessionFile: params.sessionFile,
-            messagesSnapshot,
-            prePromptMessageCount,
-            tokenBudget: params.contextTokenBudget,
-            runtimeContext: afterTurnRuntimeContext,
-            runMaintenance: async (contextParams) =>
-              await runContextEngineMaintenance({
-                contextEngine: contextParams.contextEngine as never,
-                sessionId: contextParams.sessionId,
-                sessionKey: contextParams.sessionKey,
-                sessionFile: contextParams.sessionFile,
-                reason: contextParams.reason,
-                sessionManager: contextParams.sessionManager as never,
-                runtimeContext: contextParams.runtimeContext,
-                config: params.config,
-              }),
-            sessionManager,
-            config: params.config,
-            warn: (message) => log.warn(message),
-          });
+          await withDiagnosticPhase("attempt.post-prompt-context-engine", () =>
+            finalizeAttemptContextEngineTurn({
+              contextEngine: activeContextEngine,
+              promptError: Boolean(promptError),
+              aborted,
+              yieldAborted,
+              sessionIdUsed,
+              sessionKey: params.sessionKey,
+              sessionFile: params.sessionFile,
+              messagesSnapshot,
+              prePromptMessageCount,
+              tokenBudget: params.contextTokenBudget,
+              runtimeContext: afterTurnRuntimeContext,
+              runMaintenance: async (contextParams) =>
+                await runContextEngineMaintenance({
+                  contextEngine: contextParams.contextEngine as never,
+                  sessionId: contextParams.sessionId,
+                  sessionKey: contextParams.sessionKey,
+                  sessionFile: contextParams.sessionFile,
+                  reason: contextParams.reason,
+                  sessionManager: contextParams.sessionManager as never,
+                  runtimeContext: contextParams.runtimeContext,
+                  config: params.config,
+                }),
+              sessionManager,
+              config: params.config,
+              warn: (message) => log.warn(message),
+            }),
+          );
         }
 
         if (
@@ -3658,7 +3662,8 @@ export async function runEmbeddedAttempt(
       // See: https://github.com/openclaw/openclaw/issues/8643
       let cleanupError: unknown;
       try {
-        await cleanupEmbeddedAttemptResources({
+        await withDiagnosticPhase("attempt.cleanup-resources", () =>
+          cleanupEmbeddedAttemptResources({
           removeToolResultContextGuard,
           flushPendingToolResultsAfterIdle,
           session,
@@ -3670,7 +3675,8 @@ export async function runEmbeddedAttempt(
           bundleMcpRuntime,
           bundleLspRuntime,
           sessionLock,
-        });
+          }),
+        );
       } catch (err) {
         cleanupError = err;
       }
