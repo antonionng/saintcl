@@ -85,7 +85,7 @@ function clampChars(text: string, maxChars: number): string {
   return `${trimmed.slice(0, maxChars - 1).trim()}...`;
 }
 
-type StructuredSummary = {
+export type StructuredSummary = {
   companySummary: string;
   agentBrief: string;
   knowledgeMarkdown: string;
@@ -109,7 +109,7 @@ function buildSummaryPrompt(homepageText: string, aboutText: string | null, webs
   ].join("\n");
 }
 
-function parseStructuredSummary(raw: string | null): StructuredSummary | null {
+export function parseStructuredSummary(raw: string | null): StructuredSummary | null {
   if (!raw) return null;
   let text = raw.trim();
   if (text.startsWith("```")) {
@@ -166,7 +166,7 @@ async function summarizeWithLlm(prompt: string): Promise<StructuredSummary | nul
  * is unavailable. Used so onboarding never leaves the user staring at empty
  * fields. The fallback is intentionally conservative and clearly editable.
  */
-function buildFallbackSummary(
+export function buildFallbackSummary(
   homepageText: string,
   website: string,
 ): StructuredSummary | null {
