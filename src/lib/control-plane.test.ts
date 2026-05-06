@@ -140,7 +140,7 @@ describe("super admin detection", () => {
   });
 
   it("recognizes the support super admin email allowlist", () => {
-    expect(getIsSuperAdmin({ email: "ag@experrt.com", app_metadata: {} })).toBe(true);
+    expect(getIsSuperAdmin({ email: "ag@expert.com", app_metadata: {} })).toBe(true);
   });
 
   it("ignores regular auth metadata", () => {

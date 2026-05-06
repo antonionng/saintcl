@@ -214,8 +214,7 @@ function NewAgentInner() {
       }
       const body = (await res.json()) as { data?: { id?: string } };
       const agentId = body.data?.id;
-      router.push(agentId ? `/agents/${agentId}/chat` : "/agents");
-      router.refresh();
+      router.replace(agentId ? `/agents/${agentId}/chat` : "/agents");
     } catch (err) {
       const cta = (err as { cta?: "upgrade" | "topup" | "approval" | null }).cta ?? null;
       setError({

@@ -1,10 +1,13 @@
 import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 
+import { WorkspaceBootstrapPending } from "@/components/workspace/workspace-bootstrap-pending";
 import { WorkspaceShell } from "@/components/workspace/workspace-shell";
 import { getCurrentOrg, getCurrentUserProfile, getPreferredAgentForSession, getTrialMessageUsageCount } from "@/lib/dal";
 import { isOpenClawConfigured } from "@/lib/env";
 import { normalizeAgentAvatarConfig } from "@/lib/agent-identity";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { ensureCurrentControlUiOrigin } from "@/lib/openclaw/control-ui-origins";
 import { resolveAgentWorkspaceFromConfig } from "@/lib/openclaw/agent-terminal";
 import { recordRuntimePressureSample } from "@/lib/openclaw/runtime-pressure";
@@ -20,6 +23,38 @@ import {
   TRIAL_FALLBACK_FREE_MODEL_ID,
   TRIAL_MESSAGE_LIMIT,
 } from "@/lib/plans";
+
+type NonNullOrgSession = NonNullable<Awaited<ReturnType<typeof getCurrentOrg>>>;
+
+function orgNeedsCompanyContextOnboarding(session: NonNullOrgSession) {
+  if (!session.capabilities.canManagePolicies) {
+    return false;
+  }
+  const { website, company_summary, agent_brief } = session.org;
+  const hasWebsite = Boolean(website?.trim());
+  const hasSummary = Boolean(company_summary?.trim());
+  const hasBrief = Boolean(agent_brief?.trim());
+  return !hasWebsite && !hasSummary && !hasBrief;
+}
+
+type WorkspaceOnboardingSequence = "none" | "profile_only" | "company_only" | "company_then_profile";
+
+function resolveWorkspaceOnboardingSequence(
+  session: NonNullOrgSession,
+  profileIncomplete: boolean,
+): WorkspaceOnboardingSequence {
+  const orgGate = orgNeedsCompanyContextOnboarding(session);
+  if (orgGate && profileIncomplete) {
+    return "company_then_profile";
+  }
+  if (orgGate) {
+    return "company_only";
+  }
+  if (profileIncomplete) {
+    return "profile_only";
+  }
+  return "none";
+}
 
 function profileNeedsOnboarding(profile: {
   displayName?: string | null;
@@ -160,7 +195,12 @@ async function getWorkspaceSurface(orgId: string, preferredSession?: string) {
 export default async function WorkspacePage() {
   const session = await getCurrentOrg();
   if (!session) {
-    return null;
+    const supabase = await createClient();
+    const { data: authData } = (await supabase?.auth.getUser()) ?? { data: { user: null } };
+    if (!authData?.user) {
+      redirect("/login");
+    }
+    return <WorkspaceBootstrapPending />;
   }
 
   const profile = await getCurrentUserProfile();
@@ -169,7 +209,10 @@ export default async function WorkspacePage() {
     whatIDo: profile?.whatIDo ?? "",
     agentBrief: profile?.agentBrief ?? "",
   };
-  const requiresOnboarding = profileNeedsOnboarding(profile);
+  const requiresUserProfileOnboarding = profileNeedsOnboarding(profile);
+  const requiresOrgCompanyOnboarding = orgNeedsCompanyContextOnboarding(session);
+  const onboardingSequence = resolveWorkspaceOnboardingSequence(session, requiresUserProfileOnboarding);
+
   let preferredAgent = await getPreferredAgentForSession(session);
   if (!preferredAgent) {
     await autoBootstrapIfMissing(session.capabilities.canManageAgents);
@@ -189,10 +232,28 @@ export default async function WorkspacePage() {
     isSuperAdmin: session.isSuperAdmin,
   });
 
+  let surface:
+    | Awaited<ReturnType<typeof getWorkspaceSurface>>
+    | { readonly configured: false; readonly healthy: false } = {
+      configured: false,
+      healthy: false,
+    };
+
   if (hasProvisionedAgent) {
-    const repairedModel = await repairManagedRuntimeConfig(session.org.id, preferredAgent, { trialActive });
-    if (preferredAgent && repairedModel && repairedModel !== preferredAgent.model) {
-      preferredAgent = { ...preferredAgent, model: repairedModel };
+    if (trialHasCapacity) {
+      const [repairedModel, workspaceSurface] = await Promise.all([
+        repairManagedRuntimeConfig(session.org.id, preferredAgent, { trialActive }),
+        getWorkspaceSurface(session.org.id, preferredSession),
+      ]);
+      if (preferredAgent && repairedModel && repairedModel !== preferredAgent.model) {
+        preferredAgent = { ...preferredAgent, model: repairedModel };
+      }
+      surface = workspaceSurface;
+    } else {
+      const repairedModel = await repairManagedRuntimeConfig(session.org.id, preferredAgent, { trialActive });
+      if (preferredAgent && repairedModel && repairedModel !== preferredAgent.model) {
+        preferredAgent = { ...preferredAgent, model: repairedModel };
+      }
     }
     await ensureCurrentControlUiOrigin(session.org.id).catch(() => null);
     // Best-effort runtime pressure sample. Surfaces gateway CPU/event-loop
@@ -200,10 +261,6 @@ export default async function WorkspacePage() {
     // queueing customer chat turns.
     void recordRuntimePressureSample(session.org.id);
   }
-
-  const surface = hasProvisionedAgent && trialHasCapacity
-    ? await getWorkspaceSurface(session.org.id, preferredSession)
-    : ({ configured: false, healthy: false } as const);
   const embeddedConsoleUrl =
     "embeddedConsoleUrl" in surface && surface.embeddedConsoleUrl
       ? surface.embeddedConsoleUrl
@@ -217,7 +274,14 @@ export default async function WorkspacePage() {
       gatewayUrl={gatewayUrl}
       sessionKey={preferredSession}
       error={error}
-      requiresOnboarding={requiresOnboarding}
+      requiresOnboarding={requiresUserProfileOnboarding}
+      requiresOrgCompanyOnboarding={requiresOrgCompanyOnboarding}
+      onboardingSequence={onboardingSequence}
+      initialOrgContext={{
+        website: session.org.website ?? "",
+        companySummary: session.org.company_summary ?? "",
+        agentBrief: session.org.agent_brief ?? "",
+      }}
       hasProvisionedAgent={hasProvisionedAgent}
       canProvisionAgent={session.capabilities.canManageAgents}
       canManageAgents={session.capabilities.canManageAgents}

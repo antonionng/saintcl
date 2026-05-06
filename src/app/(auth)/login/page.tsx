@@ -96,8 +96,7 @@ function LoginPageContent() {
       return;
     }
 
-    router.push(nextPath && nextPath.startsWith("/") ? nextPath : "/auth/landing");
-    router.refresh();
+    router.replace(nextPath && nextPath.startsWith("/") ? nextPath : "/auth/landing");
   }
 
   return (

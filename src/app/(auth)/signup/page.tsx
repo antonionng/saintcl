@@ -107,8 +107,9 @@ function SignupPageContent() {
       return;
     }
 
-    router.push("/workspace");
-    router.refresh();
+    const destination =
+      nextPath && nextPath.startsWith("/") ? nextPath : "/workspace";
+    window.location.assign(`${window.location.origin}${destination}`);
   }
 
   const stepIndex = step === "account" ? 0 : step === "use-case" ? 1 : 2;

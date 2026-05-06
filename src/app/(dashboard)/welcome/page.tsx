@@ -73,13 +73,15 @@ export default async function WelcomePage() {
 
   let embeddedConsoleUrl: string | undefined;
   let gatewayUrl: string | undefined;
+  let welcomeSessionKey: string | undefined;
   if (preferred && trialHasCapacity) {
     await ensureCurrentControlUiOrigin(session.org.id).catch(() => null);
     const target = await getChatSurface(session.org.id);
     if (target) {
+      welcomeSessionKey = `agent:${preferred.openclaw_agent_id}:welcome`;
       embeddedConsoleUrl = buildGatewayWorkspaceProxyPath(target, {
         path: "chat",
-        session: `agent:${preferred.openclaw_agent_id}:welcome`,
+        session: welcomeSessionKey,
       });
       gatewayUrl = target.wsUrl;
     }
@@ -162,6 +164,7 @@ export default async function WelcomePage() {
           <TestChatEmbed
             embeddedConsoleUrl={embeddedConsoleUrl}
             gatewayUrl={gatewayUrl}
+            sessionKey={welcomeSessionKey}
             title={`Test ${agentName}`}
             className="h-full"
           />

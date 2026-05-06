@@ -30,7 +30,7 @@ export function AgentCloneButton({
       }
       const newId = body?.data?.id;
       if (newId && redirectToChat) {
-        router.push(`/agents/${newId}/chat`);
+        router.replace(`/agents/${newId}/chat`);
       } else {
         router.refresh();
       }

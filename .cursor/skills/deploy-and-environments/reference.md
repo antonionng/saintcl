@@ -30,6 +30,9 @@ Railway bootstrap variables commonly include:
 - `OPENCLAW_WORKSPACE_DIR`
 - `OPENCLAW_CONFIG_PATH`
 - `OPENCLAW_ALLOWED_ORIGINS`
+- `OPENCLAW_LOG_SLOW_DIAGNOSTIC_PHASE_MS` (optional; gateway warns when preflight compaction, memory flush, or embedded bootstrap phases exceed this many milliseconds; see `railway-openclaw.env.example`)
+
+For managed **local** gateways (spawned by the app or `openclaw:gateway:watch`), set the same variable in `.env.local` so the process inherits it (see `.env.local.example`).
 
 ## Deployment Checklist
 

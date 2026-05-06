@@ -1705,6 +1705,19 @@ describe("deriveSessionTitle", () => {
 });
 
 describe("resolveGatewayModelSupportsImages", () => {
+  test("requests a read-only model catalog load so capability checks avoid heavy discovery", async () => {
+    let seenReadOnly: boolean | undefined;
+    await resolveGatewayModelSupportsImages({
+      model: "gpt-4",
+      provider: "openai",
+      loadGatewayModelCatalog: async (opts) => {
+        seenReadOnly = opts?.readOnly;
+        return [{ id: "gpt-4", name: "GPT-4", provider: "openai", input: ["text"] }];
+      },
+    });
+    expect(seenReadOnly).toBe(true);
+  });
+
   test("keeps Foundry GPT deployments image-capable even when stale catalog metadata says text-only", async () => {
     await expect(
       resolveGatewayModelSupportsImages({

@@ -1291,7 +1291,10 @@ export async function resolveGatewayModelSupportsImages(params: {
   }
 
   try {
-    const catalog = await params.loadGatewayModelCatalog({ readOnly: false });
+    // Capability checks only need persisted/static catalog rows. A full refresh
+    // (readOnly: false) imports the Pi SDK and may discover providers, which can
+    // stall chat.send on cold paths even though attachments already waited on I/O.
+    const catalog = await params.loadGatewayModelCatalog({ readOnly: true });
     const modelEntry = findModelCatalogEntry(catalog, {
       provider: params.provider,
       modelId: params.model,

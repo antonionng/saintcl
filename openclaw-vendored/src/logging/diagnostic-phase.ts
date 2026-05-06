@@ -5,8 +5,56 @@ import {
   type DiagnosticPhaseDetails,
   type DiagnosticPhaseSnapshot,
 } from "../infra/diagnostic-events.js";
+import { getLogger } from "./logger.js";
 
 const RECENT_PHASE_CAPACITY = 40;
+
+/** Embedded phases whose duration mostly reflects the user-visible LLM call (exclude from slow-phase warnings). */
+const ATTEMPT_MODEL_PHASE_PREFIX = "attempt.active-session-prompt";
+
+function resolveSlowDiagnosticPhaseThresholdMs(): number | undefined {
+  const raw = process.env.OPENCLAW_LOG_SLOW_DIAGNOSTIC_PHASE_MS?.trim();
+  if (!raw || raw === "0" || raw.toLowerCase() === "off" || raw.toLowerCase() === "false") {
+    return undefined;
+  }
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return undefined;
+  }
+  return parsed;
+}
+
+function shouldEmitSlowDiagnosticPhaseLog(phaseName: string): boolean {
+  if (phaseName === "reply.preflight-compaction" || phaseName === "reply.memory-flush") {
+    return true;
+  }
+  if (phaseName.startsWith("attempt.") && !phaseName.startsWith(ATTEMPT_MODEL_PHASE_PREFIX)) {
+    return true;
+  }
+  return false;
+}
+
+function maybeWarnSlowDiagnosticPhase(snapshot: DiagnosticPhaseSnapshot): void {
+  const thresholdMs = resolveSlowDiagnosticPhaseThresholdMs();
+  if (thresholdMs === undefined || snapshot.durationMs < thresholdMs) {
+    return;
+  }
+  if (!shouldEmitSlowDiagnosticPhaseLog(snapshot.name)) {
+    return;
+  }
+  try {
+    getLogger().warn(
+      {
+        phase: snapshot.name,
+        durationMs: snapshot.durationMs,
+        cpuTotalMs: snapshot.cpuTotalMs,
+      },
+      `slow diagnostic phase phase=${snapshot.name} wallMs=${snapshot.durationMs} (OPENCLAW_LOG_SLOW_DIAGNOSTIC_PHASE_MS)`,
+    );
+  } catch {
+    // Ignore logger failures: diagnostics must never break the reply pipeline.
+  }
+}
 
 type ActiveDiagnosticPhase = {
   name: string;
@@ -44,6 +92,7 @@ export function getRecentDiagnosticPhases(limit = 8): DiagnosticPhaseSnapshot[] 
 
 export function recordDiagnosticPhase(snapshot: DiagnosticPhaseSnapshot): void {
   pushRecentPhase(snapshot);
+  maybeWarnSlowDiagnosticPhase(snapshot);
   if (!areDiagnosticsEnabledForProcess()) {
     return;
   }

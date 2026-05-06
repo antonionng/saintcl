@@ -12,6 +12,10 @@ import {
   X,
 } from "lucide-react";
 
+import { WORKSPACE_BOOTSTRAP_ATTEMPTS_KEY } from "@/components/workspace/workspace-bootstrap-pending";
+import { WorkspaceCompanyContextOnboarding } from "@/components/workspace/workspace-company-context-onboarding";
+import { WORKSPACE_EXPECT_PROFILE_STEP2_KEY } from "@/components/workspace/workspace-onboarding-keys";
+
 import { RequestLogTable, type RequestLogItem } from "@/components/dashboard/request-log-table";
 import { SessionLogTail } from "@/components/dashboard/session-log-tail";
 import { Button } from "@/components/ui/button";
@@ -22,12 +26,21 @@ import { Textarea } from "@/components/ui/textarea";
 const OPENCLAW_CONTROL_SETTINGS_KEY = "openclaw.control.settings.v1";
 const WORKSPACE_AGENT_NOTICE_DISMISSED_KEY = "saintagi.workspace.agentNoticeDismissed.v1";
 
+type WorkspaceOnboardingSequence = "none" | "profile_only" | "company_only" | "company_then_profile";
+
 type WorkspaceShellProps = {
   embeddedConsoleUrl?: string;
   gatewayUrl?: string;
   sessionKey?: string;
   error?: string;
   requiresOnboarding?: boolean;
+  requiresOrgCompanyOnboarding?: boolean;
+  onboardingSequence?: WorkspaceOnboardingSequence;
+  initialOrgContext?: {
+    website: string;
+    companySummary: string;
+    agentBrief: string;
+  };
   hasProvisionedAgent?: boolean;
   canProvisionAgent?: boolean;
   canManageAgents?: boolean;
@@ -114,6 +127,9 @@ export function WorkspaceShell({
   sessionKey,
   error,
   requiresOnboarding = false,
+  requiresOrgCompanyOnboarding = false,
+  onboardingSequence = "none",
+  initialOrgContext = { website: "", companySummary: "", agentBrief: "" },
   hasProvisionedAgent = true,
   canProvisionAgent = false,
   canManageAgents = false,
@@ -140,6 +156,7 @@ export function WorkspaceShell({
   const [provisioningError, setProvisioningError] = useState<string | null>(null);
   const [guideOpen, setGuideOpen] = useState(false);
   const [agentNoticeOpen, setAgentNoticeOpen] = useState(true);
+  const [profileStepTwoKicker, setProfileStepTwoKicker] = useState(false);
 
   const normalizedOnboardingProfile = useMemo(
     () => ({
@@ -149,13 +166,18 @@ export function WorkspaceShell({
     }),
     [onboardingProfile],
   );
-  const onboardingActive = !onboardingComplete;
-  const showProvisioningState = !onboardingActive && !hasProvisionedAgent;
+
+  const userProfileOnboardingBlocking = requiresOnboarding && !onboardingComplete;
+  const blockingOnboarding = requiresOrgCompanyOnboarding || userProfileOnboardingBlocking;
+  const showCompanyContextOnboarding = requiresOrgCompanyOnboarding;
+  const showUserProfileOnboarding = !requiresOrgCompanyOnboarding && requiresOnboarding && !onboardingComplete;
+
+  const showProvisioningState = !blockingOnboarding && !hasProvisionedAgent;
   const displayAgentName = agentName?.trim() || "Your company agent";
   const displayOrgName = orgName?.trim() || "your company";
   const trialUsageRatio = trialMessageLimit > 0 ? trialMessageCount / trialMessageLimit : 0;
   const showTrialUsageWarning = trialActive && trialUsageRatio >= 0.8;
-  const showWorkspaceActions = !onboardingActive && hasProvisionedAgent;
+  const showWorkspaceActions = !blockingOnboarding && hasProvisionedAgent;
   const agentNoticeStorageKey = useMemo(
     () => `${WORKSPACE_AGENT_NOTICE_DISMISSED_KEY}:${displayOrgName}:${displayAgentName}`,
     [displayAgentName, displayOrgName],
@@ -165,6 +187,14 @@ export function WorkspaceShell({
     seedManagedWorkspaceSettings(gatewayUrl, sessionKey);
     setReady(true);
   }, [gatewayUrl, sessionKey]);
+
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem(WORKSPACE_BOOTSTRAP_ATTEMPTS_KEY);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 640px)");
@@ -179,6 +209,17 @@ export function WorkspaceShell({
     }
   }, [agentNoticeStorageKey]);
 
+  useLayoutEffect(() => {
+    if (!showUserProfileOnboarding) {
+      return;
+    }
+    try {
+      setProfileStepTwoKicker(sessionStorage.getItem(WORKSPACE_EXPECT_PROFILE_STEP2_KEY) === "1");
+    } catch {
+      setProfileStepTwoKicker(false);
+    }
+  }, [showUserProfileOnboarding]);
+
   useEffect(() => {
     setOnboardingProfile(initialProfile);
     setOnboardingComplete(!requiresOnboarding);
@@ -190,7 +231,7 @@ export function WorkspaceShell({
   }, [hasProvisionedAgent]);
 
   useEffect(() => {
-    if (!panelOpen || onboardingActive) {
+    if (!panelOpen || blockingOnboarding) {
       return;
     }
 
@@ -230,7 +271,7 @@ export function WorkspaceShell({
     return () => {
       cancelled = true;
     };
-  }, [onboardingActive, panelOpen]);
+  }, [blockingOnboarding, panelOpen]);
 
   async function submitOnboarding() {
     if (normalizedOnboardingProfile.displayName.length < 2) {
@@ -275,6 +316,11 @@ export function WorkspaceShell({
       });
       setOnboardingComplete(true);
       setPanelOpen(false);
+      try {
+        sessionStorage.removeItem(WORKSPACE_EXPECT_PROFILE_STEP2_KEY);
+      } catch {
+        // ignore
+      }
       router.refresh();
     } catch (saveError) {
       setOnboardingError(
@@ -393,8 +439,9 @@ export function WorkspaceShell({
         </div>
       ) : null}
       <div className="relative min-h-0 flex-1">
-        {ready && !onboardingActive && hasProvisionedAgent && embeddedConsoleUrl ? (
+        {ready && !blockingOnboarding && hasProvisionedAgent && embeddedConsoleUrl ? (
           <iframe
+            key={embeddedConsoleUrl}
             ref={iframeRef}
             src={embeddedConsoleUrl}
             title="Saint AGI Workspace"
@@ -542,10 +589,26 @@ export function WorkspaceShell({
           </Card>
         </div>
       ) : null}
-      {onboardingActive ? (
+      {showCompanyContextOnboarding ? (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-[#05060a]/96 px-4 py-20">
+          <WorkspaceCompanyContextOnboarding
+            orgName={orgName ?? "your organization"}
+            initialWebsite={initialOrgContext.website}
+            initialCompanySummary={initialOrgContext.companySummary}
+            initialAgentBrief={initialOrgContext.agentBrief}
+            companyOnboardingSequence={
+              onboardingSequence === "company_then_profile" ? "company_then_profile" : "company_only"
+            }
+          />
+        </div>
+      ) : null}
+      {showUserProfileOnboarding ? (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-[#05060a]/96 px-4 py-20">
           <Card className="w-full max-w-2xl border-white/10 bg-[#090b10]/96">
             <CardHeader>
+              {profileStepTwoKicker ? (
+                <p className="app-kicker text-white/55">Step 2 of 2 · Your profile</p>
+              ) : null}
               <CardTitle>Help your agent get to know you</CardTitle>
               <CardDescription>
                 Answer a few quick questions before you enter the workspace. Your answers help personalize your
