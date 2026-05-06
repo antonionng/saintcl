@@ -1,13 +1,17 @@
 import { isOpenClawRuntimeManaged } from "@/lib/env";
 import { OpenClawClient } from "@/lib/openclaw/client";
-import type { BootstrapTenantOptions, OpenClawRuntimeDescriptor } from "@/lib/openclaw/runtime-types";
+import type {
+  BootstrapTenantOptions,
+  OpenClawGatewaySource,
+  OpenClawRuntimeDescriptor,
+} from "@/lib/openclaw/runtime-types";
 import { ensureTenantRuntime, startTenantRuntime } from "@/lib/openclaw/runtime-manager";
 import { resolveTenantGatewayTarget } from "@/lib/openclaw/tenant-gateway";
 
 type TenantOpenClawClientResult = {
   client: OpenClawClient;
   runtime: OpenClawRuntimeDescriptor | null;
-  source: "env" | "runtime" | "shard";
+  source: OpenClawGatewaySource;
 };
 
 export async function getTenantOpenClawClient(

@@ -68,6 +68,22 @@ export type ResolvedAgentRoute = {
 
 export { DEFAULT_ACCOUNT_ID } from "./session-key.js";
 
+export class RouteResolutionError extends Error {
+  readonly code = "ROUTE_NOT_FOUND";
+
+  constructor(
+    readonly details: {
+      channel: string;
+      accountId: string;
+    },
+  ) {
+    super(
+      `No explicit route binding matched channel "${details.channel}" account "${details.accountId}".`,
+    );
+    this.name = "RouteResolutionError";
+  }
+}
+
 export function deriveLastRoutePolicy(params: {
   sessionKey: string;
   mainSessionKey: string;
@@ -813,6 +829,10 @@ export function resolveAgentRoute(input: ResolveAgentRouteInput): ResolvedAgentR
       }
       return choose(matched.binding.agentId, tier.matchedBy, matched.binding.session);
     }
+  }
+
+  if (input.cfg.session?.routeFallback === "deny") {
+    throw new RouteResolutionError({ channel, accountId });
   }
 
   return choose(resolveDefaultAgentId(input.cfg), "default");

@@ -31,6 +31,7 @@ import {
   resolveActiveWorkspace,
   sortWorkspaceMemberships,
 } from "@/lib/org-selection";
+import { ensureTenantGatewayAssignment } from "@/lib/openclaw/gateway-assignments";
 import { normalizeAgentSessionAlias, parseAgentSessionKey } from "@/lib/openclaw/session-keys";
 import { normalizePlanTier, TRIAL_LENGTH_DAYS } from "@/lib/plans";
 import { getIsSuperAdmin } from "@/lib/super-admin";
@@ -541,6 +542,11 @@ export const getCurrentOrg = cache(async (): Promise<CurrentOrgSession | null> =
 
   await admin.from("org_members").insert({ org_id: org.id, user_id: user.id, role: "owner" });
   await ensureOrgFoundation(admin, org.id);
+  await ensureTenantGatewayAssignment({
+    orgId: org.id,
+    reason: "trial",
+    dedicated: true,
+  }).catch(() => null);
 
   await notifyAdminOfSignup({
     userId: user.id,

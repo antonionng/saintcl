@@ -3,6 +3,7 @@ import type { OpenClawConfig } from "../config/config.js";
 import * as routingBindings from "./bindings.js";
 import {
   deriveLastRoutePolicy,
+  RouteResolutionError,
   resolveAgentRoute,
   resolveInboundLastRouteSessionKey,
 } from "./resolve-route.js";
@@ -113,6 +114,23 @@ describe("resolveAgentRoute", () => {
       lastRoutePolicy: "main",
       matchedBy: "default",
     });
+  });
+
+  test("denies fallback routing when session.routeFallback is deny", () => {
+    const cfg: OpenClawConfig = {
+      session: { routeFallback: "deny" },
+      agents: { list: [{ id: "agent_alpha" }, { id: "agent_beta" }] },
+      bindings: [{ agentId: "agent_alpha", match: { channel: "whatsapp", accountId: "agent_alpha" } }],
+    };
+
+    expect(() =>
+      resolveAgentRoute({
+        cfg,
+        channel: "whatsapp",
+        accountId: "agent_beta",
+        peer: { kind: "direct", id: "+15551234567" },
+      }),
+    ).toThrow(RouteResolutionError);
   });
 
   test.each([

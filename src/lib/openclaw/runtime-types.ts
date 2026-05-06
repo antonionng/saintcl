@@ -29,6 +29,8 @@ export interface OpenClawRuntimeDescriptor {
   paths: OpenClawRuntimePaths;
 }
 
+export type OpenClawGatewaySource = "env" | "runtime" | "shard" | "assignment";
+
 export interface OpenClawRuntimeState {
   id: string;
   orgId: string;

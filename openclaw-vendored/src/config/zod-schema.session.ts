@@ -55,6 +55,7 @@ export const SessionSchema = z
     typingIntervalSeconds: z.number().int().positive().optional(),
     typingMode: TypingModeSchema.optional(),
     mainKey: z.string().optional(),
+    routeFallback: z.enum(["default", "deny"]).optional(),
     sendPolicy: SessionSendPolicySchema.optional(),
     writeLock: z
       .object({

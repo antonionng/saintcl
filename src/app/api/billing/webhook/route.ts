@@ -10,6 +10,7 @@ import {
   reserveStripeEvent,
 } from "@/lib/billing/wallet";
 import { getPlanConfig } from "@/lib/plans";
+import { ensureTenantGatewayAssignment } from "@/lib/openclaw/gateway-assignments";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripeClient } from "@/lib/stripe";
 
@@ -301,6 +302,12 @@ export async function POST(request: Request) {
           stripeCheckoutSessionId: session.id,
           stripeSubscriptionId: subscriptionId,
         });
+
+        await ensureTenantGatewayAssignment({
+          orgId,
+          reason: "paid",
+          dedicated: true,
+        }).catch(() => null);
 
         const context = await getBillingNotificationContext(orgId, session.metadata?.userId ?? null);
         await notifyAdminOfBilling({

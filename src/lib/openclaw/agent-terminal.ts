@@ -1,6 +1,7 @@
 import path from "node:path";
 
 import { getAgentWorkspacePath } from "./paths";
+import type { OpenClawGatewaySource } from "./runtime-types";
 
 type ConfigRecord = Record<string, unknown>;
 
@@ -75,7 +76,7 @@ export function resolveAgentWorkspaceFromConfig(input: {
   orgId: string;
   openClawAgentId: string;
   config?: unknown;
-  source?: "runtime" | "env" | "shard";
+  source?: OpenClawGatewaySource;
 }) {
   const record = asConfigRecord(input.config);
   const configuredWorkspace = typeof record.workspace === "string" ? record.workspace.trim() : "";

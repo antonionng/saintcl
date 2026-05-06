@@ -4,7 +4,7 @@ import { env, isOpenClawConfigured } from "@/lib/env";
 import { getAgentAvatarDataUri, type AgentAvatarConfig } from "@/lib/agent-identity";
 import { recordRequestEvent } from "@/lib/observability";
 import { buildOpenClawModelAllowlist } from "@/lib/openclaw/model-catalog";
-import type { OpenClawRuntimeDescriptor } from "@/lib/openclaw/runtime-types";
+import type { OpenClawGatewaySource, OpenClawRuntimeDescriptor } from "@/lib/openclaw/runtime-types";
 
 type OpenClawFrame<T = unknown> =
   | { type: "req"; id: string; method: string; params: Record<string, unknown> }
@@ -147,9 +147,50 @@ function readAgentsList(snapshot: OpenClawConfigSnapshot | undefined) {
   return Array.isArray(list) ? (list as Array<Record<string, unknown>>) : [];
 }
 
+function readBindingsList(snapshot: OpenClawConfigSnapshot | undefined) {
+  const bindings = snapshot?.config?.bindings;
+  return Array.isArray(bindings) ? (bindings as Array<Record<string, unknown>>) : [];
+}
+
+function buildAgentIdentity(input: { agentId: string; name?: string; avatar?: AgentAvatarConfig }) {
+  if (!input.name || (input.avatar?.imagePath && !input.avatar.imageDataUrl)) {
+    return undefined;
+  }
+  return {
+    name: input.name,
+    avatar: getAgentAvatarDataUri(input.agentId, input.name, input.avatar),
+  };
+}
+
+function upsertAgentListEntry(
+  snapshot: OpenClawConfigSnapshot | undefined,
+  input: { agentId: string; workspace?: string; model?: string; name?: string; avatar?: AgentAvatarConfig },
+  options?: { fastModeDefault?: boolean; memorySearch?: unknown },
+) {
+  const identity = buildAgentIdentity(input);
+  const nextEntry = {
+    ...(readAgentsList(snapshot).find((candidate) => candidate.id === input.agentId) ?? {}),
+    id: input.agentId,
+    ...(input.workspace ? { workspace: input.workspace } : {}),
+    ...(input.model ? { model: input.model } : {}),
+    ...(options?.fastModeDefault === undefined ? {} : { fastModeDefault: options.fastModeDefault }),
+    ...(options?.memorySearch === undefined ? {} : { memorySearch: options.memorySearch }),
+    ...(identity ? { identity } : {}),
+  };
+  const list = readAgentsList(snapshot).map((entry) => {
+    if (entry.id !== input.agentId) return entry;
+    return nextEntry;
+  });
+  return list.some((entry) => entry.id === input.agentId) ? list : [...list, nextEntry];
+}
+
 function readAgentDefaults(snapshot: OpenClawConfigSnapshot | undefined) {
   const agents = plainObject(snapshot?.config?.agents);
   return plainObject(agents?.defaults);
+}
+
+function readSessionConfig(snapshot: OpenClawConfigSnapshot | undefined) {
+  return plainObject(snapshot?.config?.session);
 }
 
 function buildDormantMemorySearchConfig() {
@@ -257,10 +298,12 @@ export function buildModelGovernancePatch(input: {
 
 export function managedBootstrapDefaultsMatchSnapshot(snapshot: OpenClawConfigSnapshot | undefined) {
   const defaults = readAgentDefaults(snapshot);
+  const session = readSessionConfig(snapshot);
   return (
     defaults?.skipBootstrap === true &&
     defaults.thinkingDefault === "off" &&
-    memorySearchDormant(defaults.memorySearch, { requireExplicit: true })
+    memorySearchDormant(defaults.memorySearch, { requireExplicit: true }) &&
+    session?.routeFallback === "deny"
   );
 }
 
@@ -272,11 +315,99 @@ export function agentKnowledgeSearchDormantMatchesSnapshot(
   return memorySearchDormant(entry?.memorySearch);
 }
 
+export function agentFastModeDefaultMatchesSnapshot(
+  snapshot: OpenClawConfigSnapshot | undefined,
+  agentId: string,
+) {
+  const entry = readAgentsList(snapshot).find((candidate) => candidate.id === agentId);
+  return entry?.fastModeDefault === true;
+}
+
+export function whatsappAgentBindingMatchesSnapshot(
+  snapshot: OpenClawConfigSnapshot | undefined,
+  input: { agentId: string; accountId: string },
+) {
+  return channelAgentBindingMatchesSnapshot(snapshot, { ...input, channel: "whatsapp" });
+}
+
+export function channelAgentBindingMatchesSnapshot(
+  snapshot: OpenClawConfigSnapshot | undefined,
+  input: { channel: string; agentId: string; accountId: string },
+) {
+  return readBindingsList(snapshot).some((binding) => {
+    if (binding.agentId !== input.agentId) return false;
+    const match = plainObject(binding.match);
+    return match?.channel === input.channel && match.accountId === input.accountId;
+  });
+}
+
+function appendAgentChannelBinding(
+  snapshot: OpenClawConfigSnapshot | undefined,
+  input: { channel: string; agentId: string; accountId: string },
+) {
+  if (channelAgentBindingMatchesSnapshot(snapshot, input)) {
+    return readBindingsList(snapshot);
+  }
+  return [
+    ...readBindingsList(snapshot),
+    { agentId: input.agentId, match: { channel: input.channel, accountId: input.accountId } },
+  ];
+}
+
+export function managedWhatsAppAccountMatchesSnapshot(
+  snapshot: OpenClawConfigSnapshot | undefined,
+  input: { accountId: string },
+) {
+  const channels = plainObject(snapshot?.config?.channels);
+  const whatsapp = plainObject(channels?.whatsapp);
+  const accounts = plainObject(whatsapp?.accounts);
+  const account = plainObject(accounts?.[input.accountId]);
+  return account?.enabled === true && account.dmPolicy === "allowlist";
+}
+
+export function buildManagedAgentRuntimeConfigPatch(
+  input: { agentId: string; workspace: string; model: string; name?: string; avatar?: AgentAvatarConfig; accountId?: string },
+  snapshot?: OpenClawConfigSnapshot,
+) {
+  const accountId = input.accountId?.trim() || input.agentId;
+  const bindings = appendAgentChannelBinding(snapshot, {
+    channel: "whatsapp",
+    agentId: input.agentId,
+    accountId,
+  });
+
+  return {
+    agents: {
+      defaults: {
+        skipBootstrap: true,
+        thinkingDefault: "off",
+        memorySearch: buildDormantMemorySearchConfig(),
+      },
+      list: upsertAgentListEntry(snapshot, input, {
+        fastModeDefault: true,
+        memorySearch: buildDormantMemorySearchConfig(),
+      }),
+    },
+    plugins: { entries: { whatsapp: { enabled: true } } },
+    channels: { whatsapp: { accounts: { [accountId]: { enabled: true, dmPolicy: "allowlist" } } } },
+    session: { routeFallback: "deny" },
+    bindings,
+  };
+}
+
 export function managedAgentRuntimeConfigMatchesSnapshot(
   snapshot: OpenClawConfigSnapshot | undefined,
-  desired: { agentId: string; workspace: string; model: string },
+  desired: { agentId: string; workspace: string; model: string; accountId?: string },
 ) {
-  return managedBootstrapDefaultsMatchSnapshot(snapshot) && agentMatchesSnapshot(snapshot, desired);
+  const accountId = desired.accountId?.trim() || desired.agentId;
+  return (
+    managedBootstrapDefaultsMatchSnapshot(snapshot) &&
+    agentMatchesSnapshot(snapshot, desired) &&
+    agentFastModeDefaultMatchesSnapshot(snapshot, desired.agentId) &&
+    agentKnowledgeSearchDormantMatchesSnapshot(snapshot, desired.agentId) &&
+    whatsappAgentBindingMatchesSnapshot(snapshot, { agentId: desired.agentId, accountId }) &&
+    managedWhatsAppAccountMatchesSnapshot(snapshot, { accountId })
+  );
 }
 
 export class OpenClawClient {
@@ -284,7 +415,7 @@ export class OpenClawClient {
     private readonly runtime?: Pick<OpenClawRuntimeDescriptor, "gatewayUrl" | "gatewayToken">,
     private readonly context?: {
       orgId?: string;
-      source?: "env" | "runtime" | "shard";
+      source?: OpenClawGatewaySource;
     },
   ) {}
 
@@ -413,6 +544,7 @@ export class OpenClawClient {
           memorySearch: buildDormantMemorySearchConfig(),
         },
       },
+      session: { routeFallback: "deny" },
     });
     await exec("config.patch", { raw, baseHash: snapshot.hash });
     return { changed: true };
@@ -433,28 +565,34 @@ export class OpenClawClient {
       return { changed: false };
     }
 
+    const raw = JSON.stringify(buildManagedAgentRuntimeConfigPatch(input, snapshot));
+    await exec("config.patch", { raw, baseHash: snapshot.hash });
+    return { changed: true };
+  }
+
+  async ensureWhatsAppAgentBinding(
+    input: { agentId: string; accountId?: string },
+    runner?: GatewayRpcRunner,
+    options?: { currentSnapshot?: OpenClawConfigSnapshot },
+  ): Promise<{ changed: boolean }> {
+    if (!isOpenClawConfigured()) {
+      throw new Error("Runtime gateway is not configured.");
+    }
+
+    const accountId = input.accountId?.trim() || input.agentId;
+    const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
+    const snapshot = options?.currentSnapshot ?? (await this.getConfigSnapshot(exec));
+    if (
+      whatsappAgentBindingMatchesSnapshot(snapshot, { agentId: input.agentId, accountId }) &&
+      managedWhatsAppAccountMatchesSnapshot(snapshot, { accountId })
+    ) {
+      return { changed: false };
+    }
+
     const raw = JSON.stringify({
-      agents: {
-        defaults: {
-          skipBootstrap: true,
-          thinkingDefault: "off",
-          memorySearch: buildDormantMemorySearchConfig(),
-        },
-        list: [
-          {
-            id: input.agentId,
-            workspace: input.workspace,
-            model: input.model,
-            fastModeDefault: true,
-            identity: input.name && (!input.avatar?.imagePath || input.avatar.imageDataUrl)
-              ? {
-                  name: input.name,
-                  avatar: getAgentAvatarDataUri(input.agentId, input.name, input.avatar),
-                }
-              : undefined,
-          },
-        ],
-      },
+      plugins: { entries: { whatsapp: { enabled: true } } },
+      channels: { whatsapp: { accounts: { [accountId]: { enabled: true, dmPolicy: "allowlist" } } } },
+      bindings: appendAgentChannelBinding(snapshot, { channel: "whatsapp", agentId: input.agentId, accountId }),
     });
     await exec("config.patch", { raw, baseHash: snapshot.hash });
     return { changed: true };
@@ -481,19 +619,7 @@ export class OpenClawClient {
 
     const raw = JSON.stringify({
       agents: {
-        list: [
-          {
-            id: input.agentId,
-            workspace: input.workspace,
-            model: input.model,
-            identity: input.name && (!input.avatar?.imagePath || input.avatar.imageDataUrl)
-              ? {
-                  name: input.name,
-                  avatar: getAgentAvatarDataUri(input.agentId, input.name, input.avatar),
-                }
-              : undefined,
-          },
-        ],
+        list: upsertAgentListEntry(snapshot, input),
       },
     });
 
@@ -747,14 +873,15 @@ export class OpenClawClient {
     }
 
     const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
-    const baseHash = await this.getConfigHash(exec);
+    const snapshot = await this.getConfigSnapshot(exec);
+    const accountId = input.agentId;
     const raw = JSON.stringify({
       plugins: { entries: { telegram: { enabled: true } } },
-      channels: { telegram: { botToken: input.botToken } },
-      bindings: [{ agentId: input.agentId, match: { channel: "telegram", accountId: "default" } }],
+      channels: { telegram: { accounts: { [accountId]: { enabled: true, botToken: input.botToken } } } },
+      bindings: appendAgentChannelBinding(snapshot, { channel: "telegram", agentId: input.agentId, accountId }),
     });
 
-    return exec("config.patch", { raw, baseHash });
+    return exec("config.patch", { raw, baseHash: snapshot.hash });
   }
 
   async connectSlack(input: { agentId: string; teamId: string }, runner?: GatewayRpcRunner) {
@@ -763,13 +890,17 @@ export class OpenClawClient {
     }
 
     const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
-    const baseHash = await this.getConfigHash(exec);
+    const snapshot = await this.getConfigSnapshot(exec);
     const raw = JSON.stringify({
       plugins: { entries: { slack: { enabled: true } } },
-      bindings: [{ agentId: input.agentId, match: { channel: "slack", accountId: input.teamId } }],
+      bindings: appendAgentChannelBinding(snapshot, {
+        channel: "slack",
+        agentId: input.agentId,
+        accountId: input.teamId,
+      }),
     });
 
-    return exec("config.patch", { raw, baseHash });
+    return exec("config.patch", { raw, baseHash: snapshot.hash });
   }
 
   async listModels() {

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { assertCanSpend, recordUsageCharge, usagePricing } from "@/lib/billing/usage";
 import { getCurrentOrg } from "@/lib/dal";
 import { env, isOpenClawConfigured } from "@/lib/env";
+import { ensureTenantGatewayAssignment } from "@/lib/openclaw/gateway-assignments";
 import { appendRuntimeAuditEvent } from "@/lib/openclaw/log-sync";
 import { getOrgModelCatalogState } from "@/lib/openclaw/model-governance";
 import { RuntimeRateLimitError } from "@/lib/openclaw/client";
@@ -70,6 +71,12 @@ export async function POST(request: Request) {
   if (!session.isSuperAdmin) {
     await assertCanSpend(payload.orgId, usagePricing.channelConnect);
   }
+  await ensureTenantGatewayAssignment({
+    orgId: payload.orgId,
+    reason: payload.type,
+    dedicated: true,
+  }).catch(() => null);
+
   const { snapshot } = await getOrgModelCatalogState(payload.orgId, {
     trialStatus: session.org.trial_status,
     trialEndsAt: session.org.trial_ends_at,

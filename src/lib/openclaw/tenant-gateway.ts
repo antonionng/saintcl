@@ -1,12 +1,14 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { env, isOpenClawRuntimeManaged } from "@/lib/env";
+import { getActiveTenantGatewayAssignment } from "@/lib/openclaw/gateway-assignments";
 import { resolveOrgGatewayShard } from "@/lib/openclaw/gateway-shards";
+import type { OpenClawGatewaySource } from "@/lib/openclaw/runtime-types";
 
 export type TenantGatewayTarget = {
   wsUrl: string;
   httpUrl: string;
   token?: string;
-  source: "runtime" | "env" | "shard";
+  source: OpenClawGatewaySource;
   shardId?: string;
 };
 
@@ -72,7 +74,14 @@ export function buildGatewayConsoleUrl(target: TenantGatewayTarget) {
 function buildGatewayProxyPath(
   target: TenantGatewayTarget,
   basePath: string,
-  options?: { path?: string; embed?: boolean; managedRuntime?: boolean; session?: string; debug?: boolean },
+  options?: {
+    path?: string;
+    embed?: boolean;
+    managedRuntime?: boolean;
+    session?: string;
+    debug?: boolean;
+    whatsappAccountId?: string;
+  },
 ) {
   const params = new URLSearchParams();
   params.set("gatewayUrl", target.wsUrl);
@@ -87,6 +96,9 @@ function buildGatewayProxyPath(
   }
   if (options?.session?.trim()) {
     params.set("session", options.session.trim());
+  }
+  if (options?.whatsappAccountId?.trim()) {
+    params.set("whatsappAccountId", options.whatsappAccountId.trim());
   }
 
   const token = target.token?.trim();
@@ -104,15 +116,18 @@ export function buildGatewayConsoleProxyPath(
   return buildGatewayProxyPath(target, "/api/openclaw/console", {
     ...options,
     debug: true,
-    managedRuntime: target.source === "env",
+    managedRuntime: target.source !== "runtime",
   });
 }
 
-export function buildGatewayWorkspaceProxyPath(target: TenantGatewayTarget, options?: { path?: string; session?: string }) {
+export function buildGatewayWorkspaceProxyPath(
+  target: TenantGatewayTarget,
+  options?: { path?: string; session?: string; whatsappAccountId?: string },
+) {
   return buildGatewayProxyPath(target, "/api/openclaw/workspace", {
     ...options,
     embed: true,
-    managedRuntime: target.source === "env",
+    managedRuntime: target.source !== "runtime",
   });
 }
 
@@ -128,6 +143,18 @@ function getShardGatewayTarget(orgId: string): TenantGatewayTarget | null {
   };
 }
 
+async function getAssignedGatewayTarget(orgId: string): Promise<TenantGatewayTarget | null> {
+  const assignment = await getActiveTenantGatewayAssignment(orgId);
+  if (!assignment?.wsUrl) return null;
+  return {
+    wsUrl: assignment.wsUrl,
+    httpUrl: wsToHttp(assignment.wsUrl),
+    token: assignment.token || env.openClawGatewayToken || undefined,
+    source: "assignment",
+    shardId: assignment.shardId,
+  };
+}
+
 export async function resolveTenantGatewayTarget(orgId?: string): Promise<TenantGatewayTarget | null> {
   if (!orgId) {
     return getEnvGatewayTarget();
@@ -137,10 +164,9 @@ export async function resolveTenantGatewayTarget(orgId?: string): Promise<Tenant
     return getRuntimeGatewayTarget(orgId);
   }
 
-  // Sharded hosted gateways: when OPENCLAW_GATEWAY_SHARDS is set, each org is
-  // pinned to a stable shard so customer traffic does not pile up on a single
-  // Railway runtime CPU. Falls back to the single env gateway when sharding
-  // is not configured (current default).
-  return getShardGatewayTarget(orgId) ?? getEnvGatewayTarget();
+  // Database assignments let the control plane move a tenant to a dedicated
+  // pre-warmed Railway gateway without redeploying the app. Env shards remain
+  // the fallback for staged rollout and disaster recovery.
+  return (await getAssignedGatewayTarget(orgId)) ?? getShardGatewayTarget(orgId) ?? getEnvGatewayTarget();
 }
 

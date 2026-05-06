@@ -129,7 +129,7 @@ async function repairManagedRuntimeConfig(
       normalizedModel !== TRIAL_FALLBACK_FREE_MODEL_ID
         ? TRIAL_DEFAULT_MODEL_ID
         : normalizedModel;
-    if (agent && repairedModel && repairedModel !== agent.model) {
+    if (agent && repairedModel) {
       const workspace = resolveAgentWorkspaceFromConfig({
         orgId,
         openClawAgentId: agent.openclaw_agent_id,
@@ -143,11 +143,13 @@ async function repairManagedRuntimeConfig(
         avatar: normalizeAgentAvatarConfig((agent.config as Record<string, unknown> | null | undefined)?.agentAvatar),
       });
 
-      const admin = createAdminClient();
-      await admin?.from("agents").update({ model: repairedModel }).eq("id", agent.id).eq("org_id", orgId);
+      if (repairedModel !== agent.model) {
+        const admin = createAdminClient();
+        await admin?.from("agents").update({ model: repairedModel }).eq("id", agent.id).eq("org_id", orgId);
+      }
+    } else {
+      await client.ensureManagedBootstrapDisabled();
     }
-
-    await client.ensureManagedBootstrapDisabled();
     return repairedModel ?? null;
   } catch {
     // Chat can still render its gateway error; this repair is best-effort on page load.
@@ -155,7 +157,11 @@ async function repairManagedRuntimeConfig(
   }
 }
 
-async function getWorkspaceSurface(orgId: string, preferredSession?: string) {
+async function getWorkspaceSurface(
+  orgId: string,
+  preferredSession?: string,
+  whatsappAccountId?: string,
+) {
   if (!isOpenClawConfigured()) {
     return { configured: false, healthy: false } as const;
   }
@@ -178,14 +184,22 @@ async function getWorkspaceSurface(orgId: string, preferredSession?: string) {
     return {
       configured: true,
       healthy: true,
-      embeddedConsoleUrl: buildGatewayWorkspaceProxyPath(target, { path: "chat", session: preferredSession }),
+      embeddedConsoleUrl: buildGatewayWorkspaceProxyPath(target, {
+        path: "chat",
+        session: preferredSession,
+        whatsappAccountId,
+      }),
       gatewayUrl: target.wsUrl,
     } as const;
   } catch (error) {
     return {
       configured: true,
       healthy: false,
-      embeddedConsoleUrl: buildGatewayWorkspaceProxyPath(target, { path: "chat", session: preferredSession }),
+      embeddedConsoleUrl: buildGatewayWorkspaceProxyPath(target, {
+        path: "chat",
+        session: preferredSession,
+        whatsappAccountId,
+      }),
       gatewayUrl: target.wsUrl,
       error: error instanceof Error ? error.message : "Gateway unreachable",
     } as const;
@@ -220,6 +234,7 @@ export default async function WorkspacePage() {
   }
   const hasProvisionedAgent = Boolean(preferredAgent);
   const preferredSession = preferredAgent ? buildAgentSessionKey(preferredAgent.openclaw_agent_id, "main") : undefined;
+  const whatsappAccountId = preferredAgent?.openclaw_agent_id;
   const trialMessageCount = await getTrialMessageUsageCount(session.org.id);
   const trialActive = isTrialModelRestrictionActive({
     trialStatus: session.org.trial_status,
@@ -243,7 +258,7 @@ export default async function WorkspacePage() {
     if (trialHasCapacity) {
       const [repairedModel, workspaceSurface] = await Promise.all([
         repairManagedRuntimeConfig(session.org.id, preferredAgent, { trialActive }),
-        getWorkspaceSurface(session.org.id, preferredSession),
+        getWorkspaceSurface(session.org.id, preferredSession, whatsappAccountId),
       ]);
       if (preferredAgent && repairedModel && repairedModel !== preferredAgent.model) {
         preferredAgent = { ...preferredAgent, model: repairedModel };

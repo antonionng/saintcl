@@ -21,6 +21,7 @@ function createState(): ChannelsState {
 describe("channels controller WhatsApp wait", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.history.pushState(null, "", "/?managedRuntime=true&whatsappAccountId=agent_alpha");
   });
 
   it("passes the currently displayed QR and replaces it when the login QR rotates", async () => {
@@ -35,6 +36,7 @@ describe("channels controller WhatsApp wait", () => {
     await waitWhatsAppLogin(state);
 
     expect(request).toHaveBeenCalledWith("web.login.wait", {
+      accountId: "agent_alpha",
       timeoutMs: 120000,
       currentQrDataUrl: "data:image/png;base64,current-qr",
     });
@@ -43,6 +45,20 @@ describe("channels controller WhatsApp wait", () => {
     );
     expect(state.whatsappLoginConnected).toBe(false);
     expect(state.whatsappLoginQrDataUrl).toBe("data:image/png;base64,next-qr");
+    expect(state.whatsappBusy).toBe(false);
+  });
+
+  it("blocks managed WhatsApp waits when the agent account id is missing", async () => {
+    window.history.pushState(null, "", "/?managedRuntime=true");
+    const state = createState();
+    const request = vi.mocked(state.client!.request);
+
+    await waitWhatsAppLogin(state);
+
+    expect(request).not.toHaveBeenCalled();
+    expect(state.whatsappLoginMessage).toContain("missing its agent-scoped account id");
+    expect(state.whatsappLoginQrDataUrl).toBeNull();
+    expect(state.whatsappLoginConnected).toBeNull();
     expect(state.whatsappBusy).toBe(false);
   });
 });

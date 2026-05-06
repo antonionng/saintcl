@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   BookOpen,
   Bot,
+  Check,
   LoaderCircle,
   MessageSquareText,
   ShieldCheck,
@@ -27,6 +28,8 @@ const OPENCLAW_CONTROL_SETTINGS_KEY = "openclaw.control.settings.v1";
 const WORKSPACE_AGENT_NOTICE_DISMISSED_KEY = "saintagi.workspace.agentNoticeDismissed.v1";
 
 type WorkspaceOnboardingSequence = "none" | "profile_only" | "company_only" | "company_then_profile";
+
+const MAX_PROVISION_RATE_LIMIT_ROUNDS = 6;
 
 type WorkspaceShellProps = {
   embeddedConsoleUrl?: string;
@@ -154,6 +157,9 @@ export function WorkspaceShell({
   const [onboardingError, setOnboardingError] = useState<string | null>(null);
   const [provisioning, setProvisioning] = useState(false);
   const [provisioningError, setProvisioningError] = useState<string | null>(null);
+  const [provisioningRetrySeconds, setProvisioningRetrySeconds] = useState<number | null>(null);
+  const provisioningRateLimitAutoRetries = useRef(0);
+  const provisionAgentRef = useRef<() => Promise<void>>(async () => {});
   const [guideOpen, setGuideOpen] = useState(false);
   const [agentNoticeOpen, setAgentNoticeOpen] = useState(true);
   const [profileStepTwoKicker, setProfileStepTwoKicker] = useState(false);
@@ -331,7 +337,7 @@ export function WorkspaceShell({
     }
   }
 
-  async function provisionAgent() {
+  const provisionAgent = useCallback(async () => {
     setProvisioning(true);
     setProvisioningError(null);
 
@@ -344,12 +350,51 @@ export function WorkspaceShell({
           created?: boolean;
           reason?: string;
         };
-        error?: { message?: string };
+        error?: { message?: string; code?: string; retryAfterSeconds?: number };
       };
+
+      const isProvisionRateLimited =
+        response.status === 429 &&
+        (body.error?.code === "runtime_rate_limit" ||
+          (typeof body.error?.message === "string" && /too many setup changes/i.test(body.error.message)));
+
+      if (isProvisionRateLimited) {
+        const headerSec = Number.parseInt(response.headers.get("Retry-After") ?? "", 10);
+        const fromBody =
+          typeof body.error?.retryAfterSeconds === "number" && Number.isFinite(body.error.retryAfterSeconds)
+            ? body.error.retryAfterSeconds
+            : null;
+        const fromMessage =
+          typeof body.error?.message === "string"
+            ? (() => {
+                const m = /try again in (\d+) seconds?/i.exec(body.error.message);
+                return m ? Number.parseInt(m[1], 10) : null;
+              })()
+            : null;
+        const sec = Math.min(
+          120,
+          Math.max(1, fromBody ?? (Number.isFinite(headerSec) ? headerSec : fromMessage ?? 15)),
+        );
+
+        if (provisioningRateLimitAutoRetries.current >= MAX_PROVISION_RATE_LIMIT_ROUNDS) {
+          setProvisioningError(
+            body.error?.message ??
+              "The runtime is still limiting setup changes. Wait a minute, then use Create my first agent again.",
+          );
+          return;
+        }
+
+        provisioningRateLimitAutoRetries.current += 1;
+        setProvisioningRetrySeconds(sec);
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(body.error?.message || "Unable to create your first agent.");
       }
+
+      provisioningRateLimitAutoRetries.current = 0;
+      setProvisioningRetrySeconds(null);
 
       if (!body.data) {
         throw new Error("Unable to create your first agent.");
@@ -363,7 +408,24 @@ export function WorkspaceShell({
     } finally {
       setProvisioning(false);
     }
-  }
+  }, [router]);
+
+  provisionAgentRef.current = provisionAgent;
+
+  useEffect(() => {
+    if (provisioningRetrySeconds === null) {
+      return undefined;
+    }
+    if (provisioningRetrySeconds <= 0) {
+      setProvisioningRetrySeconds(null);
+      queueMicrotask(() => void provisionAgentRef.current());
+      return undefined;
+    }
+    const id = window.setTimeout(() => {
+      setProvisioningRetrySeconds((s) => (s === null ? null : s - 1));
+    }, 1000);
+    return () => window.clearTimeout(id);
+  }, [provisioningRetrySeconds]);
 
   function dismissAgentNotice() {
     setAgentNoticeOpen(false);
@@ -545,6 +607,58 @@ export function WorkspaceShell({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
+              {canProvisionAgent && (provisioning || (provisioningRetrySeconds ?? 0) > 0) ? (
+                <div className="rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02))] px-6 py-8 text-center">
+                  <div className="mx-auto flex size-28 items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/saint-agi-mark.svg"
+                      alt=""
+                      width={72}
+                      height={72}
+                      className="h-[4.5rem] w-auto animate-[spin_2.8s_linear_infinite] opacity-95"
+                    />
+                  </div>
+                  <p className="mt-6 text-lg font-semibold leading-7 text-white">
+                    {(provisioningRetrySeconds ?? 0) > 0
+                      ? "Almost there. Your workspace runtime is catching up."
+                      : "Your first agent is taking shape."}
+                  </p>
+                  {(provisioningRetrySeconds ?? 0) > 0 ? (
+                    <div className="mt-3">
+                      <p className="text-5xl font-semibold tabular-nums tracking-tight text-white">
+                        {provisioningRetrySeconds}
+                      </p>
+                      <p className="mt-1 text-sm text-zinc-400">seconds until we retry for you automatically</p>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-sm text-zinc-400">This usually takes just a moment on first setup.</p>
+                  )}
+                  <ul className="mt-8 space-y-3 text-left text-sm leading-6 text-zinc-400">
+                    <li className="flex gap-3">
+                      <Check className="mt-0.5 size-4 shrink-0 text-emerald-400" aria-hidden />
+                      <span>
+                        We connect your company agent to the governed runtime, your models, and workspace policies.
+                      </span>
+                    </li>
+                    <li className="flex gap-3">
+                      <Check className="mt-0.5 size-4 shrink-0 text-emerald-400" aria-hidden />
+                      <span>
+                        When chat opens, you can delegate planning, drafting, and synthesis with your company context in
+                        mind.
+                      </span>
+                    </li>
+                    <li className="flex gap-3">
+                      <Check className="mt-0.5 size-4 shrink-0 text-emerald-400" aria-hidden />
+                      <span>
+                        A brief pause protects the shared runtime when many teams provision at once. Thank you for your
+                        patience.
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              ) : null}
+
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm leading-7 text-zinc-300">
                 <div className="flex items-start gap-3">
                   <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
@@ -572,13 +686,25 @@ export function WorkspaceShell({
                 </div>
               </div>
 
-              {provisioningError ? <p className="text-sm text-red-400">{provisioningError}</p> : null}
+              {provisioningError && (provisioningRetrySeconds === null || provisioningRetrySeconds <= 0) ? (
+                <p className="text-sm text-red-400">{provisioningError}</p>
+              ) : null}
 
               {canProvisionAgent ? (
                 <div className="flex flex-wrap items-center gap-3">
-                  <Button type="button" onClick={provisionAgent} disabled={provisioning}>
+                  <Button
+                    type="button"
+                    onClick={() => void provisionAgent()}
+                    disabled={provisioning || (provisioningRetrySeconds !== null && provisioningRetrySeconds > 0)}
+                  >
                     {provisioning ? <LoaderCircle className="size-4 animate-spin" /> : null}
-                    <span>{provisioning ? "Creating agent..." : "Create my first agent"}</span>
+                    <span>
+                      {provisioning
+                        ? "Creating agent..."
+                        : (provisioningRetrySeconds ?? 0) > 0
+                          ? `Wait ${provisioningRetrySeconds}s`
+                          : "Create my first agent"}
+                    </span>
                   </Button>
                   <Button type="button" variant="secondary" asChild>
                     <Link href="/agents/new">Open advanced setup</Link>

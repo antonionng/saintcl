@@ -278,15 +278,13 @@ function mergeConfig(existingConfig, options) {
     controlUi.allowedOrigins = [...new Set([...existingAllowedOrigins, ...options.allowedOrigins])];
   }
 
-  if (
-    (!Array.isArray(controlUi.allowedOrigins) || controlUi.allowedOrigins.length === 0) &&
-    controlUi.dangerouslyAllowHostHeaderOriginFallback === undefined
-  ) {
+  // For dedicated hosted gateways we keep host-header fallback enabled so the
+  // Control UI dashboard works from allowed origins without requiring device
+  // pairing on every direct visit. The explicit allowedOrigins list is still
+  // enforced as the primary gate; the fallback is a safety net for browser
+  // clients that do not send a perfect Origin header.
+  if (controlUi.dangerouslyAllowHostHeaderOriginFallback === undefined) {
     controlUi.dangerouslyAllowHostHeaderOriginFallback = true;
-  }
-
-  if (Array.isArray(controlUi.allowedOrigins) && controlUi.allowedOrigins.length > 0) {
-    delete controlUi.dangerouslyAllowHostHeaderOriginFallback;
   }
 
   // SaintAGI runs as a hosted multi-tenant control plane: the Next.js backend
@@ -298,6 +296,14 @@ function mergeConfig(existingConfig, options) {
   // gateway config.
   if (controlUi.allowSharedTokenBackendOperator === undefined) {
     controlUi.allowSharedTokenBackendOperator = true;
+  }
+
+  // For dedicated per-tenant gateways we disable device auth for the Control UI
+  // so the dashboard works immediately from allowed origins without requiring
+  // manual device pairing on every first visit. The gateway is not shared, so
+  // the risk is contained. The SaintAGI backend still uses the shared token path.
+  if (controlUi.dangerouslyDisableDeviceAuth === undefined) {
+    controlUi.dangerouslyDisableDeviceAuth = true;
   }
 
   for (const channelId of options.bootstrapChannels) {

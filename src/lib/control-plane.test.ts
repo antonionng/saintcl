@@ -18,6 +18,13 @@ import {
   restrictSnapshotToTrialFreeModels,
 } from "./openclaw/model-catalog";
 import {
+  buildManagedAgentRuntimeConfigPatch,
+  channelAgentBindingMatchesSnapshot,
+  managedAgentRuntimeConfigMatchesSnapshot,
+  whatsappAgentBindingMatchesSnapshot,
+} from "./openclaw/client";
+import { resolveTenantGatewayAssignmentFromRow } from "./openclaw/gateway-assignments";
+import {
   getAgentTerminalConfig,
   normalizeAgentTerminalRepoPaths,
   resolveAgentWorkspaceFromConfig,
@@ -30,7 +37,7 @@ import {
 import { paginateDiscoveryCatalog } from "./openclaw/discovery-pagination";
 import { resolveKnowledgeMimeType } from "./knowledge";
 import { resolveActiveWorkspace, sortWorkspaceMemberships } from "./org-selection";
-import { parseAgentSessionKey } from "./openclaw/session-keys";
+import { agentSessionKeyBelongsToAgent, parseAgentSessionKey } from "./openclaw/session-keys";
 import { createEmailActionToken, verifyEmailActionToken } from "./email/tokens";
 import { renderEmailTemplate } from "./email/templates";
 import {
@@ -516,6 +523,205 @@ describe("observability projections", () => {
       sessionName: "main",
     });
     expect(parseAgentSessionKey("not-a-session-key")).toBeNull();
+  });
+
+  it("rejects session keys owned by a different agent", () => {
+    expect(agentSessionKeyBelongsToAgent("agent:alpha:main", "alpha")).toBe(true);
+    expect(agentSessionKeyBelongsToAgent("agent:beta:main", "alpha")).toBe(false);
+    expect(agentSessionKeyBelongsToAgent("main", "alpha")).toBe(false);
+  });
+});
+
+describe("managed OpenClaw agent isolation config", () => {
+  it("upserts one managed agent without dropping sibling agents or channel bindings", () => {
+    const patch = buildManagedAgentRuntimeConfigPatch(
+      {
+        agentId: "agent_alpha",
+        workspace: "/runtime/org_123/agents/agent_alpha",
+        model: "openrouter/anthropic/claude-4.5-haiku",
+        name: "Alpha",
+      },
+      {
+        hash: "hash_123",
+        config: {
+          agents: {
+            list: [
+              { id: "agent_beta", workspace: "/runtime/org_123/agents/agent_beta", model: "model-beta" },
+              { id: "agent_alpha", workspace: "/old", model: "old-model", identity: { name: "Old Alpha" } },
+            ],
+          },
+          bindings: [{ agentId: "agent_beta", match: { channel: "whatsapp", accountId: "agent_beta" } }],
+        },
+      } as never,
+    );
+
+    expect(patch.agents.list).toHaveLength(2);
+    expect(patch.agents.list.find((entry) => entry.id === "agent_beta")).toMatchObject({
+      id: "agent_beta",
+      workspace: "/runtime/org_123/agents/agent_beta",
+    });
+    expect(patch.agents.list.find((entry) => entry.id === "agent_alpha")).toMatchObject({
+      id: "agent_alpha",
+      workspace: "/runtime/org_123/agents/agent_alpha",
+      model: "openrouter/anthropic/claude-4.5-haiku",
+      fastModeDefault: true,
+      memorySearch: { enabled: false },
+    });
+    expect(patch.bindings).toContainEqual({
+      agentId: "agent_alpha",
+      match: { channel: "whatsapp", accountId: "agent_alpha" },
+    });
+    expect(patch.channels.whatsapp.accounts.agent_alpha).toMatchObject({
+      enabled: true,
+      dmPolicy: "allowlist",
+    });
+    expect(patch.session).toEqual({ routeFallback: "deny" });
+  });
+
+  it("requires the agent-scoped WhatsApp binding and allowlist policy for a managed config match", () => {
+    const baseSnapshot = {
+      hash: "hash_123",
+      config: {
+        agents: {
+          defaults: {
+            skipBootstrap: true,
+            thinkingDefault: "off",
+            memorySearch: { enabled: false, sync: { onSessionStart: false, onSearch: false, watch: false } },
+          },
+          list: [
+            {
+              id: "agent_alpha",
+              workspace: "/runtime/org_123/agents/agent_alpha",
+              model: "openrouter/anthropic/claude-4.5-haiku",
+              fastModeDefault: true,
+              memorySearch: { enabled: false },
+            },
+          ],
+        },
+      },
+    };
+
+    expect(
+      managedAgentRuntimeConfigMatchesSnapshot(baseSnapshot as never, {
+        agentId: "agent_alpha",
+        workspace: "/runtime/org_123/agents/agent_alpha",
+        model: "openrouter/anthropic/claude-4.5-haiku",
+      }),
+    ).toBe(false);
+
+    const withBinding = {
+      ...baseSnapshot,
+      config: {
+        ...baseSnapshot.config,
+        bindings: [{ agentId: "agent_alpha", match: { channel: "whatsapp", accountId: "agent_alpha" } }],
+      },
+    };
+
+    expect(
+      whatsappAgentBindingMatchesSnapshot(withBinding as never, { agentId: "agent_alpha", accountId: "agent_alpha" }),
+    ).toBe(true);
+    expect(
+      managedAgentRuntimeConfigMatchesSnapshot(withBinding as never, {
+        agentId: "agent_alpha",
+        workspace: "/runtime/org_123/agents/agent_alpha",
+        model: "openrouter/anthropic/claude-4.5-haiku",
+      }),
+    ).toBe(false);
+
+    const withManagedWhatsAppAccount = {
+      ...withBinding,
+      config: {
+        ...withBinding.config,
+        channels: {
+          whatsapp: {
+            accounts: {
+              agent_alpha: {
+                enabled: true,
+                dmPolicy: "allowlist",
+              },
+            },
+          },
+        },
+        session: { routeFallback: "deny" },
+      },
+    };
+
+    expect(
+      managedAgentRuntimeConfigMatchesSnapshot(withManagedWhatsAppAccount as never, {
+        agentId: "agent_alpha",
+        workspace: "/runtime/org_123/agents/agent_alpha",
+        model: "openrouter/anthropic/claude-4.5-haiku",
+      }),
+    ).toBe(true);
+  });
+
+  it("matches channel bindings by both channel and account id", () => {
+    const snapshot = {
+      hash: "hash_123",
+      config: {
+        bindings: [
+          { agentId: "agent_alpha", match: { channel: "telegram", accountId: "agent_alpha" } },
+          { agentId: "agent_alpha", match: { channel: "slack", accountId: "T123" } },
+        ],
+      },
+    };
+
+    expect(
+      channelAgentBindingMatchesSnapshot(snapshot as never, {
+        channel: "telegram",
+        agentId: "agent_alpha",
+        accountId: "agent_alpha",
+      }),
+    ).toBe(true);
+    expect(
+      channelAgentBindingMatchesSnapshot(snapshot as never, {
+        channel: "telegram",
+        agentId: "agent_alpha",
+        accountId: "default",
+      }),
+    ).toBe(false);
+    expect(
+      channelAgentBindingMatchesSnapshot(snapshot as never, {
+        channel: "whatsapp",
+        agentId: "agent_alpha",
+        accountId: "agent_alpha",
+      }),
+    ).toBe(false);
+  });
+});
+
+describe("tenant gateway assignments", () => {
+  it("resolves active URL assignments and ignores disabled rows", () => {
+    process.env.OPENCLAW_TEST_GATEWAY_TOKEN = "token_123";
+
+    expect(
+      resolveTenantGatewayAssignmentFromRow({
+        org_id: "org_123",
+        ws_url: "wss://tenant-a.up.railway.app",
+        token_env_key: "OPENCLAW_TEST_GATEWAY_TOKEN",
+        status: "active",
+        dedicated: true,
+        assignment_reason: "paid",
+      }),
+    ).toEqual({
+      orgId: "org_123",
+      shardId: undefined,
+      wsUrl: "wss://tenant-a.up.railway.app",
+      token: "token_123",
+      status: "active",
+      dedicated: true,
+      assignmentReason: "paid",
+    });
+
+    expect(
+      resolveTenantGatewayAssignmentFromRow({
+        org_id: "org_123",
+        ws_url: "wss://tenant-a.up.railway.app",
+        status: "disabled",
+      }),
+    ).toBeNull();
+
+    delete process.env.OPENCLAW_TEST_GATEWAY_TOKEN;
   });
 });
 

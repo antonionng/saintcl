@@ -10,7 +10,11 @@ import {
 } from "@/lib/openclaw/model-governance";
 import { RuntimeRateLimitError } from "@/lib/openclaw/client";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
-import { buildAgentSessionKey, parseProviderFromModelRef } from "@/lib/openclaw/session-keys";
+import {
+  agentSessionKeyBelongsToAgent,
+  buildAgentSessionKey,
+  parseProviderFromModelRef,
+} from "@/lib/openclaw/session-keys";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const patchSessionModelSchema = z.object({
@@ -78,6 +82,12 @@ export async function PATCH(
     });
 
     const sessionKey = payload.sessionKey?.trim() || buildAgentSessionKey(agent.openclaw_agent_id);
+    if (!agentSessionKeyBelongsToAgent(sessionKey, agent.openclaw_agent_id)) {
+      return NextResponse.json(
+        { error: { message: "Session key does not belong to this agent." } },
+        { status: 403 },
+      );
+    }
     const runtimeAllowed = getRuntimeAllowedModels(snapshot).map((entry) => ({
       id: entry.id,
       label: entry.label,

@@ -25,6 +25,13 @@ export async function GET(request: Request) {
   const preferredSession = preferredAgent ? `agent:${preferredAgent.openclaw_agent_id}:main` : undefined;
 
   return NextResponse.redirect(
-    new URL(buildGatewayWorkspaceProxyPath(target, { path: "chat", session: preferredSession }), request.url),
+    new URL(
+      buildGatewayWorkspaceProxyPath(target, {
+        path: "chat",
+        session: preferredSession,
+        whatsappAccountId: preferredAgent.openclaw_agent_id,
+      }),
+      request.url,
+    ),
   );
 }

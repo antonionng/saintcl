@@ -14,6 +14,11 @@ export function parseAgentSessionKey(sessionKey: string) {
   };
 }
 
+export function agentSessionKeyBelongsToAgent(sessionKey: string, openclawAgentId: string) {
+  const parsed = parseAgentSessionKey(sessionKey);
+  return parsed?.openclawAgentId === openclawAgentId;
+}
+
 export function normalizeAgentSessionAlias(value: string) {
   const normalized = value.trim().toLowerCase();
   const separatorIndex = normalized.indexOf("-");

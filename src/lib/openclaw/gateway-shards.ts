@@ -106,3 +106,9 @@ export function resolveOrgGatewayShard(orgId: string | undefined | null): Gatewa
 export function listConfiguredGatewayShards(): GatewayShard[] {
   return getShardConfig().shards.slice();
 }
+
+export function getConfiguredGatewayShard(shardId: string | undefined | null): GatewayShard | null {
+  const normalized = shardId?.trim();
+  if (!normalized) return null;
+  return getShardConfig().shards.find((shard) => shard.id === normalized) ?? null;
+}

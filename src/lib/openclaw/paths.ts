@@ -1,7 +1,11 @@
 import path from "node:path";
 
 import { env } from "../env";
-import type { OpenClawRuntimeDescriptor, OpenClawRuntimePaths } from "./runtime-types";
+import type {
+  OpenClawGatewaySource,
+  OpenClawRuntimeDescriptor,
+  OpenClawRuntimePaths,
+} from "./runtime-types";
 
 export function slugifyPathSegment(value: string) {
   return value
@@ -71,9 +75,9 @@ export function getHostedWorkspaceBasePath() {
 
 export function getGatewayWorkspaceRoot(
   orgId: string,
-  options?: { source?: "runtime" | "env" | "shard" },
+  options?: { source?: OpenClawGatewaySource },
 ) {
-  if (options?.source === "env" || options?.source === "shard") {
+  if (options?.source === "env" || options?.source === "shard" || options?.source === "assignment") {
     return path.join(getHostedWorkspaceBasePath(), slugifyPathSegment(orgId));
   }
 
@@ -83,7 +87,7 @@ export function getGatewayWorkspaceRoot(
 export function getAgentWorkspacePath(
   orgId: string,
   agentId: string,
-  options?: { source?: "runtime" | "env" | "shard" },
+  options?: { source?: OpenClawGatewaySource },
 ) {
   return path.join(getGatewayWorkspaceRoot(orgId, options), slugifyPathSegment(agentId));
 }

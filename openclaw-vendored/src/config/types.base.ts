@@ -201,6 +201,12 @@ export type SessionConfig = {
   typingIntervalSeconds?: number;
   typingMode?: TypingMode;
   mainKey?: string;
+  /**
+   * Controls inbound route behavior when no binding matches.
+   * "default" preserves legacy fallback to the default agent.
+   * "deny" fails closed so channel traffic cannot drift to another agent.
+   */
+  routeFallback?: "default" | "deny";
   sendPolicy?: SessionSendPolicyConfig;
   /** Session transcript write-lock acquisition policy. */
   writeLock?: SessionWriteLockConfig;

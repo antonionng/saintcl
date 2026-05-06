@@ -4,6 +4,7 @@ import { getAgents, getCurrentOrg, loadCurrentUserProfile } from "@/lib/dal";
 import { sendAgentIntroductionEmail } from "@/lib/email/service";
 import { isOpenClawConfigured } from "@/lib/env";
 import { injectAgentContext } from "@/lib/openclaw/context-injection";
+import { ensureTenantGatewayAssignment } from "@/lib/openclaw/gateway-assignments";
 import { getAgentWorkspacePath } from "@/lib/openclaw/paths";
 import { resolveModelSelection } from "@/lib/openclaw/model-governance";
 import { RuntimeRateLimitError } from "@/lib/openclaw/client";
@@ -95,6 +96,12 @@ export async function POST() {
       trialEndsAt: session.org.trial_ends_at,
       context: "agent",
     });
+    await ensureTenantGatewayAssignment({
+      orgId,
+      reason: session.org.trial_status === "active" ? "trial" : "manual",
+      dedicated: true,
+    }).catch(() => null);
+
     const { client, runtime, source } = await getTenantOpenClawClient(orgId, {
       orgId,
       defaultModel: snapshot.defaultModel,
@@ -273,6 +280,8 @@ export async function POST() {
       return NextResponse.json(
         {
           error: {
+            code: "runtime_rate_limit",
+            retryAfterSeconds,
             message: `Too many setup changes in the last minute. Please try again in ${retryAfterSeconds} seconds.`,
           },
         },
