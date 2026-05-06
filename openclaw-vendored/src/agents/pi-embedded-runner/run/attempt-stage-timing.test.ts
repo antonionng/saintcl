@@ -25,18 +25,18 @@ describe("embedded run stage timing", () => {
     });
   });
 
-  it("warns only for very slow stage summaries by default", () => {
+  it("warns when stage summary crosses the chat-latency threshold by default", () => {
     expect(
       shouldWarnEmbeddedRunStageSummary({
-        totalMs: 9_999,
-        stages: [{ name: "auth", durationMs: 4_999, elapsedMs: 4_999 }],
+        totalMs: 1_499,
+        stages: [{ name: "auth", durationMs: 499, elapsedMs: 499 }],
       }),
     ).toBe(false);
-    expect(shouldWarnEmbeddedRunStageSummary({ totalMs: 10_000, stages: [] })).toBe(true);
+    expect(shouldWarnEmbeddedRunStageSummary({ totalMs: 1_500, stages: [] })).toBe(true);
     expect(
       shouldWarnEmbeddedRunStageSummary({
         totalMs: 10,
-        stages: [{ name: "auth", durationMs: 5_000, elapsedMs: 5_000 }],
+        stages: [{ name: "auth", durationMs: 500, elapsedMs: 500 }],
       }),
     ).toBe(true);
   });

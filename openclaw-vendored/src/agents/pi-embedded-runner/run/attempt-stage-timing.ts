@@ -14,8 +14,26 @@ export type EmbeddedRunStageTracker = {
   snapshot: () => EmbeddedRunStageSummary;
 };
 
-const EMBEDDED_RUN_STAGE_WARN_TOTAL_MS = 10_000;
-const EMBEDDED_RUN_STAGE_WARN_STAGE_MS = 5_000;
+// Real Chat Latency: lowered defaults so the prep / startup stage summaries
+// surface in production logs whenever a turn would already feel slow to the
+// user. The previous defaults (10s total / 5s any stage) only logged when
+// things had gone catastrophically wrong, hiding the 4-9s tail we're trying
+// to fix. Override with OPENCLAW_STAGE_WARN_TOTAL_MS /
+// OPENCLAW_STAGE_WARN_STAGE_MS if you need looser thresholds.
+const FALLBACK_STAGE_WARN_TOTAL_MS = 1_500;
+const FALLBACK_STAGE_WARN_STAGE_MS = 500;
+function resolveEnvMs(envVar: string, fallback: number): number {
+  const parsed = Number.parseInt(process.env[envVar]?.trim() ?? "", 10);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
+const EMBEDDED_RUN_STAGE_WARN_TOTAL_MS = resolveEnvMs(
+  "OPENCLAW_STAGE_WARN_TOTAL_MS",
+  FALLBACK_STAGE_WARN_TOTAL_MS,
+);
+const EMBEDDED_RUN_STAGE_WARN_STAGE_MS = resolveEnvMs(
+  "OPENCLAW_STAGE_WARN_STAGE_MS",
+  FALLBACK_STAGE_WARN_STAGE_MS,
+);
 
 export function createEmbeddedRunStageTracker(options?: {
   now?: () => number;
