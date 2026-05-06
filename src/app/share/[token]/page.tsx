@@ -68,7 +68,7 @@ export default async function SharedAgentPage({
             Saint AGI
           </Link>
           <Button asChild size="sm" variant="secondary">
-            <Link href="/#contact">Request access</Link>
+            <Link href="/#contact">Join waitlist</Link>
           </Button>
         </div>
       </header>
@@ -93,7 +93,7 @@ export default async function SharedAgentPage({
           </div>
 
           <div className="mt-6 rounded-lg border border-border-subtle bg-surface-1 p-4 text-sm text-zinc-400">
-            Want to build your own? <Link href="/#contact" className="text-white underline">Request access</Link> and pick from
+            Want to build your own? <Link href="/#contact" className="text-white underline">Join waitlist</Link> and pick from
             our templates.
           </div>
         </div>

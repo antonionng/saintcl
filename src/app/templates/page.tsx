@@ -35,7 +35,7 @@ export default function PublicTemplatesPage() {
               <Link href="/login">Sign in</Link>
             </Button>
             <Button asChild size="sm">
-              <Link href="/#contact">Request access</Link>
+              <Link href="/#contact">Join waitlist</Link>
             </Button>
           </div>
         </div>
@@ -88,7 +88,7 @@ export default function PublicTemplatesPage() {
             </p>
           </div>
           <Button asChild size="lg">
-            <Link href="/#contact">Request access</Link>
+            <Link href="/#contact">Join waitlist</Link>
           </Button>
         </div>
       </section>

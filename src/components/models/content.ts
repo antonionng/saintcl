@@ -5,7 +5,7 @@ export const modelsPageHero = {
     "Saint AGI gives your company access to deep reasoning, fast execution, open deployment paths, and budget-aware coverage under one governed operating layer.",
   primary: {
     href: "/#contact",
-    label: "Request access",
+    label: "Join waitlist",
   },
   secondary: {
     href: "/capabilities",
@@ -165,7 +165,7 @@ export const modelsClosingCta = {
     "Saint AGI turns model variety into a practical operating advantage by keeping routing, approvals, memory, and runtime behavior aligned as adoption scales.",
   primary: {
     href: "/#contact",
-    label: "Request access",
+    label: "Join waitlist",
   },
   secondary: {
     href: "/pricing",

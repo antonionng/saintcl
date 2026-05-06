@@ -66,7 +66,7 @@ export default async function HomePage() {
                   Log in
                 </Link>
                 <Button asChild size="sm">
-                  <Link href="/#contact">Request access</Link>
+                  <Link href="/#contact">Join waitlist</Link>
                 </Button>
               </>
             )}

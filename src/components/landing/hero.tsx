@@ -99,7 +99,7 @@ export function HeroSection() {
               href="/#contact"
               className="inline-flex items-center justify-center rounded-[10px] bg-white px-6 py-3.5 text-[15px] font-semibold !text-black transition-colors hover:bg-white/90"
             >
-              Request access
+              Join waitlist
             </Link>
             <Link
               href="#how-it-works"

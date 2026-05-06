@@ -125,6 +125,33 @@ You can reply directly to this email if you want to add anything else.`;
   });
 }
 
+export async function sendWaitlistConfirmation(input: SupportTicketEmailInput) {
+  const subject = `You are on the Saint AGI waiting list [SC-${input.publicToken}]`;
+  const body = `Hi ${input.requesterName || "there"},
+
+Thanks for joining the Saint AGI waiting list. We have your details and will reach out as soon as we are ready to open the right access path for your team.
+
+What you shared:
+${input.message}
+
+You can reply directly to this email if you want to add anything else.`;
+
+  return sendSupportEmail({
+    to: input.requesterEmail,
+    replyTo: getSupportReplyAddress(input.publicToken),
+    subject,
+    text: body,
+    html: renderSupportShell({
+      eyebrow: "Waiting list joined",
+      title: "You are on the list.",
+      body,
+      reference: `SC-${input.publicToken}`,
+      footer: "We will only use this thread to follow up about Saint AGI access unless you ask us for something else.",
+    }),
+    headers: buildReplyHeaders({ publicToken: input.publicToken }),
+  });
+}
+
 export async function sendContactAdminNotification(input: SupportTicketEmailInput) {
   const ticketUrl = `${getBaseUrl()}/support`;
   const subject = `New Saint AGI contact request: ${input.subject}`;
@@ -153,6 +180,39 @@ Open queue: ${ticketUrl}`;
       ctaLabel: "Open support queue",
       ctaUrl: ticketUrl,
       footer: "This message was generated from the Saint AGI contact form.",
+    }),
+    headers: buildReplyHeaders({ publicToken: input.publicToken }),
+  });
+}
+
+export async function sendWaitlistAdminNotification(input: SupportTicketEmailInput) {
+  const ticketUrl = `${getBaseUrl()}/support`;
+  const subject = `New Saint AGI waitlist signup: ${input.requesterEmail}`;
+  const body = `Someone joined the Saint AGI waiting list.
+
+Name: ${input.requesterName || "Not provided"}
+Email: ${input.requesterEmail}
+Company: ${input.company || "Not provided"}
+Ticket: ${input.ticketId}
+
+Signup details:
+${input.message}
+
+Open queue: ${ticketUrl}`;
+
+  return sendSupportEmail({
+    to: env.supportNotifyEmail,
+    replyTo: input.requesterEmail,
+    subject,
+    text: body,
+    html: renderSupportShell({
+      eyebrow: "New waitlist signup",
+      title: input.company ? `${input.requesterName || input.requesterEmail} from ${input.company}` : input.requesterName || input.requesterEmail,
+      body,
+      reference: `SC-${input.publicToken}`,
+      ctaLabel: "Open support queue",
+      ctaUrl: ticketUrl,
+      footer: "This message was generated when someone joined the Saint AGI waiting list.",
     }),
     headers: buildReplyHeaders({ publicToken: input.publicToken }),
   });

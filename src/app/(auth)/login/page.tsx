@@ -116,7 +116,7 @@ function LoginPageContent() {
             className="text-white transition-colors hover:text-zinc-200"
             href="/#contact"
           >
-            Request access
+            Join the waiting list
           </Link>
         </>
       }

@@ -261,10 +261,10 @@ export const trustPillars = [
 ] as const;
 
 export const finalCtaContent = {
-  headline: "Two years of research. Built with enterprises across the globe. Available today.",
-  subhead: "Request access and our team will help set up your first governed agent.",
-  primary: { href: "/#contact", label: "Request access" },
-  secondary: { href: "/#contact", label: "Talk to sales" },
+  headline: "Two years of research. Built with enterprises across the globe. Opening access carefully.",
+  subhead: "Join the waiting list and tell us where governed agents could help your team first.",
+  primary: { href: "/#contact", label: "Join waitlist" },
+  secondary: { href: "/#contact", label: "Tell us your use case" },
 };
 
 export const productSystemIntro = {
@@ -467,7 +467,7 @@ export const articleCta = {
     "Launch agents from proven recipes, connect them to work, and keep approvals, visibility, runtime health, and policy in one place.",
   primary: {
     href: "/#contact",
-    label: "Request access",
+    label: "Join waitlist",
   },
   secondary: {
     href: "/pricing",
@@ -490,7 +490,7 @@ export const footerLinkGroups = [
   {
     title: "Company",
     links: [
-      { href: "/#contact", label: "Request access" },
+      { href: "/#contact", label: "Join waitlist" },
       { href: "/login", label: "Log in" },
       { href: "/#contact", label: "Contact" },
     ],

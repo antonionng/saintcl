@@ -19,29 +19,29 @@ export function ContactForm() {
     const formData = new FormData(form);
     setState({ status: "submitting", message: null });
 
-    const response = await fetch("/api/contact", {
+    const response = await fetch("/api/waitlist", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: formData.get("name"),
         email: formData.get("email"),
         company: formData.get("company"),
-        subject: formData.get("subject"),
-        message: formData.get("message"),
+        teamSize: formData.get("teamSize"),
+        useCase: formData.get("useCase"),
         website: formData.get("website"),
       }),
     });
 
     const body = (await response.json().catch(() => null)) as { data?: { reference?: string }; error?: { message?: string } } | null;
     if (!response.ok) {
-      setState({ status: "error", message: body?.error?.message || "We could not send your request. Please try again." });
+      setState({ status: "error", message: body?.error?.message || "We could not add you to the waiting list. Please try again." });
       return;
     }
 
     form.reset();
     setState({
       status: "success",
-      message: `Thanks. We have your request${body?.data?.reference ? ` (${body.data.reference})` : ""} and will be in touch.`,
+      message: `You are on the waiting list${body?.data?.reference ? ` (${body.data.reference})` : ""}. We sent a confirmation and will reach out as access opens.`,
     });
   }
 
@@ -62,7 +62,7 @@ export function ContactForm() {
           />
         </label>
         <label className="space-y-2 text-[14px] font-medium text-white">
-          Email
+          Work email
           <input
             name="email"
             type="email"
@@ -84,39 +84,38 @@ export function ContactForm() {
           />
         </label>
         <label className="space-y-2 text-[14px] font-medium text-white">
-          Subject
+          Team size
           <input
-            name="subject"
-            required
-            maxLength={180}
+            name="teamSize"
+            maxLength={80}
             className="w-full rounded-[12px] border border-[#2a2a30] bg-black px-4 py-3 text-[15px] text-white outline-none transition-colors placeholder:text-[#6f6f78] focus:border-white/50"
-            placeholder="What do you need?"
+            placeholder="1-10, 11-50, 51-250..."
           />
         </label>
       </div>
       <label className="mt-4 block space-y-2 text-[14px] font-medium text-white">
-        Message
+        What would you like agents to handle first?
         <textarea
-          name="message"
+          name="useCase"
           required
           minLength={10}
           maxLength={5000}
           rows={6}
           className="w-full resize-y rounded-[12px] border border-[#2a2a30] bg-black px-4 py-3 text-[15px] text-white outline-none transition-colors placeholder:text-[#6f6f78] focus:border-white/50"
-          placeholder="Tell us what you want to build, buy, fix, or ask."
+          placeholder="Tell us about the team, workflow, or tools you want Saint AGI to help with."
         />
       </label>
       <input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
       <div className="mt-6 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
         <p className="text-[13px] leading-6 text-[#8d8d96]">
-          We will email you a confirmation and route urgent requests to the Saint AGI team.
+          We will email your confirmation and notify the Saint AGI team when you join.
         </p>
         <Button
           type="submit"
           disabled={state.status === "submitting"}
           className="h-12 w-full rounded-[12px] px-7 text-[15px] font-semibold whitespace-nowrap sm:w-auto sm:min-w-[160px]"
         >
-          {state.status === "submitting" ? "Sending..." : "Send request"}
+          {state.status === "submitting" ? "Joining..." : "Join waiting list"}
         </Button>
       </div>
       {state.message ? (
