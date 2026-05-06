@@ -6,7 +6,6 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import {
   BookOpen,
   Bot,
-  Check,
   LoaderCircle,
   MessageSquareText,
   ShieldCheck,
@@ -157,9 +156,10 @@ export function WorkspaceShell({
   const [onboardingError, setOnboardingError] = useState<string | null>(null);
   const [provisioning, setProvisioning] = useState(false);
   const [provisioningError, setProvisioningError] = useState<string | null>(null);
-  const [provisioningRetrySeconds, setProvisioningRetrySeconds] = useState<number | null>(null);
+  const provisioningRetrySecondsRef = useRef<number | null>(null);
   const provisioningRateLimitAutoRetries = useRef(0);
   const provisionAgentRef = useRef<() => Promise<void>>(async () => {});
+  const provisioningAutoStartedRef = useRef(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [agentNoticeOpen, setAgentNoticeOpen] = useState(true);
   const [profileStepTwoKicker, setProfileStepTwoKicker] = useState(false);
@@ -372,60 +372,69 @@ export function WorkspaceShell({
               })()
             : null;
         const sec = Math.min(
-          120,
-          Math.max(1, fromBody ?? (Number.isFinite(headerSec) ? headerSec : fromMessage ?? 15)),
+          60,
+          Math.max(2, fromBody ?? (Number.isFinite(headerSec) ? headerSec : fromMessage ?? 8)),
         );
 
         if (provisioningRateLimitAutoRetries.current >= MAX_PROVISION_RATE_LIMIT_ROUNDS) {
+          setProvisioning(false);
           setProvisioningError(
             body.error?.message ??
-              "The runtime is still limiting setup changes. Wait a minute, then use Create my first agent again.",
+              "We could not finish setting up your agent. Try again in a minute.",
           );
           return;
         }
 
         provisioningRateLimitAutoRetries.current += 1;
-        setProvisioningRetrySeconds(sec);
+        provisioningRetrySecondsRef.current = sec;
+        // Keep `provisioning` true so the loading state stays continuous while
+        // we wait silently for the next attempt. No countdown is shown to the
+        // user; the calm spinner is the entire experience.
+        window.setTimeout(() => {
+          provisioningRetrySecondsRef.current = null;
+          void provisionAgentRef.current();
+        }, sec * 1000);
         return;
       }
 
       if (!response.ok) {
-        throw new Error(body.error?.message || "Unable to create your first agent.");
+        throw new Error(body.error?.message || "Unable to set up your agent.");
       }
 
       provisioningRateLimitAutoRetries.current = 0;
-      setProvisioningRetrySeconds(null);
+      provisioningRetrySecondsRef.current = null;
 
       if (!body.data) {
-        throw new Error("Unable to create your first agent.");
+        throw new Error("Unable to set up your agent.");
       }
 
+      // Keep the loading state visible until the page rerender swaps in the
+      // chat iframe. router.refresh() updates server data without dropping
+      // the spinner.
       router.refresh();
     } catch (bootstrapError) {
-      setProvisioningError(
-        bootstrapError instanceof Error ? bootstrapError.message : "Unable to create your first agent.",
-      );
-    } finally {
       setProvisioning(false);
+      setProvisioningError(
+        bootstrapError instanceof Error ? bootstrapError.message : "Unable to set up your agent.",
+      );
     }
   }, [router]);
 
   provisionAgentRef.current = provisionAgent;
 
+  // Auto-start provisioning the moment onboarding is clear and the user can
+  // create their default agent. The server-side page also tries to bootstrap
+  // for us, but origin inference can fail in some hosting setups; this client
+  // path guarantees the workspace lands the user directly in chat without an
+  // extra "Create my first agent" click.
   useEffect(() => {
-    if (provisioningRetrySeconds === null) {
-      return undefined;
-    }
-    if (provisioningRetrySeconds <= 0) {
-      setProvisioningRetrySeconds(null);
-      queueMicrotask(() => void provisionAgentRef.current());
-      return undefined;
-    }
-    const id = window.setTimeout(() => {
-      setProvisioningRetrySeconds((s) => (s === null ? null : s - 1));
-    }, 1000);
-    return () => window.clearTimeout(id);
-  }, [provisioningRetrySeconds]);
+    if (provisioningAutoStartedRef.current) return;
+    if (blockingOnboarding) return;
+    if (hasProvisionedAgent) return;
+    if (!canProvisionAgent) return;
+    provisioningAutoStartedRef.current = true;
+    void provisionAgent();
+  }, [blockingOnboarding, canProvisionAgent, hasProvisionedAgent, provisionAgent]);
 
   function dismissAgentNotice() {
     setAgentNoticeOpen(false);
@@ -597,119 +606,80 @@ export function WorkspaceShell({
       ) : null}
       {showProvisioningState ? (
         <div className="fixed inset-0 z-20 flex items-center justify-center bg-[#05060a]/96 px-4 py-20">
-          <Card className="w-full max-w-2xl border-white/10 bg-[#090b10]/96">
+          <Card className="w-full max-w-xl border-white/10 bg-[#090b10]/96">
             <CardHeader>
-              <CardTitle>{canProvisionAgent ? "Create your first agent" : "Waiting for your agent"}</CardTitle>
+              <CardTitle>
+                {!canProvisionAgent
+                  ? "Waiting for your agent"
+                  : provisioningError
+                    ? "We hit a snag setting up your agent"
+                    : "Setting up your agent workspace"}
+              </CardTitle>
               <CardDescription>
-                {canProvisionAgent
-                  ? "Your workspace stays empty until you explicitly provision one default agent. Additional agents are created from Agents and follow your plan limits and billing rules."
-                  : "Your workspace will activate once an admin provisions and assigns a company agent to you."}
+                {!canProvisionAgent
+                  ? "Your workspace will activate once an admin provisions and assigns a company agent to you."
+                  : provisioningError
+                    ? "You can try again. Most setup issues clear up within a minute."
+                    : "We are connecting your company agent to the runtime. Chat opens automatically when it is ready."}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
-              {canProvisionAgent && (provisioning || (provisioningRetrySeconds ?? 0) > 0) ? (
-                <div className="rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02))] px-6 py-8 text-center">
-                  <div className="mx-auto flex size-28 items-center justify-center">
+              {canProvisionAgent && !provisioningError ? (
+                <div className="rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02))] px-6 py-10 text-center">
+                  <div className="mx-auto flex size-24 items-center justify-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="/saint-agi-mark.svg"
                       alt=""
-                      width={72}
-                      height={72}
-                      className="h-[4.5rem] w-auto animate-[spin_2.8s_linear_infinite] opacity-95"
+                      width={64}
+                      height={64}
+                      className="h-16 w-auto animate-[spin_2.8s_linear_infinite] opacity-95"
                     />
                   </div>
-                  <p className="mt-6 text-lg font-semibold leading-7 text-white">
-                    {(provisioningRetrySeconds ?? 0) > 0
-                      ? "Almost there. Your workspace runtime is catching up."
-                      : "Your first agent is taking shape."}
+                  <p className="mt-5 text-base font-medium leading-6 text-white">
+                    Hang tight while we get your workspace ready.
                   </p>
-                  {(provisioningRetrySeconds ?? 0) > 0 ? (
-                    <div className="mt-3">
-                      <p className="text-5xl font-semibold tabular-nums tracking-tight text-white">
-                        {provisioningRetrySeconds}
-                      </p>
-                      <p className="mt-1 text-sm text-zinc-400">seconds until we retry for you automatically</p>
+                  <p className="mt-2 text-sm text-zinc-400">
+                    This usually takes just a moment on first setup.
+                  </p>
+                </div>
+              ) : null}
+
+              {!canProvisionAgent ? (
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm leading-7 text-zinc-300">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                      <Bot className="size-5 text-white" />
                     </div>
-                  ) : (
-                    <p className="mt-2 text-sm text-zinc-400">This usually takes just a moment on first setup.</p>
-                  )}
-                  <ul className="mt-8 space-y-3 text-left text-sm leading-6 text-zinc-400">
-                    <li className="flex gap-3">
-                      <Check className="mt-0.5 size-4 shrink-0 text-emerald-400" aria-hidden />
-                      <span>
-                        We connect your company agent to the governed runtime, your models, and workspace policies.
-                      </span>
-                    </li>
-                    <li className="flex gap-3">
-                      <Check className="mt-0.5 size-4 shrink-0 text-emerald-400" aria-hidden />
-                      <span>
-                        When chat opens, you can delegate planning, drafting, and synthesis with your company context in
-                        mind.
-                      </span>
-                    </li>
-                    <li className="flex gap-3">
-                      <Check className="mt-0.5 size-4 shrink-0 text-emerald-400" aria-hidden />
-                      <span>
-                        A brief pause protects the shared runtime when many teams provision at once. Thank you for your
-                        patience.
-                      </span>
-                    </li>
-                  </ul>
+                    <div className="space-y-1">
+                      <p className="font-medium text-white">Agent access is admin-managed</p>
+                      <p className="text-zinc-400">
+                        Ask a workspace admin to create or assign a business agent for your role. Once assigned, this
+                        workspace will load automatically.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               ) : null}
 
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm leading-7 text-zinc-300">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-                    <Bot className="size-5 text-white" />
+              {canProvisionAgent && provisioningError ? (
+                <>
+                  <p className="text-sm text-red-400">{provisioningError}</p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        provisioningRateLimitAutoRetries.current = 0;
+                        provisioningAutoStartedRef.current = true;
+                        void provisionAgent();
+                      }}
+                      disabled={provisioning}
+                    >
+                      {provisioning ? <LoaderCircle className="size-4 animate-spin" /> : null}
+                      <span>{provisioning ? "Trying again..." : "Try again"}</span>
+                    </Button>
                   </div>
-                  <div className="space-y-1">
-                    {canProvisionAgent ? (
-                      <>
-                        <p className="font-medium text-white">Provisioning creates one default agent</p>
-                        <p className="text-zinc-400">
-                          This uses your included agent allowance when available. Model, tool, and channel activity are
-                          still recorded as usage for billing and audit history.
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="font-medium text-white">Agent access is admin-managed</p>
-                        <p className="text-zinc-400">
-                          Ask a workspace admin to create or assign a business agent for your role. Once assigned, this
-                          workspace will load automatically.
-                        </p>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {provisioningError && (provisioningRetrySeconds === null || provisioningRetrySeconds <= 0) ? (
-                <p className="text-sm text-red-400">{provisioningError}</p>
-              ) : null}
-
-              {canProvisionAgent ? (
-                <div className="flex flex-wrap items-center gap-3">
-                  <Button
-                    type="button"
-                    onClick={() => void provisionAgent()}
-                    disabled={provisioning || (provisioningRetrySeconds !== null && provisioningRetrySeconds > 0)}
-                  >
-                    {provisioning ? <LoaderCircle className="size-4 animate-spin" /> : null}
-                    <span>
-                      {provisioning
-                        ? "Creating agent..."
-                        : (provisioningRetrySeconds ?? 0) > 0
-                          ? `Wait ${provisioningRetrySeconds}s`
-                          : "Create my first agent"}
-                    </span>
-                  </Button>
-                  <Button type="button" variant="secondary" asChild>
-                    <Link href="/agents/new">Open advanced setup</Link>
-                  </Button>
-                </div>
+                </>
               ) : null}
             </CardContent>
           </Card>
