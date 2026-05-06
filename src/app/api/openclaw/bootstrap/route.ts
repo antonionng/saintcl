@@ -113,12 +113,6 @@ export async function POST() {
     const runtimeMetadata = runtime ? await upsertRuntimeMetadata(runtime) : null;
     const workspacePath = getAgentWorkspacePath(orgId, slug, { source });
     await client.withSession(async (rpc) => {
-      // Fetch the gateway snapshot exactly once per bootstrap session and pass
-      // it to both governance and provisioning helpers. They each use it to
-      // skip their `config.patch` when the desired state is already in place,
-      // which keeps us under the gateway's 3-per-60s control-plane write cap
-      // when users retry the create-agent button.
-      const currentSnapshot = await client.getConfigSnapshot(rpc);
       await client.applyModelGovernance(
         {
           defaultModel: snapshot.defaultModel,
@@ -128,7 +122,6 @@ export async function POST() {
           })),
         },
         rpc,
-        { currentSnapshot },
       );
       await client.provisionAgent(
         {
@@ -138,14 +131,13 @@ export async function POST() {
           name: agentName,
         },
         rpc,
-        { currentSnapshot },
       );
     });
     let row: Awaited<ReturnType<typeof insertAgentMetadata>>;
     try {
       // Workspace files only at this stage. Knowledge mirroring + memorySearch
       // happen after the assignment is upserted below so the scope is known.
-      await injectAgentContext(
+      const initialInjection = await injectAgentContext(
         {
           id: slug,
           org_id: orgId,
@@ -179,6 +171,9 @@ export async function POST() {
           writeHeartbeat: true,
         },
       );
+      if (initialInjection.status === "failed") {
+        throw new Error(initialInjection.message);
+      }
 
       row = await insertAgentMetadata({
         orgId,
@@ -213,7 +208,7 @@ export async function POST() {
         assigneeRef: session.userId,
         createdBy: session.userId,
       });
-      await injectAgentContext(
+      const assignedInjection = await injectAgentContext(
         {
           id: row.id,
           org_id: orgId,
@@ -249,7 +244,10 @@ export async function POST() {
           applySafeMemoryConfig: true,
           writeHeartbeat: false,
         },
-      ).catch(() => null);
+      );
+      if (assignedInjection.status === "failed") {
+        throw new Error(assignedInjection.message);
+      }
 
       sendAgentIntroductionEmail({
         orgId,

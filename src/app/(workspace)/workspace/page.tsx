@@ -9,6 +9,7 @@ import { normalizeAgentAvatarConfig } from "@/lib/agent-identity";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { ensureCurrentControlUiOrigin } from "@/lib/openclaw/control-ui-origins";
+import { injectAgentContext } from "@/lib/openclaw/context-injection";
 import { resolveAgentWorkspaceFromConfig } from "@/lib/openclaw/agent-terminal";
 import { recordRuntimePressureSample } from "@/lib/openclaw/runtime-pressure";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
@@ -113,12 +114,24 @@ type RuntimeRepairAgent = {
   assignment?: { assignee_type?: string; assignee_ref?: string } | null;
 };
 
+type RuntimeRepairProfile = {
+  displayName?: string | null;
+  email?: string | null;
+  role?: string | null;
+  whatIDo?: string | null;
+  agentBrief?: string | null;
+} | null;
+
+type RuntimeRepairResult =
+  | { ok: true; model: string | null }
+  | { ok: false; model: string | null; error: string };
+
 async function repairManagedRuntimeConfig(
   orgId: string,
   agent?: RuntimeRepairAgent | null,
-  options?: { trialActive?: boolean },
-) {
-  if (!isOpenClawConfigured()) return null;
+  options?: { trialActive?: boolean; org: NonNullOrgSession["org"]; profile: RuntimeRepairProfile },
+): Promise<RuntimeRepairResult> {
+  if (!isOpenClawConfigured()) return { ok: true, model: null };
 
   try {
     const { client } = await getTenantOpenClawClient(orgId, { orgId });
@@ -141,10 +154,19 @@ async function repairManagedRuntimeConfig(
       // recreated), it may not exist in the current gateway's agents list yet.
       // Re-provision it first so ensureManagedAgentRuntimeConfig has something to patch.
       const snapshot = await client.getConfigSnapshot().catch(() => null);
-      const agentsList = Array.isArray((snapshot as any)?.config?.agents?.list)
-        ? (snapshot as any).config.agents.list
-        : [];
-      const agentExistsInGateway = agentsList.some((a: any) => a?.id === agent.openclaw_agent_id);
+      const config = snapshot?.config;
+      const agentsConfig =
+        config?.agents && typeof config.agents === "object" && !Array.isArray(config.agents)
+          ? (config.agents as { list?: unknown })
+          : null;
+      const agentsList = Array.isArray(agentsConfig?.list) ? agentsConfig.list : [];
+      const agentExistsInGateway = agentsList.some(
+        (candidate) =>
+          candidate &&
+          typeof candidate === "object" &&
+          !Array.isArray(candidate) &&
+          (candidate as { id?: unknown }).id === agent.openclaw_agent_id,
+      );
 
       if (!agentExistsInGateway) {
         await client.provisionAgent({
@@ -152,7 +174,7 @@ async function repairManagedRuntimeConfig(
           workspace,
           model: repairedModel,
           name: agent.name,
-        }).catch(() => null);
+        });
       }
 
       await client.ensureManagedAgentRuntimeConfig({
@@ -163,6 +185,35 @@ async function repairManagedRuntimeConfig(
         avatar: normalizeAgentAvatarConfig((agent.config as Record<string, unknown> | null | undefined)?.agentAvatar),
       });
 
+      const injection = await injectAgentContext(
+        {
+          id: agent.id,
+          org_id: agent.org_id,
+          user_id: agent.user_id ?? null,
+          openclaw_agent_id: agent.openclaw_agent_id,
+          name: agent.name,
+          model: repairedModel,
+          config: agent.config as Record<string, unknown> | null | undefined,
+          assignment: agent.assignment ?? null,
+        },
+        {
+          client,
+          org: {
+            name: options?.org.name,
+            website: options?.org.website,
+            companySummary: options?.org.company_summary,
+            agentBrief: options?.org.agent_brief,
+          },
+          profile: options?.profile ?? null,
+          syncKnowledge: true,
+          applySafeMemoryConfig: true,
+          writeHeartbeat: true,
+        },
+      );
+      if (injection.status === "failed") {
+        return { ok: false, model: repairedModel, error: injection.message };
+      }
+
       if (repairedModel !== agent.model) {
         const admin = createAdminClient();
         await admin?.from("agents").update({ model: repairedModel }).eq("id", agent.id).eq("org_id", orgId);
@@ -170,10 +221,13 @@ async function repairManagedRuntimeConfig(
     } else {
       await client.ensureManagedBootstrapDisabled();
     }
-    return repairedModel ?? null;
-  } catch {
-    // Chat can still render its gateway error; this repair is best-effort on page load.
-    return null;
+    return { ok: true, model: repairedModel ?? null };
+  } catch (error) {
+    return {
+      ok: false,
+      model: null,
+      error: error instanceof Error ? error.message : "Runtime repair failed.",
+    };
   }
 }
 
@@ -273,21 +327,31 @@ export default async function WorkspacePage() {
       configured: false,
       healthy: false,
     };
+  let runtimeRepairError: string | undefined;
 
   if (hasProvisionedAgent) {
     if (trialHasCapacity) {
-      const [repairedModel, workspaceSurface] = await Promise.all([
-        repairManagedRuntimeConfig(session.org.id, preferredAgent, { trialActive }),
-        getWorkspaceSurface(session.org.id, preferredSession, whatsappAccountId),
-      ]);
-      if (preferredAgent && repairedModel && repairedModel !== preferredAgent.model) {
-        preferredAgent = { ...preferredAgent, model: repairedModel };
+      const repair = await repairManagedRuntimeConfig(session.org.id, preferredAgent, {
+        trialActive,
+        org: session.org,
+        profile,
+      });
+      if (preferredAgent && repair.model && repair.model !== preferredAgent.model) {
+        preferredAgent = { ...preferredAgent, model: repair.model };
       }
-      surface = workspaceSurface;
+      if (repair.ok) {
+        surface = await getWorkspaceSurface(session.org.id, preferredSession, whatsappAccountId);
+      } else {
+        runtimeRepairError = repair.error;
+      }
     } else {
-      const repairedModel = await repairManagedRuntimeConfig(session.org.id, preferredAgent, { trialActive });
-      if (preferredAgent && repairedModel && repairedModel !== preferredAgent.model) {
-        preferredAgent = { ...preferredAgent, model: repairedModel };
+      const repair = await repairManagedRuntimeConfig(session.org.id, preferredAgent, {
+        trialActive,
+        org: session.org,
+        profile,
+      });
+      if (preferredAgent && repair.model && repair.model !== preferredAgent.model) {
+        preferredAgent = { ...preferredAgent, model: repair.model };
       }
     }
     await ensureCurrentControlUiOrigin(session.org.id).catch(() => null);
@@ -301,7 +365,9 @@ export default async function WorkspacePage() {
       ? surface.embeddedConsoleUrl
       : undefined;
   const gatewayUrl = "gatewayUrl" in surface ? surface.gatewayUrl : undefined;
-  const error = trialHasCapacity ? ("error" in surface ? surface.error : undefined) : getTrialMessageLimitMessage();
+  const error = trialHasCapacity
+    ? runtimeRepairError ?? ("error" in surface ? surface.error : undefined)
+    : getTrialMessageLimitMessage();
 
   return (
     <WorkspaceShell
