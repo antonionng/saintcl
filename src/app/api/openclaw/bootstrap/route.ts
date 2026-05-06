@@ -105,6 +105,7 @@ export async function POST() {
             name: existingAgent.name,
           },
           rpc,
+          { force: true },
         );
       });
 

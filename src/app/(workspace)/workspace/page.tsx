@@ -150,13 +150,17 @@ async function repairManagedRuntimeConfig(
         config: agent.config,
       });
 
-      await client.ensureManagedAgentRuntimeConfig({
-        agentId: agent.openclaw_agent_id,
-        workspace,
-        model: repairedModel,
-        name: agent.name,
-        avatar: normalizeAgentAvatarConfig((agent.config as Record<string, unknown> | null | undefined)?.agentAvatar),
-      });
+      await client.ensureManagedAgentRuntimeConfig(
+        {
+          agentId: agent.openclaw_agent_id,
+          workspace,
+          model: repairedModel,
+          name: agent.name,
+          avatar: normalizeAgentAvatarConfig((agent.config as Record<string, unknown> | null | undefined)?.agentAvatar),
+        },
+        undefined,
+        { force: true },
+      );
 
       const injection = await injectAgentContext(
         {

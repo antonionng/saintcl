@@ -553,7 +553,7 @@ export class OpenClawClient {
   async ensureManagedAgentRuntimeConfig(
     input: { agentId: string; workspace: string; model: string; name?: string; avatar?: AgentAvatarConfig },
     runner?: GatewayRpcRunner,
-    options?: { currentSnapshot?: OpenClawConfigSnapshot },
+    options?: { currentSnapshot?: OpenClawConfigSnapshot; force?: boolean },
   ): Promise<{ changed: boolean }> {
     if (!isOpenClawConfigured()) {
       throw new Error("Runtime gateway is not configured.");
@@ -561,7 +561,7 @@ export class OpenClawClient {
 
     const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
     const snapshot = options?.currentSnapshot ?? (await this.getConfigSnapshot(exec));
-    if (managedAgentRuntimeConfigMatchesSnapshot(snapshot, input)) {
+    if (!options?.force && managedAgentRuntimeConfigMatchesSnapshot(snapshot, input)) {
       return { changed: false };
     }
 
@@ -601,7 +601,7 @@ export class OpenClawClient {
   async provisionAgent(
     input: { agentId: string; workspace: string; model: string; name?: string; avatar?: AgentAvatarConfig },
     runner?: GatewayRpcRunner,
-    options?: { currentSnapshot?: OpenClawConfigSnapshot },
+    options?: { currentSnapshot?: OpenClawConfigSnapshot; force?: boolean },
   ): Promise<{ changed: boolean }> {
     if (!isOpenClawConfigured()) {
       throw new Error("Runtime gateway is not configured.");
@@ -613,7 +613,7 @@ export class OpenClawClient {
     // Skip the control-plane write entirely when the gateway already encodes
     // the requested agent. This prevents bootstrap retries from chewing
     // through the gateway's 3-per-60s `config.patch` budget on no-op patches.
-    if (agentMatchesSnapshot(snapshot, input)) {
+    if (!options?.force && agentMatchesSnapshot(snapshot, input)) {
       return { changed: false };
     }
 
