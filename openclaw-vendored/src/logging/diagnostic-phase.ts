@@ -36,7 +36,8 @@ function shouldEmitSlowDiagnosticPhaseLog(phaseName: string): boolean {
 
 function maybeWarnSlowDiagnosticPhase(snapshot: DiagnosticPhaseSnapshot): void {
   const thresholdMs = resolveSlowDiagnosticPhaseThresholdMs();
-  if (thresholdMs === undefined || snapshot.durationMs < thresholdMs) {
+  const durationMs = snapshot.durationMs ?? 0;
+  if (thresholdMs === undefined || durationMs < thresholdMs) {
     return;
   }
   if (!shouldEmitSlowDiagnosticPhaseLog(snapshot.name)) {
@@ -46,10 +47,10 @@ function maybeWarnSlowDiagnosticPhase(snapshot: DiagnosticPhaseSnapshot): void {
     getLogger().warn(
       {
         phase: snapshot.name,
-        durationMs: snapshot.durationMs,
+        durationMs,
         cpuTotalMs: snapshot.cpuTotalMs,
       },
-      `slow diagnostic phase phase=${snapshot.name} wallMs=${snapshot.durationMs} (OPENCLAW_LOG_SLOW_DIAGNOSTIC_PHASE_MS)`,
+      `slow diagnostic phase phase=${snapshot.name} wallMs=${durationMs} (OPENCLAW_LOG_SLOW_DIAGNOSTIC_PHASE_MS)`,
     );
   } catch {
     // Ignore logger failures: diagnostics must never break the reply pipeline.
