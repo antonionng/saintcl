@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getCurrentOrg, getOrgMembers } from "@/lib/dal";
-import { syncOrgContextToAgents, type SyncOrgContextResult } from "@/lib/openclaw/profile-context";
+import { injectOrgContext, type OrgInjectionResult } from "@/lib/openclaw/context-injection";
 import { ACTIVE_ORG_COOKIE_NAME } from "@/lib/org-selection";
 import { enrichOrgWebsite } from "@/lib/org-website-enrichment";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -24,17 +24,28 @@ async function runOrgContextSync(input: {
     companySummary: string | null;
     agentBrief: string | null;
   };
-}): Promise<SyncOrgContextResult> {
+}): Promise<OrgInjectionResult> {
   try {
-    return await syncOrgContextToAgents(input);
+    return await injectOrgContext(
+      { orgId: input.orgId },
+      {
+        org: input.org,
+        agentOptions: {
+          syncKnowledge: true,
+          applySafeMemoryConfig: true,
+          writeHeartbeat: true,
+        },
+      },
+    );
   } catch (error) {
     return {
-      status: "failed",
+      orgId: input.orgId,
       totalAgents: 0,
-      syncedAgents: 0,
+      okAgents: 0,
       failedAgents: 0,
       failures: [],
-      reason: error instanceof Error ? error.message : "Unknown sync error.",
+      plans: [],
+      skipped: error instanceof Error ? error.message : "Unknown sync error.",
     };
   }
 }

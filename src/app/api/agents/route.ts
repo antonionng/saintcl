@@ -16,7 +16,7 @@ import { sendAgentIntroductionEmail } from "@/lib/email/service";
 import { recordSetupAuditEvent, recordFunnelStep } from "@/lib/setup-audit";
 import { getBuiltInPersonaById } from "@/lib/personas";
 import { normalizeAgentTerminalRepoPaths } from "@/lib/openclaw/agent-terminal";
-import { syncKnowledgeToAgent } from "@/lib/openclaw/knowledge-sync";
+import { injectAgentContext } from "@/lib/openclaw/context-injection";
 import { getAgentWorkspacePath } from "@/lib/openclaw/paths";
 import {
   insertAgentMetadata,
@@ -24,7 +24,6 @@ import {
   upsertAgentAssignment,
   upsertRuntimeMetadata,
 } from "@/lib/openclaw/runtime-store";
-import { writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
 import { getRuntimeAllowedModels, resolveModelSelection } from "@/lib/openclaw/model-governance";
 import { RuntimeRateLimitError } from "@/lib/openclaw/client";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
@@ -327,28 +326,44 @@ export async function POST(request: Request) {
     });
     let agentRow: Awaited<ReturnType<typeof insertAgentMetadata>>;
     try {
-      await writeAgentBootstrapFiles({
-        orgId,
-        agentId: slug,
-        name,
-        model,
-        persona: basePersona,
-        org: {
-          name: session.org.name,
-          website: session.org.website,
-          companySummary: session.org.company_summary,
-          agentBrief: session.org.agent_brief,
+      // Pre-flight workspace files only. Knowledge mirroring + memorySearch
+      // governance run after the assignment row exists (we need the resolved
+      // assignment to compute scope for the agent), in the post-provision
+      // injection below.
+      await injectAgentContext(
+        {
+          id: slug,
+          org_id: orgId,
+          user_id: userId,
+          openclaw_agent_id: slug,
+          name,
+          model,
+          config: { persona: basePersona },
+          assignment: null,
         },
-        profile: profile
-          ? {
-              displayName: profile.displayName,
-              email: profile.email,
-              role: profile.role,
-              whatIDo: profile.whatIDo,
-              agentBrief: profile.agentBrief,
-            }
-          : null,
-      });
+        {
+          client,
+          persona: basePersona,
+          org: {
+            name: session.org.name,
+            website: session.org.website,
+            companySummary: session.org.company_summary,
+            agentBrief: session.org.agent_brief,
+          },
+          profile: profile
+            ? {
+                displayName: profile.displayName,
+                email: profile.email,
+                role: profile.role,
+                whatIDo: profile.whatIDo,
+                agentBrief: profile.agentBrief,
+              }
+            : null,
+          syncKnowledge: false,
+          applySafeMemoryConfig: false,
+          writeHeartbeat: true,
+        },
+      );
 
       agentRow = await insertAgentMetadata({
         orgId,
@@ -407,18 +422,51 @@ export async function POST(request: Request) {
     }
 
     if (agentRow) {
-      await syncKnowledgeToAgent({
-        ...agentRow,
-        assignment: {
-          assignee_type: payload.scope,
-          assignee_ref:
-            payload.scope === "org"
-              ? orgId
-              : payload.scope === "employee"
-                ? employeeAssignment?.assigneeRef ?? session.userId
-                : teamAssignment?.id ?? orgId,
+      // Now that the assignment exists, run the full injection so knowledge
+      // is mirrored under the right scope folder and memorySearch governance
+      // is applied with synchronous sync hooks kept off.
+      await injectAgentContext(
+        {
+          id: agentRow.id,
+          org_id: orgId,
+          user_id: userId,
+          openclaw_agent_id: slug,
+          name,
+          model,
+          config: { persona: basePersona },
+          assignment: {
+            assignee_type: payload.scope,
+            assignee_ref:
+              payload.scope === "org"
+                ? orgId
+                : payload.scope === "employee"
+                  ? employeeAssignment?.assigneeRef ?? session.userId
+                  : teamAssignment?.id ?? orgId,
+          },
         },
-      }).catch(() => null);
+        {
+          client,
+          persona: basePersona,
+          org: {
+            name: session.org.name,
+            website: session.org.website,
+            companySummary: session.org.company_summary,
+            agentBrief: session.org.agent_brief,
+          },
+          profile: profile
+            ? {
+                displayName: profile.displayName,
+                email: profile.email,
+                role: profile.role,
+                whatIDo: profile.whatIDo,
+                agentBrief: profile.agentBrief,
+              }
+            : null,
+          syncKnowledge: true,
+          applySafeMemoryConfig: true,
+          writeHeartbeat: false,
+        },
+      ).catch(() => null);
     }
 
     recordSetupAuditEvent({

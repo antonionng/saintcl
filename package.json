@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "openclaw:install": "cd openclaw-vendored && pnpm install",
     "openclaw:build": "cd openclaw-vendored && pnpm ui:build && pnpm build",
-    "openclaw:gateway:watch": "cd openclaw-vendored && pnpm gateway:watch"
+    "openclaw:gateway:watch": "cd openclaw-vendored && pnpm gateway:watch",
+    "openclaw:inject-context": "node scripts/inject-openclaw-agent-context.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

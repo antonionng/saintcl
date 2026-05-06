@@ -116,4 +116,35 @@ describe("openclaw agent bootstrap templates", () => {
 
     expect(files.agents).toContain("Read IDENTITY.md");
   });
+
+  it("renders HEARTBEAT.md with platform-owned status and a no-rewrite hint", () => {
+    const files = renderAgentBootstrapFiles({
+      agentId: "agent-1",
+      name: "Alex Agent",
+      model: "openrouter/auto",
+      persona: "Help the user move quickly.",
+      org: { name: "SaintAGI" },
+      user: { displayName: "Antonio" },
+    });
+
+    expect(files.heartbeat).toContain("# HEARTBEAT.md");
+    expect(files.heartbeat).toContain("Saint AGI control plane");
+    expect(files.heartbeat).toContain("Org: SaintAGI");
+    expect(files.heartbeat).toContain("Working with: Antonio");
+    expect(files.heartbeat).toContain("Do not rewrite it inside a customer chat turn");
+  });
+
+  it("instructs the agent not to self-optimize during a chat turn", () => {
+    const files = renderAgentBootstrapFiles({
+      agentId: "agent-1",
+      name: "Alex Agent",
+      model: "openrouter/auto",
+      persona: "Help the user move quickly.",
+    });
+
+    expect(files.soul).toContain("Do not run setup, provisioning, or self-optimization steps");
+    expect(files.soul).toContain("Do not attempt to enable, disable, or reconfigure memorySearch");
+    expect(files.tools).toContain("Do not call gateway control-plane RPCs");
+    expect(files.agents).toContain("Never run provisioning or self-optimization steps inside a chat");
+  });
 });

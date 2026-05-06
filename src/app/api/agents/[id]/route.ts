@@ -4,8 +4,8 @@ import { z } from "zod";
 import { getCurrentOrg, getVisibleAgentForSession } from "@/lib/dal";
 import { normalizeAgentAvatarConfig } from "@/lib/agent-identity";
 import { resolveAgentWorkspaceFromConfig } from "@/lib/openclaw/agent-terminal";
+import { injectAgentContext } from "@/lib/openclaw/context-injection";
 import { assertModelSelectionAllowed, getOrgModelCatalogState } from "@/lib/openclaw/model-governance";
-import { writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
 import { RuntimeRateLimitError } from "@/lib/openclaw/client";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -175,19 +175,30 @@ export async function PATCH(
     }
 
     if (payload.persona) {
-      await writeAgentBootstrapFiles({
-        orgId: session.org.id,
-        agentId: agent.openclaw_agent_id,
-        name: agent.name,
-        model: resolvedModel,
-        persona: payload.persona,
-        org: {
-          name: session.org.name,
-          website: session.org.website,
-          companySummary: session.org.company_summary,
-          agentBrief: session.org.agent_brief,
+      await injectAgentContext(
+        {
+          id: agent.id,
+          org_id: session.org.id,
+          user_id: agent.user_id ?? null,
+          openclaw_agent_id: agent.openclaw_agent_id,
+          name: agent.name,
+          model: resolvedModel,
+          config: { ...(agent.config ?? {}), persona: payload.persona },
+          assignment: agent.assignment ?? null,
         },
-      }).catch(() => null);
+        {
+          persona: payload.persona,
+          org: {
+            name: session.org.name,
+            website: session.org.website,
+            companySummary: session.org.company_summary,
+            agentBrief: session.org.agent_brief,
+          },
+          syncKnowledge: false,
+          applySafeMemoryConfig: false,
+          writeHeartbeat: false,
+        },
+      ).catch(() => null);
     }
 
     if (payload.avatarInitials !== undefined || payload.avatarTheme !== undefined) {

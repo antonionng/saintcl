@@ -595,6 +595,95 @@ export class OpenClawClient {
     return this.call("config.patch", { raw, baseHash });
   }
 
+  /**
+   * Platform-owned safe variant of memorySearch governance. The agent itself
+   * is never allowed to call this (the gateway protects the relevant config
+   * paths). SaintAGI calls it during context injection so memory search is
+   * enabled when there is anything to retrieve, but synchronous sync hooks
+   * are kept off so they cannot stretch the user-visible chat turn.
+   *
+   * Synchronous sync paths (`onSessionStart`, `onSearch`, `watch`) are
+   * deliberately disabled here. Document indexing happens via the platform's
+   * own background pipelines instead of being attached to the agent's
+   * critical chat path.
+   */
+  async configureAgentSafeKnowledgeSearch(
+    input: {
+      agentId: string;
+      extraPaths: string[];
+      provider?: "openai" | "gemini" | "voyage" | "mistral" | "ollama";
+      model?: string;
+    },
+    runner?: GatewayRpcRunner,
+    options?: { currentSnapshot?: OpenClawConfigSnapshot },
+  ): Promise<{ changed: boolean }> {
+    if (!isOpenClawConfigured()) {
+      throw new Error("Runtime gateway is not configured.");
+    }
+
+    const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
+    const snapshot = options?.currentSnapshot ?? (await this.getConfigSnapshot(exec));
+
+    const desired = {
+      enabled: true,
+      provider: input.provider ?? "openai",
+      model: input.model ?? "text-embedding-3-small",
+      extraPaths: [...new Set(input.extraPaths.map((path) => path.trim()).filter(Boolean))],
+      sync: {
+        onSessionStart: false,
+        onSearch: false,
+        watch: false,
+      },
+    };
+
+    const entry = readAgentsList(snapshot).find((candidate) => candidate.id === input.agentId);
+    const current = plainObject(entry?.memorySearch);
+    const currentSync = plainObject(current?.sync);
+    const currentExtra = Array.isArray(current?.extraPaths)
+      ? (current?.extraPaths as unknown[]).filter((value): value is string => typeof value === "string")
+      : [];
+    const currentSet = new Set(currentExtra);
+    const desiredSet = new Set(desired.extraPaths);
+    const sameExtra =
+      currentSet.size === desiredSet.size && [...desiredSet].every((value) => currentSet.has(value));
+
+    if (
+      current?.enabled === true &&
+      current?.provider === desired.provider &&
+      current?.model === desired.model &&
+      currentSync?.onSessionStart === false &&
+      currentSync?.onSearch === false &&
+      currentSync?.watch === false &&
+      sameExtra
+    ) {
+      return { changed: false };
+    }
+
+    const raw = JSON.stringify({
+      agents: {
+        list: [
+          {
+            id: input.agentId,
+            memorySearch: {
+              enabled: desired.enabled,
+              provider: desired.provider,
+              model: desired.model,
+              extraPaths: desired.extraPaths,
+              store: {
+                vector: {
+                  enabled: true,
+                },
+              },
+              sync: desired.sync,
+            },
+          },
+        ],
+      },
+    });
+    await exec("config.patch", { raw, baseHash: snapshot.hash });
+    return { changed: true };
+  }
+
   async disableAgentKnowledgeSearch(
     input: { agentId: string },
     runner?: GatewayRpcRunner,

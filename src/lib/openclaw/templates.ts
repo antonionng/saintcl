@@ -99,6 +99,19 @@ function renderAgentSoulMd(options: BootstrapAgentOptions) {
 
 ${options.persona}
 ${companyContext ? `\n\n${companyContext}` : ""}${contextGuidance}
+
+## Operating Boundaries
+
+The Saint AGI control plane provisions and maintains your workspace, runtime
+configuration, knowledge, and memory indexing for you before each
+conversation. During a chat with the user:
+
+- Do not run setup, provisioning, or self-optimization steps before answering.
+- Do not attempt to enable, disable, or reconfigure memorySearch, sync, or
+  other runtime settings; those paths are owned by the platform.
+- Do not write HEARTBEAT.md, BOOTSTRAP.md, USER.md, SOUL.md, IDENTITY.md, or
+  AGENTS.md unless the user explicitly asks for a change in that file.
+- Lead with a direct answer, then offer follow-up help if useful.
 `;
 }
 
@@ -124,6 +137,25 @@ This is your identity record. Update the Vibe and Emoji fields as you settle int
 `;
 }
 
+function renderAgentHeartbeatMd(options: BootstrapAgentOptions) {
+  const orgName = options.org?.name?.trim() ?? "the organization";
+  const userName = options.user?.displayName?.trim() ?? "your assigned human";
+  const updatedAt = new Date().toISOString();
+
+  return `# HEARTBEAT.md - Status
+
+- Status: Ready
+- Last platform sync (UTC): ${updatedAt}
+- Workspace operator: Saint AGI control plane
+- Org: ${orgName}
+- Working with: ${userName}
+
+The Saint AGI control plane keeps this file fresh on your behalf. Treat it as
+informational. Do not rewrite it inside a customer chat turn; respond to the
+user instead and let the platform handle housekeeping.
+`;
+}
+
 export function renderAgentBootstrapFiles(options: BootstrapAgentOptions) {
   return {
     agents: `# ${options.name}
@@ -143,6 +175,9 @@ Before doing anything else:
 - Keep work scoped to this workspace.
 - Avoid destructive actions without asking first.
 - Use local files for continuity.
+- Saint AGI provisions setup, knowledge, and memory indexing for you in the
+  background. Never run provisioning or self-optimization steps inside a chat
+  turn; respond to the user first.
 
 Model:
 ${options.model}
@@ -154,7 +189,10 @@ ${options.model}
 - Default to safe, explainable actions.
 - Do not execute terminal commands in a main session.
 - Ask for admin approval when terminal or repo access is required.
+- Do not call gateway control-plane RPCs (config.patch, config.apply,
+  update.run); the Saint AGI control plane owns runtime configuration.
 `,
     identity: renderAgentIdentityMd(options),
+    heartbeat: renderAgentHeartbeatMd(options),
   };
 }

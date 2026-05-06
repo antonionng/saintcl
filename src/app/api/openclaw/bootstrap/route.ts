@@ -3,10 +3,9 @@ import { NextResponse } from "next/server";
 import { getAgents, getCurrentOrg, loadCurrentUserProfile } from "@/lib/dal";
 import { sendAgentIntroductionEmail } from "@/lib/email/service";
 import { isOpenClawConfigured } from "@/lib/env";
-import { syncKnowledgeToAgent } from "@/lib/openclaw/knowledge-sync";
+import { injectAgentContext } from "@/lib/openclaw/context-injection";
 import { getAgentWorkspacePath } from "@/lib/openclaw/paths";
 import { resolveModelSelection } from "@/lib/openclaw/model-governance";
-import { writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
 import { RuntimeRateLimitError } from "@/lib/openclaw/client";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { insertAgentMetadata, upsertAgentAssignment, upsertRuntimeMetadata } from "@/lib/openclaw/runtime-store";
@@ -137,28 +136,42 @@ export async function POST() {
     });
     let row: Awaited<ReturnType<typeof insertAgentMetadata>>;
     try {
-      await writeAgentBootstrapFiles({
-        orgId,
-        agentId: slug,
-        name: agentName,
-        model,
-        persona,
-        org: {
-          name: session.org.name,
-          website: session.org.website,
-          companySummary: session.org.company_summary,
-          agentBrief: session.org.agent_brief,
+      // Workspace files only at this stage. Knowledge mirroring + memorySearch
+      // happen after the assignment is upserted below so the scope is known.
+      await injectAgentContext(
+        {
+          id: slug,
+          org_id: orgId,
+          user_id: session.userId,
+          openclaw_agent_id: slug,
+          name: agentName,
+          model,
+          config: { persona },
+          assignment: null,
         },
-        profile: profile
-          ? {
-              displayName: profile.displayName,
-              email: profile.email,
-              role: profile.role,
-              whatIDo: profile.whatIDo,
-              agentBrief: profile.agentBrief,
-            }
-          : null,
-      });
+        {
+          client,
+          persona,
+          org: {
+            name: session.org.name,
+            website: session.org.website,
+            companySummary: session.org.company_summary,
+            agentBrief: session.org.agent_brief,
+          },
+          profile: profile
+            ? {
+                displayName: profile.displayName,
+                email: profile.email,
+                role: profile.role,
+                whatIDo: profile.whatIDo,
+                agentBrief: profile.agentBrief,
+              }
+            : null,
+          syncKnowledge: false,
+          applySafeMemoryConfig: false,
+          writeHeartbeat: true,
+        },
+      );
 
       row = await insertAgentMetadata({
         orgId,
@@ -193,13 +206,43 @@ export async function POST() {
         assigneeRef: session.userId,
         createdBy: session.userId,
       });
-      await syncKnowledgeToAgent({
-        ...row,
-        assignment: {
-          assignee_type: "employee",
-          assignee_ref: session.userId,
+      await injectAgentContext(
+        {
+          id: row.id,
+          org_id: orgId,
+          user_id: session.userId,
+          openclaw_agent_id: slug,
+          name: agentName,
+          model,
+          config: { persona },
+          assignment: {
+            assignee_type: "employee",
+            assignee_ref: session.userId,
+          },
         },
-      }).catch(() => null);
+        {
+          client,
+          persona,
+          org: {
+            name: session.org.name,
+            website: session.org.website,
+            companySummary: session.org.company_summary,
+            agentBrief: session.org.agent_brief,
+          },
+          profile: profile
+            ? {
+                displayName: profile.displayName,
+                email: profile.email,
+                role: profile.role,
+                whatIDo: profile.whatIDo,
+                agentBrief: profile.agentBrief,
+              }
+            : null,
+          syncKnowledge: true,
+          applySafeMemoryConfig: true,
+          writeHeartbeat: false,
+        },
+      ).catch(() => null);
 
       sendAgentIntroductionEmail({
         orgId,
