@@ -13,7 +13,12 @@ const HOSTED_CHANNEL_IDS = [
   "matrix",
   "nostr",
 ];
-const DEFAULT_BOOTSTRAP_CHANNELS = [];
+// When OPENCLAW_BOOTSTRAP_CHANNELS is unset, enable this allowlist so OpenClaw Control
+// UI can expose native channel flows (QR login, status, config) without Railway env
+// twiddling. Set OPENCLAW_BOOTSTRAP_CHANNELS=none to keep all bundled chat plugins
+// off (previous empty-default behavior). Override with a comma list to widen or
+// narrow the set.
+const DEFAULT_BOOTSTRAP_CHANNELS = ["whatsapp", "telegram", "slack"];
 
 async function fileExists(targetPath) {
   try {
