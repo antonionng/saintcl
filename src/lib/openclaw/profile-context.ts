@@ -5,7 +5,7 @@ import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { renderAgentBootstrapFiles } from "@/lib/openclaw/templates";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-const BOOTSTRAP_FILE_RETRY_DELAYS_MS = [500, 1_500, 3_000, 5_000] as const;
+const BOOTSTRAP_FILE_RETRY_DELAYS_MS = [500, 1_500, 3_000, 5_000, 8_000, 13_000] as const;
 
 type ProfileContextInput = {
   displayName?: string | null;
@@ -91,7 +91,9 @@ function isTransientGatewayBootstrapError(error: unknown) {
     message.includes("runtime gateway timeout") ||
     message.includes("socket hang up") ||
     message.includes("fetch failed") ||
-    message.includes("unknown agent id")
+    message.includes("unknown agent id") ||
+    message.includes("unexpected server response: 502") ||
+    message.includes("bad gateway")
   );
 }
 

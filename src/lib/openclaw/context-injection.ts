@@ -27,6 +27,8 @@ import type { OpenClawClient } from "@/lib/openclaw/client";
  * platform handles housekeeping.
  */
 
+const BOOTSTRAP_FILE_RETRY_DELAYS_MS = [500, 1_500, 3_000, 5_000, 8_000, 13_000] as const;
+
 type OrgContext = {
   name?: string | null;
   website?: string | null;
@@ -157,6 +159,45 @@ function resolveKnowledgeDirectories(scope: "org" | "team" | "employee") {
   return ["knowledge/company", "knowledge/personal"];
 }
 
+function isTransientGatewayBootstrapError(error: unknown) {
+  const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+  return (
+    message.includes("runtime gateway connection closed unexpectedly") ||
+    message.includes("runtime gateway timeout") ||
+    message.includes("socket hang up") ||
+    message.includes("fetch failed") ||
+    message.includes("unknown agent id") ||
+    message.includes("unexpected server response: 502") ||
+    message.includes("bad gateway")
+  );
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function setAgentBootstrapFileWithRetry(
+  client: OpenClawClient,
+  input: { agentId: string; name: string; content: string },
+) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= BOOTSTRAP_FILE_RETRY_DELAYS_MS.length; attempt += 1) {
+    try {
+      await client.setAgentFile(input);
+      return;
+    } catch (error) {
+      lastError = error;
+      const retryDelayMs = BOOTSTRAP_FILE_RETRY_DELAYS_MS[attempt];
+      if (retryDelayMs === undefined || !isTransientGatewayBootstrapError(error)) {
+        throw error;
+      }
+      await delay(retryDelayMs);
+    }
+  }
+
+  throw lastError;
+}
+
 function buildKnowledgeFilePath(scopeType: "org" | "team" | "user", docId: string, filename: string) {
   const folder =
     scopeType === "org"
@@ -260,7 +301,7 @@ export async function injectAgentContext(
 
   try {
     for (const file of writes) {
-      await client.setAgentFile({
+      await setAgentBootstrapFileWithRetry(client, {
         agentId: agent.openclaw_agent_id,
         name: file.name,
         content: file.content,
