@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { getAuthenticatedHomePath, isAdminRole } from "@/lib/access";
-import { getAgents, getCurrentOrg } from "@/lib/dal";
+import { getAuthenticatedHomePath } from "@/lib/access";
+import { getCurrentOrg } from "@/lib/dal";
 import { sendWelcomeEmailForSession } from "@/lib/email/service";
 import { createClient } from "@/lib/supabase/server";
 
@@ -23,9 +23,6 @@ export async function GET(request: Request) {
   let nextPath: string;
   if (next && next.startsWith("/")) {
     nextPath = next;
-  } else if (session && isAdminRole(session.role, { isSuperAdmin: session.isSuperAdmin })) {
-    const agents = await getAgents(session.org.id).catch(() => []);
-    nextPath = agents.length === 0 ? "/welcome" : "/workspace";
   } else {
     nextPath = getAuthenticatedHomePath(session?.role, { isSuperAdmin: session?.isSuperAdmin });
   }

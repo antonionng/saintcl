@@ -71,7 +71,7 @@ function SignupPageContent() {
     setLoading(true);
 
     if (!isSupabaseConfigured()) {
-      router.push("/welcome");
+      router.push("/workspace");
       return;
     }
 
@@ -95,7 +95,9 @@ function SignupPageContent() {
           trial_plan: selectedPlan,
           billing_interval: selectedInterval,
         },
-        emailRedirectTo: `${window.location.origin}/callback${nextPath && nextPath.startsWith("/") ? `?next=${encodeURIComponent(nextPath)}` : "?next=%2Fwelcome"}`,
+        emailRedirectTo: `${window.location.origin}/callback${
+          nextPath && nextPath.startsWith("/") ? `?next=${encodeURIComponent(nextPath)}` : "?next=%2Fworkspace"
+        }`,
       },
     });
 
@@ -105,7 +107,7 @@ function SignupPageContent() {
       return;
     }
 
-    router.push("/auth/landing");
+    router.push("/workspace");
     router.refresh();
   }
 

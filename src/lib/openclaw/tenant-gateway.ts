@@ -1,11 +1,13 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { env, isOpenClawRuntimeManaged } from "@/lib/env";
+import { resolveOrgGatewayShard } from "@/lib/openclaw/gateway-shards";
 
 export type TenantGatewayTarget = {
   wsUrl: string;
   httpUrl: string;
   token?: string;
-  source: "runtime" | "env";
+  source: "runtime" | "env" | "shard";
+  shardId?: string;
 };
 
 function wsToHttp(url: string) {
@@ -114,6 +116,18 @@ export function buildGatewayWorkspaceProxyPath(target: TenantGatewayTarget, opti
   });
 }
 
+function getShardGatewayTarget(orgId: string): TenantGatewayTarget | null {
+  const shard = resolveOrgGatewayShard(orgId);
+  if (!shard) return null;
+  return {
+    wsUrl: shard.wsUrl,
+    httpUrl: wsToHttp(shard.wsUrl),
+    token: shard.token || env.openClawGatewayToken || undefined,
+    source: "shard",
+    shardId: shard.id,
+  };
+}
+
 export async function resolveTenantGatewayTarget(orgId?: string): Promise<TenantGatewayTarget | null> {
   if (!orgId) {
     return getEnvGatewayTarget();
@@ -123,6 +137,10 @@ export async function resolveTenantGatewayTarget(orgId?: string): Promise<Tenant
     return getRuntimeGatewayTarget(orgId);
   }
 
-  return getEnvGatewayTarget();
+  // Sharded hosted gateways: when OPENCLAW_GATEWAY_SHARDS is set, each org is
+  // pinned to a stable shard so customer traffic does not pile up on a single
+  // Railway runtime CPU. Falls back to the single env gateway when sharding
+  // is not configured (current default).
+  return getShardGatewayTarget(orgId) ?? getEnvGatewayTarget();
 }
 

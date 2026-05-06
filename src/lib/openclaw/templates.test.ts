@@ -1,8 +1,40 @@
 import { describe, expect, it } from "vitest";
 
-import { renderAgentBootstrapFiles } from "./templates";
+import { renderAgentBootstrapFiles, renderTenantOpenClawConfig } from "./templates";
 
 describe("openclaw agent bootstrap templates", () => {
+  it("configures managed runtimes to use SaintAGI bootstrap files", () => {
+    const config = JSON.parse(
+      renderTenantOpenClawConfig(
+        {
+          id: "rt_org",
+          orgId: "org_1",
+          gatewayPort: 18000,
+          gatewayUrl: "ws://127.0.0.1:18000",
+          vendorPath: "/repo/openclaw-vendored",
+          status: "stopped",
+          paths: {
+            root: "/runtime/org_1",
+            stateRoot: "/runtime/org_1/state",
+            configDir: "/runtime/org_1/config",
+            configPath: "/runtime/org_1/config/openclaw.json",
+            workspaceRoot: "/runtime/org_1/workspaces",
+            logsDir: "/runtime/org_1/logs",
+            gatewayLogPath: "/runtime/org_1/logs/gateway.log",
+            metadataPath: "/runtime/org_1/runtime.json",
+          },
+        },
+        {
+          orgId: "org_1",
+          defaultModel: "openrouter/auto",
+          approvedModels: [{ id: "openrouter/auto", label: "Auto" }],
+        },
+      ),
+    ) as { agents: { defaults: { skipBootstrap?: boolean } } };
+
+    expect(config.agents.defaults.skipBootstrap).toBe(true);
+  });
+
   it("renders AGENTS.md with the startup sequence", () => {
     const files = renderAgentBootstrapFiles({
       agentId: "agent-1",

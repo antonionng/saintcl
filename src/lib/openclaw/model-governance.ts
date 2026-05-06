@@ -1,3 +1,4 @@
+import { BillingGateError } from "@/lib/billing/errors";
 import { getOrgPolicy, getOrgWallet, getUserBudgetOverride, getUserSpendCents } from "@/lib/dal";
 import { requiresWalletBalance } from "@/lib/model-pricing";
 import {
@@ -29,6 +30,15 @@ export async function getOrgModelCatalogState(orgId: string, options?: TrialGate
   return { policy, snapshot };
 }
 
+/**
+ * Returns the runtime allowlist for OpenClaw (locked entries removed). Use this
+ * everywhere the snapshot is forwarded to the runtime gateway so locked paid
+ * models surfaced to the UI never leak into the actual routing allowlist.
+ */
+export function getRuntimeAllowedModels(snapshot: { approvedModels: ModelCatalogEntry[] }) {
+  return snapshot.approvedModels.filter((entry) => !entry.lockedReason);
+}
+
 export async function assertModelSelectionAllowed(params: {
   orgId: string;
   userId?: string | null;
@@ -48,10 +58,24 @@ export async function assertModelSelectionAllowed(params: {
     getOrgWallet(params.orgId),
   ]);
 
-  const selectedModel = findAllowedModel(params.model, snapshot.approvedModels);
+  const matched = findAllowedModel(params.model, snapshot.approvedModels);
+
+  if (matched && matched.lockedReason === "trial_paid_model") {
+    throw new BillingGateError({
+      code: "TRIAL_PAID_MODEL_BLOCKED",
+      message: "Paid models unlock when you upgrade. Pick the trial model or upgrade to use this one.",
+      cta: "upgrade",
+    });
+  }
+
+  const selectedModel = matched && !matched.lockedReason ? matched : null;
   if (!selectedModel) {
     if (isTrialModelRestrictionActive(params)) {
-      throw new Error("Paid models are locked during trial. Upgrade and top up your wallet to use this model.");
+      throw new BillingGateError({
+        code: "TRIAL_PAID_MODEL_BLOCKED",
+        message: "Paid models unlock when you upgrade. Pick the trial model or upgrade to use this one.",
+        cta: "upgrade",
+      });
     }
     throw new Error("This model is not approved for your organization.");
   }
@@ -69,7 +93,11 @@ export async function assertModelSelectionAllowed(params: {
   });
 
   if (requiresWallet && (!wallet || wallet.balance_cents <= 0)) {
-    throw new Error("Insufficient wallet balance. Please top up before changing models.");
+    throw new BillingGateError({
+      code: "WALLET_INSUFFICIENT",
+      message: "Wallet is empty. Top up to use this model.",
+      cta: "topup",
+    });
   }
 
   if (
@@ -77,7 +105,11 @@ export async function assertModelSelectionAllowed(params: {
     policy?.require_approval_on_spend &&
     (wallet?.balance_cents ?? 0) <= (wallet?.low_balance_threshold_cents ?? 0)
   ) {
-    throw new Error("Model changes are locked while the wallet is below the approval threshold.");
+    throw new BillingGateError({
+      code: "WALLET_BELOW_APPROVAL_THRESHOLD",
+      message: "Model changes are locked until the wallet is topped up above the approval threshold.",
+      cta: "topup",
+    });
   }
 
   if (params.userId && requiresWallet) {
@@ -91,12 +123,22 @@ export async function assertModelSelectionAllowed(params: {
       budgetOverride?.hard_limit_cents !== undefined &&
       spentCents >= budgetOverride.hard_limit_cents
     ) {
-      throw new Error("You have reached your hard spend limit for this organization.");
+      throw new BillingGateError({
+        code: "USER_HARD_LIMIT_REACHED",
+        message: "You have reached your hard spend limit for this organization.",
+        cta: null,
+        status: 403,
+      });
     }
   }
 
   if (selectedModel.isPremium && snapshot.guardrails.requireApprovalForPremiumModels) {
-    throw new Error("This premium model requires additional approval in your organization.");
+    throw new BillingGateError({
+      code: "PREMIUM_REQUIRES_APPROVAL",
+      message: "This premium model requires additional approval in your organization.",
+      cta: "approval",
+      status: 403,
+    });
   }
 
   return { policy, snapshot, selectedModel, wallet };
@@ -116,7 +158,36 @@ export async function resolveModelSelection(params: {
     trialEndsAt: params.trialEndsAt,
     isSuperAdmin: params.isSuperAdmin,
   });
-  const candidate = params.requestedModel?.trim() || snapshot.defaultModel;
+
+  const trialActive = isTrialModelRestrictionActive(params);
+  const requested = params.requestedModel?.trim() || "";
+  const requestedMatch = requested ? findAllowedModel(requested, snapshot.approvedModels) : null;
+
+  // Trial users provisioning a new agent never block: silently coerce any
+  // disallowed or locked model selection to the trial-allowed default. The UI
+  // pre-selects the right model anyway; this is defence-in-depth so a stale
+  // form post never throws a red error in their face.
+  const shouldCoerceForTrial =
+    trialActive &&
+    params.context === "agent" &&
+    (!requested || !requestedMatch || requestedMatch.lockedReason === "trial_paid_model");
+
+  if (shouldCoerceForTrial) {
+    const trialDefault =
+      findAllowedModel(snapshot.defaultModel, snapshot.approvedModels) ??
+      snapshot.approvedModels.find((entry) => !entry.lockedReason);
+    if (!trialDefault) {
+      throw new Error("No approved model is configured for this organization.");
+    }
+    return {
+      policy,
+      snapshot,
+      model: trialDefault.id,
+      selectedModel: trialDefault,
+    };
+  }
+
+  const candidate = requested || snapshot.defaultModel;
   const selectedModel =
     findAllowedModel(candidate, snapshot.approvedModels) ??
     findAllowedModel(snapshot.defaultModel, snapshot.approvedModels);
@@ -125,14 +196,14 @@ export async function resolveModelSelection(params: {
     throw new Error("No approved model is configured for this organization.");
   }
 
-  if (params.requestedModel?.trim()) {
+  if (requested) {
     await assertModelSelectionAllowed({
       orgId: params.orgId,
       userId: params.userId,
       isSuperAdmin: params.isSuperAdmin,
       trialStatus: params.trialStatus,
       trialEndsAt: params.trialEndsAt,
-      model: params.requestedModel,
+      model: requested,
       context: params.context,
     });
   }

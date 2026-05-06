@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
+import { GlobalTrialBanner } from "@/components/dashboard/global-trial-banner";
 import { cn } from "@/lib/utils";
 import type { WorkspaceMembership } from "@/types";
 
@@ -17,6 +18,7 @@ type PlatformStatus = {
   avatarUrl?: string | null;
   role?: string | null;
   currentOrgId?: string | null;
+  isSuperAdmin?: boolean;
   workspaces?: WorkspaceMembership[];
   visibleAgents?: Array<{
     id: string;
@@ -30,6 +32,8 @@ type PlatformStatus = {
     canManageConsole: boolean;
     canManageAdminTools: boolean;
   };
+  trialStatus?: string | null;
+  trialEndsAt?: string | null;
 };
 
 export function DashboardShell({
@@ -73,11 +77,19 @@ export function DashboardShell({
             "flex min-h-screen w-full flex-col app-fade-in",
             isConsoleRoute
               ? "max-w-none px-0 py-0"
-              : "max-w-[1080px] px-phi-5 py-phi-8 sm:px-phi-8 lg:px-phi-13 lg:py-phi-13",
-            isSettingsRoute && "ml-0 mr-auto max-w-[1280px] px-phi-5 py-phi-8 sm:px-phi-8 lg:px-phi-8 lg:py-phi-13",
+              : "max-w-[1080px] px-4 py-phi-5 sm:px-phi-8 sm:py-phi-8 lg:px-phi-13 lg:py-phi-13",
+            isSettingsRoute && "ml-0 mr-auto max-w-[1280px] px-4 py-phi-5 sm:px-phi-8 sm:py-phi-8 lg:px-phi-8 lg:py-phi-13",
             !isConsoleRoute && !isSettingsRoute && "mx-auto",
           )}
         >
+          {!isConsoleRoute ? (
+            <GlobalTrialBanner
+              trialStatus={platformStatus.trialStatus}
+              trialEndsAt={platformStatus.trialEndsAt}
+              isSuperAdmin={platformStatus.isSuperAdmin}
+              className="mb-phi-5"
+            />
+          ) : null}
           {children}
         </div>
       </div>

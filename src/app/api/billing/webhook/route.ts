@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
 import { env } from "@/lib/env";
+import { notifyAdminOfBilling } from "@/lib/admin-notifications";
 import {
   creditWallet,
   markStripeEventFailed,
@@ -100,6 +101,23 @@ async function findOrgIdForSubscription(subscription: Stripe.Subscription) {
     .maybeSingle();
 
   return data?.id ?? null;
+}
+
+async function getBillingNotificationContext(orgId: string, userId?: string | null) {
+  const admin = createAdminClient();
+  if (!admin) {
+    return { orgName: null, userEmail: null };
+  }
+
+  const [orgResult, userResult] = await Promise.all([
+    admin.from("orgs").select("name").eq("id", orgId).maybeSingle(),
+    userId ? admin.auth.admin.getUserById(userId) : Promise.resolve(null),
+  ]);
+
+  return {
+    orgName: (orgResult.data as { name?: string } | null)?.name ?? null,
+    userEmail: userResult?.data.user?.email ?? null,
+  };
 }
 
 async function creditIncludedUsage(input: {
@@ -243,6 +261,20 @@ export async function POST(request: Request) {
             stripePaymentIntentId:
               typeof session.payment_intent === "string" ? session.payment_intent : null,
           });
+
+          const context = await getBillingNotificationContext(orgId, session.metadata?.userId ?? null);
+          await notifyAdminOfBilling({
+            event: "wallet_topup",
+            orgId,
+            orgName: context.orgName,
+            userId: session.metadata?.userId ?? null,
+            userEmail: context.userEmail,
+            amountCents,
+            customerId: typeof session.customer === "string" ? session.customer : null,
+            checkoutSessionId: session.id,
+            status: session.payment_status,
+            metadata: session.metadata ?? {},
+          }).catch(() => null);
         }
       }
 
@@ -269,6 +301,23 @@ export async function POST(request: Request) {
           stripeCheckoutSessionId: session.id,
           stripeSubscriptionId: subscriptionId,
         });
+
+        const context = await getBillingNotificationContext(orgId, session.metadata?.userId ?? null);
+        await notifyAdminOfBilling({
+          event: "subscription_started",
+          orgId,
+          orgName: context.orgName,
+          userId: session.metadata?.userId ?? null,
+          userEmail: context.userEmail,
+          amountCents: session.amount_total ?? null,
+          planId: session.metadata.planId,
+          interval: normalizeStripeInterval(session.metadata.interval ?? subscription?.items.data[0]?.price.recurring?.interval),
+          subscriptionId,
+          customerId: typeof session.customer === "string" ? session.customer : null,
+          checkoutSessionId: session.id,
+          status: subscription?.status ?? "active",
+          metadata: session.metadata ?? {},
+        }).catch(() => null);
       }
     }
 
@@ -321,6 +370,27 @@ export async function POST(request: Request) {
               clearTrial: subscription.status !== "canceled",
             });
           }
+
+          const context = await getBillingNotificationContext(invoiceOrgId, null);
+          await notifyAdminOfBilling({
+            event: "subscription_renewed",
+            orgId: invoiceOrgId,
+            orgName: context.orgName,
+            amountCents: invoice.amount_paid ?? null,
+            planId,
+            interval: subscription
+              ? normalizeStripeInterval(
+                  subscription.metadata?.interval ??
+                    subscription.items.data[0]?.price.recurring?.interval,
+                )
+              : null,
+            subscriptionId,
+            customerId:
+              subscription && typeof subscription.customer === "string" ? subscription.customer : null,
+            invoiceId: invoice.id ?? event.id,
+            status: invoice.status ?? null,
+            metadata: invoice.metadata ?? {},
+          }).catch(() => null);
         }
       }
     }

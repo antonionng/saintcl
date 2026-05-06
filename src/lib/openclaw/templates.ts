@@ -29,6 +29,7 @@ export function renderTenantOpenClawConfig(
         defaults: {
           model: options.defaultModel ? { primary: options.defaultModel } : undefined,
           models: Object.keys(modelAllowlist).length > 0 ? modelAllowlist : undefined,
+          skipBootstrap: true,
           workspace: runtime.paths.workspaceRoot,
         },
         list: [],

@@ -58,7 +58,7 @@ export default async function AgentChatPage({
 
   return (
     <div className="flex h-full min-h-[calc(100vh-12rem)] flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-3 pb-6">
+      <header className="flex flex-col gap-3 pb-6 md:flex-row md:items-center md:justify-between">
         <div className="flex min-w-0 items-start gap-3">
           <AgentAvatar
             agentId={agent.openclaw_agent_id}
@@ -75,7 +75,7 @@ export default async function AgentChatPage({
             </h1>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid w-full gap-2 sm:flex sm:flex-wrap sm:items-center md:w-auto md:justify-end">
           <Button asChild variant="secondary" size="sm">
             <Link href={`/agents/${agent.id}`}>
               <Settings className="size-4" />

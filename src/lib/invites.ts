@@ -1,5 +1,6 @@
 import type { OrgInviteRecord, OrgRole } from "@/types";
 import { recordInviteCharge, reverseInviteCharge } from "@/lib/billing/invites";
+import { notifyAdminOfInvite } from "@/lib/admin-notifications";
 import { sendTemplatedEmail } from "@/lib/email/client";
 import { createOpaqueEmailToken, hashEmailToken } from "@/lib/email/tokens";
 import { getOrgMembers, getTeam } from "@/lib/dal";
@@ -56,6 +57,17 @@ function mapInvite(row: OrgInviteRow): OrgInviteRecord {
 
 function normalizeInviteEmail(email: string) {
   return email.trim().toLowerCase();
+}
+
+async function getAuthUserEmail(
+  admin: NonNullable<ReturnType<typeof createAdminClient>>,
+  userId?: string | null,
+) {
+  if (!userId) {
+    return null;
+  }
+  const { data } = await admin.auth.admin.getUserById(userId);
+  return data.user?.email ?? null;
 }
 
 async function getInviteRowById(inviteId: string, orgId?: string) {
@@ -242,7 +254,23 @@ export async function createAndSendOrgInvite(input: {
       .select("*")
       .single();
 
-    return mapInvite((updated as OrgInviteRow | null) ?? invite);
+    const finalInvite = mapInvite((updated as OrgInviteRow | null) ?? invite);
+    await notifyAdminOfInvite({
+      event: "sent",
+      orgId: input.orgId,
+      orgName: input.orgName,
+      inviteId: invite.id,
+      invitedEmail: email,
+      role: input.role,
+      teamId: input.teamId ?? null,
+      teamName: team?.name ?? null,
+      invitedByUserId: input.invitedByUserId,
+      invitedByEmail: await getAuthUserEmail(admin, input.invitedByUserId),
+      billedAmountCents: input.seatPriceCents,
+      billingStatus: finalInvite.billingStatus,
+    }).catch(() => null);
+
+    return finalInvite;
   } catch (error) {
     if (input.seatPriceCents > 0 && chargedLedgerEntryId) {
       await reverseInviteCharge({
@@ -405,5 +433,30 @@ export async function acceptOrgInvite(input: { token: string; userId: string; em
     .select("*")
     .single();
 
-  return mapInvite((data as OrgInviteRow | null) ?? invite);
+  const acceptedInvite = mapInvite((data as OrgInviteRow | null) ?? invite);
+  const [orgResult, teamResult, invitedByEmail, acceptedByEmail] = await Promise.all([
+    admin.from("orgs").select("name").eq("id", invite.org_id).maybeSingle(),
+    invite.team_id ? admin.from("teams").select("name").eq("id", invite.team_id).maybeSingle() : Promise.resolve(null),
+    getAuthUserEmail(admin, invite.invited_by),
+    getAuthUserEmail(admin, input.userId),
+  ]);
+
+  await notifyAdminOfInvite({
+    event: "accepted",
+    orgId: invite.org_id,
+    orgName: (orgResult.data as { name?: string } | null)?.name ?? "Saint AGI workspace",
+    inviteId: invite.id,
+    invitedEmail: invite.email,
+    role: invite.role,
+    teamId: invite.team_id,
+    teamName: (teamResult?.data as { name?: string } | null)?.name ?? null,
+    invitedByUserId: invite.invited_by,
+    invitedByEmail,
+    acceptedByUserId: input.userId,
+    acceptedByEmail: acceptedByEmail ?? input.email,
+    billedAmountCents: invite.billed_amount_cents,
+    billingStatus: acceptedInvite.billingStatus,
+  }).catch(() => null);
+
+  return acceptedInvite;
 }

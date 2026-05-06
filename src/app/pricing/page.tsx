@@ -31,7 +31,7 @@ export default async function PricingPage() {
         <div className="pointer-events-none absolute left-1/2 top-0 h-[18rem] w-[42rem] -translate-x-1/2 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.12),rgba(255,255,255,0.04)_34%,transparent_72%)]" />
 
         <header className="sticky top-0 z-20 bg-black/80 backdrop-blur-md">
-          <div className="site-shell flex items-center justify-between py-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
+          <div className="site-shell flex items-center justify-between gap-4 py-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
             <Link href="/" className="inline-flex h-10 items-center">
               <Image
                 src="/saint-agi-mark.svg"
@@ -50,7 +50,7 @@ export default async function PricingPage() {
                 </Link>
               ))}
             </nav>
-            <div className="flex items-center gap-2.5 sm:gap-3 lg:justify-self-end">
+            <div className="flex shrink-0 items-center gap-2.5 sm:gap-3 lg:justify-self-end">
               {session ? (
                 <UserDropdownMenu
                   email={profile?.email ?? session.email}
@@ -66,7 +66,7 @@ export default async function PricingPage() {
                     <Link href="/login">Log in</Link>
                   </Button>
                   <Button asChild size="sm">
-                    <Link href="/signup">Start</Link>
+                    <Link href="/#contact">Request access</Link>
                   </Button>
                 </>
               )}

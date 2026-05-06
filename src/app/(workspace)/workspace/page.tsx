@@ -1,13 +1,23 @@
+import { cookies, headers } from "next/headers";
+
 import { WorkspaceShell } from "@/components/workspace/workspace-shell";
 import { getCurrentOrg, getCurrentUserProfile, getPreferredAgentForSession, getTrialMessageUsageCount } from "@/lib/dal";
 import { isOpenClawConfigured } from "@/lib/env";
+import { normalizeAgentAvatarConfig } from "@/lib/agent-identity";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureCurrentControlUiOrigin } from "@/lib/openclaw/control-ui-origins";
+import { resolveAgentWorkspaceFromConfig } from "@/lib/openclaw/agent-terminal";
+import { recordRuntimePressureSample } from "@/lib/openclaw/runtime-pressure";
+import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { buildAgentSessionKey } from "@/lib/openclaw/session-keys";
 import { buildGatewayWorkspaceProxyPath, resolveTenantGatewayTarget } from "@/lib/openclaw/tenant-gateway";
 import {
   getTrialMessageLimitMessage,
   hasTrialMessageCapacity,
   isTrialModelRestrictionActive,
+  normalizeTrialFreeModelId,
+  TRIAL_DEFAULT_MODEL_ID,
+  TRIAL_FALLBACK_FREE_MODEL_ID,
   TRIAL_MESSAGE_LIMIT,
 } from "@/lib/plans";
 
@@ -19,6 +29,95 @@ function profileNeedsOnboarding(profile: {
   return [profile?.displayName, profile?.whatIDo, profile?.agentBrief].some(
     (value) => typeof value !== "string" || value.trim().length === 0,
   );
+}
+
+async function getRequestOrigin() {
+  const configuredUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "");
+  if (configuredUrl) return configuredUrl;
+
+  const headerStore = await headers();
+  const host = headerStore.get("x-forwarded-host") ?? headerStore.get("host");
+  if (!host) return "";
+
+  const protocol =
+    headerStore.get("x-forwarded-proto") ?? (host.startsWith("localhost") || host.startsWith("127.") ? "http" : "https");
+  return `${protocol}://${host}`;
+}
+
+async function autoBootstrapIfMissing(canProvisionAgent: boolean) {
+  if (!canProvisionAgent || !isOpenClawConfigured()) return;
+
+  const base = await getRequestOrigin();
+  if (!base) return;
+
+  try {
+    const cookieHeader = (await cookies())
+      .getAll()
+      .map(({ name, value }) => `${name}=${value}`)
+      .join("; ");
+    await fetch(`${base}/api/openclaw/bootstrap`, {
+      method: "POST",
+      headers: {
+        ...(cookieHeader ? { cookie: cookieHeader } : {}),
+      },
+      cache: "no-store",
+    });
+  } catch {
+    // The workspace can still render the manual provisioning state if bootstrap fails.
+  }
+}
+
+type RuntimeRepairAgent = {
+  id: string;
+  org_id: string;
+  user_id?: string | null;
+  name: string;
+  model: string;
+  openclaw_agent_id: string;
+  config?: unknown;
+  assignment?: { assignee_type?: string; assignee_ref?: string } | null;
+};
+
+async function repairManagedRuntimeConfig(
+  orgId: string,
+  agent?: RuntimeRepairAgent | null,
+  options?: { trialActive?: boolean },
+) {
+  if (!isOpenClawConfigured()) return null;
+
+  try {
+    const { client } = await getTenantOpenClawClient(orgId, { orgId });
+    const normalizedModel = normalizeTrialFreeModelId(agent?.model);
+    const repairedModel =
+      options?.trialActive === true &&
+      normalizedModel !== TRIAL_DEFAULT_MODEL_ID &&
+      normalizedModel !== TRIAL_FALLBACK_FREE_MODEL_ID
+        ? TRIAL_DEFAULT_MODEL_ID
+        : normalizedModel;
+    if (agent && repairedModel && repairedModel !== agent.model) {
+      const workspace = resolveAgentWorkspaceFromConfig({
+        orgId,
+        openClawAgentId: agent.openclaw_agent_id,
+        config: agent.config,
+      });
+      await client.ensureManagedAgentRuntimeConfig({
+        agentId: agent.openclaw_agent_id,
+        workspace,
+        model: repairedModel,
+        name: agent.name,
+        avatar: normalizeAgentAvatarConfig((agent.config as Record<string, unknown> | null | undefined)?.agentAvatar),
+      });
+
+      const admin = createAdminClient();
+      await admin?.from("agents").update({ model: repairedModel }).eq("id", agent.id).eq("org_id", orgId);
+    }
+
+    await client.ensureManagedBootstrapDisabled();
+    return repairedModel ?? null;
+  } catch {
+    // Chat can still render its gateway error; this repair is best-effort on page load.
+    return null;
+  }
 }
 
 async function getWorkspaceSurface(orgId: string, preferredSession?: string) {
@@ -71,7 +170,11 @@ export default async function WorkspacePage() {
     agentBrief: profile?.agentBrief ?? "",
   };
   const requiresOnboarding = profileNeedsOnboarding(profile);
-  const preferredAgent = await getPreferredAgentForSession(session);
+  let preferredAgent = await getPreferredAgentForSession(session);
+  if (!preferredAgent) {
+    await autoBootstrapIfMissing(session.capabilities.canManageAgents);
+    preferredAgent = await getPreferredAgentForSession(session);
+  }
   const hasProvisionedAgent = Boolean(preferredAgent);
   const preferredSession = preferredAgent ? buildAgentSessionKey(preferredAgent.openclaw_agent_id, "main") : undefined;
   const trialMessageCount = await getTrialMessageUsageCount(session.org.id);
@@ -87,7 +190,15 @@ export default async function WorkspacePage() {
   });
 
   if (hasProvisionedAgent) {
+    const repairedModel = await repairManagedRuntimeConfig(session.org.id, preferredAgent, { trialActive });
+    if (preferredAgent && repairedModel && repairedModel !== preferredAgent.model) {
+      preferredAgent = { ...preferredAgent, model: repairedModel };
+    }
     await ensureCurrentControlUiOrigin(session.org.id).catch(() => null);
+    // Best-effort runtime pressure sample. Surfaces gateway CPU/event-loop
+    // pressure into observability so we can see when shared runtimes start
+    // queueing customer chat turns.
+    void recordRuntimePressureSample(session.org.id);
   }
 
   const surface = hasProvisionedAgent && trialHasCapacity

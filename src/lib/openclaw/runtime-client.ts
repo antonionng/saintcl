@@ -7,7 +7,7 @@ import { resolveTenantGatewayTarget } from "@/lib/openclaw/tenant-gateway";
 type TenantOpenClawClientResult = {
   client: OpenClawClient;
   runtime: OpenClawRuntimeDescriptor | null;
-  source: "env" | "runtime";
+  source: "env" | "runtime" | "shard";
 };
 
 export async function getTenantOpenClawClient(

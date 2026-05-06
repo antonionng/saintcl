@@ -39,7 +39,7 @@ export function SiteFooter() {
                 {group.links.map((link) =>
                   link.href.startsWith("mailto:") ? (
                     <a
-                      key={link.href}
+                      key={`${link.href}:${link.label}`}
                       href={link.href}
                       className="py-1 text-[13px] text-[#b5b5bd] transition-colors hover:text-white"
                     >
@@ -47,7 +47,7 @@ export function SiteFooter() {
                     </a>
                   ) : (
                     <Link
-                      key={link.href}
+                      key={`${link.href}:${link.label}`}
                       href={link.href}
                       className="py-1 text-[13px] text-[#b5b5bd] transition-colors hover:text-white"
                     >

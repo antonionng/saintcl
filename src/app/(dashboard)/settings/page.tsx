@@ -331,7 +331,7 @@ async function SettingsTabContent({
             id: "wallet",
             label: "Wallet",
             content: (
-              <section className="space-y-4 p-5">
+              <section className="space-y-4 p-4 sm:p-5">
                 <div>
                   <h3 className="text-[length:var(--text-base)] font-medium text-white">Wallet actions</h3>
                   <p className="mt-1 text-[length:var(--text-xs)] text-white/55">
@@ -384,7 +384,7 @@ async function SettingsTabContent({
                       {ledger.map((entry) => (
                         <li
                           key={entry.id}
-                          className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0"
+                          className="flex flex-col gap-2 border-b border-border-subtle px-4 py-2.5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
                         >
                           <div className="min-w-0">
                             <p className="truncate text-[length:var(--text-sm)] text-white">
@@ -394,7 +394,7 @@ async function SettingsTabContent({
                               {entry.source_type} · {new Date(entry.created_at).toLocaleString()}
                             </p>
                           </div>
-                          <div className="shrink-0 text-right">
+                          <div className="shrink-0 text-left sm:text-right">
                             <p
                               className={`text-[length:var(--text-sm)] ${
                                 entry.direction === "credit" ? "text-emerald-300" : "text-amber-300"
@@ -430,9 +430,9 @@ async function SettingsTabContent({
             id: "channels",
             label: "Channels",
             content: (
-              <section className="space-y-4 p-5">
+              <section className="space-y-4 p-4 sm:p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="text-[length:var(--text-base)] font-medium text-white">
                       Connected channels
                     </h3>
@@ -460,7 +460,7 @@ async function SettingsTabContent({
                       {channels.map((channel) => (
                         <li
                           key={channel.id}
-                          className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0"
+                          className="flex flex-col gap-2 border-b border-border-subtle px-4 py-2.5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
                         >
                           <div className="min-w-0">
                             <p className="text-[length:var(--text-sm)] font-medium capitalize text-white">
@@ -473,7 +473,7 @@ async function SettingsTabContent({
                                 : " · pending"}
                             </p>
                           </div>
-                          <Badge variant={channel.status === "connected" ? "success" : "warning"}>
+                          <Badge variant={channel.status === "connected" ? "success" : "warning"} className="self-start sm:self-center">
                             {channel.status}
                           </Badge>
                         </li>
@@ -488,7 +488,7 @@ async function SettingsTabContent({
             id: "setup",
             label: "Setup guide",
             content: (
-              <section className="space-y-5 p-5">
+              <section className="space-y-5 p-4 sm:p-5">
                 <div>
                   <h3 className="text-[length:var(--text-base)] font-medium text-white">Ready setup</h3>
                   <p className="mt-1 max-w-3xl text-[length:var(--text-sm)] leading-6 text-zinc-400">
@@ -569,7 +569,7 @@ async function SettingsTabContent({
     <div className="space-y-8">
       <section>
         <div className="flex flex-col gap-2 pb-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
-          <div>
+          <div className="min-w-0">
             <h3 className="text-[length:var(--text-base)] font-medium text-white">
               Repo allowlists
             </h3>
@@ -589,7 +589,7 @@ async function SettingsTabContent({
               {allowlists.map((entry) => (
                 <li
                   key={entry.id}
-                  className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0"
+                className="flex flex-col gap-2 border-b border-border-subtle px-4 py-2.5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-[length:var(--text-sm)] text-white">
@@ -649,7 +649,7 @@ async function SettingsTabContent({
                 {approvals.slice(0, 8).map((approval) => (
                   <li
                     key={approval.id}
-                    className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0"
+                    className="flex flex-col gap-2 border-b border-border-subtle px-4 py-2.5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
                   >
                     <div className="min-w-0">
                       <p className="truncate text-[length:var(--text-sm)] text-white">
@@ -659,7 +659,7 @@ async function SettingsTabContent({
                         {new Date(approval.created_at).toLocaleString()}
                       </p>
                     </div>
-                    <Badge variant={approval.status === "approved" ? "success" : "warning"}>
+                    <Badge variant={approval.status === "approved" ? "success" : "warning"} className="self-start sm:self-center">
                       {approval.status}
                     </Badge>
                   </li>
@@ -688,11 +688,11 @@ async function SettingsTabContent({
                     key={run.id}
                     className="border-b border-border-subtle px-4 py-2.5 last:border-b-0"
                   >
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                       <p className="truncate text-[length:var(--text-sm)] text-white">
                         {run.command}
                       </p>
-                      <Badge variant={run.exit_code === 0 ? "success" : "warning"}>
+                      <Badge variant={run.exit_code === 0 ? "success" : "warning"} className="self-start sm:self-center">
                         exit {run.exit_code}
                       </Badge>
                     </div>

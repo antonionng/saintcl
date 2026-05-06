@@ -63,6 +63,11 @@ Copy `.env.local.example` to `.env.local` and provide:
 - `EMAIL_REPLY_TO`
 - `EMAIL_TOKEN_SECRET`
 - `EMAIL_CRON_SECRET`
+- `SUPER_ADMIN_EMAILS`
+- `SUPPORT_NOTIFY_EMAIL`
+- `SUPPORT_BCC_EMAIL`
+- `SUPPORT_INBOUND_WEBHOOK_SECRET`
+- `SUPPORT_AI_MODEL`
 - `OPENCLAW_GATEWAY_URL` and `OPENCLAW_GATEWAY_TOKEN` when the app should talk to a hosted Railway gateway
 - `OPENROUTER_API_KEY` if you want Saint AGI-managed OpenClaw runtimes to use OpenRouter
 - optional OpenClaw runtime overrides like `OPENCLAW_VENDOR_DIR`, `OPENCLAW_RUNTIME_ROOT`, and `OPENCLAW_BASE_PORT`
@@ -70,7 +75,7 @@ Copy `.env.local.example` to `.env.local` and provide:
 By default, SaintAGI now points tenant runtimes at `OPENCLAW_DEFAULT_MODEL=openrouter/auto`. To force a specific OpenRouter model, set `OPENCLAW_DEFAULT_MODEL` explicitly, for example:
 
 ```text
-OPENCLAW_DEFAULT_MODEL=openrouter/meta-llama/llama-3.3-70b:free
+OPENCLAW_DEFAULT_MODEL=openrouter/openrouter/free
 ```
 
 OpenClaw already has native OpenRouter support, so you do not need a separate OpenRouter CLI bridge inside SaintAGI. Under the hood, the vendored runtime can also be onboarded directly with:
@@ -96,6 +101,8 @@ Use these prerequisites when turning the current working tree into staged deploy
   Requires `supabase/migrations/00002_wallets_assignments_and_policies.sql` and `supabase/migrations/00008_billing_subscriptions_and_trials.sql`, plus all Stripe variables listed above.
 - Batch 5. Invites, email, and lifecycle automation:
   Requires `supabase/migrations/00009_email_invites_and_preferences.sql`, `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO`, `EMAIL_TOKEN_SECRET`, `EMAIL_CRON_SECRET`, and `NEXT_PUBLIC_APP_URL`.
+- Batch 5a. Contact and support automation:
+  Requires `supabase/migrations/00025_support_tickets.sql`, `SUPER_ADMIN_EMAILS`, `SUPPORT_NOTIFY_EMAIL`, `SUPPORT_BCC_EMAIL`, `SUPPORT_INBOUND_WEBHOOK_SECRET`, `SUPPORT_AI_MODEL`, Resend inbound email routing, and Vercel AI Gateway access for AI triage.
 - Batch 6. Observability, model governance, and runtime ops UI:
   Requires `supabase/migrations/00003_openrouter_model_governance.sql` and `supabase/migrations/00004_request_observability.sql`, plus a healthy OpenClaw gateway/runtime path so sync and telemetry routes can resolve the gateway.
 - Batch 7. Marketing, legal, and public site:

@@ -19,8 +19,8 @@ export function AgentAppsCard({
   bindings?: AgentAppBinding[];
 }) {
   return (
-    <section className="rounded-2xl border border-border-subtle bg-surface-1 p-5">
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <section className="rounded-2xl border border-border-subtle bg-surface-1 p-4 sm:p-5">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-medium tracking-[-0.03em] text-white">Connected apps</h2>
         <Button asChild size="sm" variant="secondary">
           <Link href={`/apps?agent=${agentId}`}>
@@ -43,7 +43,7 @@ export function AgentAppsCard({
           {bindings.map((binding) => (
             <li
               key={binding.id}
-              className="flex items-center justify-between rounded-md border border-border-subtle bg-surface-1 px-4 py-3"
+              className="flex flex-col gap-2 rounded-md border border-border-subtle bg-surface-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-white">{binding.name ?? binding.appId}</p>
@@ -52,7 +52,7 @@ export function AgentAppsCard({
                 ) : null}
               </div>
               {binding.status ? (
-                <span className="text-xs uppercase tracking-[0.08em] text-zinc-500">{binding.status}</span>
+                <span className="shrink-0 text-xs uppercase tracking-[0.08em] text-zinc-500">{binding.status}</span>
               ) : null}
             </li>
           ))}

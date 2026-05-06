@@ -71,7 +71,7 @@ export function BillingActions({
     <div className="space-y-5">
       <div className="space-y-3">
         <p className="app-kicker">Add balance</p>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
           {topupOptions.map((option) => (
             <Button
               key={option.amountCents}
@@ -97,6 +97,7 @@ export function BillingActions({
             variant="secondary"
             onClick={() => openCheckout(Math.max(500, Math.round(Number(manualAmount || "0") * 100)))}
             disabled={loading !== null}
+            className="w-full sm:w-auto"
           >
             Custom
           </Button>
@@ -121,7 +122,7 @@ export function BillingActions({
               placeholder="Credit description"
             />
           </div>
-          <Button variant="secondary" onClick={issueManualCredit} disabled={loading !== null}>
+          <Button variant="secondary" onClick={issueManualCredit} disabled={loading !== null} className="w-full sm:w-auto">
             {loading === "manual-credit" ? "Applying..." : "Apply manual credit"}
           </Button>
         </div>

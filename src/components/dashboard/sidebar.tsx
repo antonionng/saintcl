@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Command,
   Database,
+  LifeBuoy,
   LayoutDashboard,
   MessageSquare,
   type LucideIcon,
@@ -52,6 +53,7 @@ export function DashboardSidebar({
     avatarUrl?: string | null;
     role?: string | null;
     currentOrgId?: string | null;
+    isSuperAdmin?: boolean;
     workspaces?: WorkspaceMembership[];
     visibleAgents?: Array<{
       id: string;
@@ -77,6 +79,7 @@ export function DashboardSidebar({
   const isKnowledgeRoute = pathname === "/knowledge" || pathname.startsWith("/knowledge/");
   const isConsoleRoute = pathname === "/openclaw" || pathname.startsWith("/openclaw/");
   const isAccountRoute = pathname === "/account" || pathname.startsWith("/account/");
+  const isSupportRoute = pathname === "/support" || pathname.startsWith("/support/");
   const activeSettingsTab = resolveSettingsTab(searchParams.get("tab") ?? undefined, platformStatus.capabilities);
   const visibleSettingsTabs = getVisibleSettingsTabs(platformStatus.capabilities);
 
@@ -184,7 +187,10 @@ export function DashboardSidebar({
     {
       id: "admin",
       label: "Administration",
-      items: [{ href: "/settings", label: "Settings", icon: Settings }],
+      items: [
+        { href: "/settings", label: "Settings", icon: Settings },
+        ...(platformStatus.isSuperAdmin ? [{ href: "/support", label: "Support", icon: LifeBuoy }] : []),
+      ],
     },
   ];
 
@@ -305,6 +311,19 @@ export function DashboardSidebar({
       },
     ],
     console: agentContextualGroups,
+    support: [
+      {
+        id: "platform-support",
+        label: "Platform support",
+        items: [
+          {
+            href: "/support",
+            label: "Ticket queue",
+            active: isSupportRoute,
+          },
+        ],
+      },
+    ],
   };
 
   return (
@@ -444,7 +463,9 @@ export function DashboardSidebar({
                                     ? contextualGroups.account
                                     : item.href === "/openclaw" && isConsoleRoute
                                       ? contextualGroups.console
-                                      : [];
+                                      : item.href === "/support" && isSupportRoute
+                                        ? contextualGroups.support
+                                        : [];
 
                       return (
                         <div key={item.href} className="space-y-0.5">

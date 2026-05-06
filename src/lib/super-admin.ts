@@ -1,3 +1,5 @@
+import { env } from "@/lib/env";
+
 export function isTruthyMetadataFlag(raw: unknown) {
   return raw === true || raw === "true" || raw === 1 || raw === "1";
 }
@@ -6,8 +8,26 @@ function normalizeAdminLabel(raw: unknown) {
   return typeof raw === "string" ? raw.trim().toLowerCase() : "";
 }
 
-export function getIsSuperAdmin(user: { app_metadata?: Record<string, unknown> } | null) {
+function normalizeEmail(raw: unknown) {
+  return typeof raw === "string" ? raw.trim().toLowerCase() : "";
+}
+
+function getSuperAdminEmailAllowlist() {
+  return new Set(
+    env.superAdminEmails
+      .split(",")
+      .map((email) => normalizeEmail(email))
+      .filter(Boolean),
+  );
+}
+
+export function getIsSuperAdmin(user: { email?: string | null; app_metadata?: Record<string, unknown> } | null) {
   const metadata = user?.app_metadata ?? {};
+  const email = normalizeEmail(user?.email);
+  if (email && getSuperAdminEmailAllowlist().has(email)) {
+    return true;
+  }
+
   const flagKeys = [
     "is_super_admin",
     "isSuperAdmin",

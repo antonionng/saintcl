@@ -10,6 +10,7 @@ export const env = {
   openClawWorkspaceDir: process.env.OPENCLAW_WORKSPACE_DIR,
   openClawBasePort: Number(process.env.OPENCLAW_BASE_PORT || 18789),
   openClawDefaultModel: process.env.OPENCLAW_DEFAULT_MODEL || "openrouter/auto",
+  openClawGatewayShards: process.env.OPENCLAW_GATEWAY_SHARDS,
   openRouterApiKey: process.env.OPENROUTER_API_KEY,
   stripeSecretKey: process.env.STRIPE_SECRET_KEY,
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
@@ -24,6 +25,12 @@ export const env = {
   emailReplyTo: process.env.EMAIL_REPLY_TO || "hello@saintagi.com",
   emailTokenSecret: process.env.EMAIL_TOKEN_SECRET,
   emailCronSecret: process.env.EMAIL_CRON_SECRET,
+  adminNotifyEmail: process.env.ADMIN_NOTIFY_EMAIL || "ag@expert.com",
+  superAdminEmails: process.env.SUPER_ADMIN_EMAILS || "ag@expert.com",
+  supportNotifyEmail: process.env.SUPPORT_NOTIFY_EMAIL || "ag@expert.com",
+  supportBccEmail: process.env.SUPPORT_BCC_EMAIL || "ag@expert.com",
+  supportInboundWebhookSecret: process.env.SUPPORT_INBOUND_WEBHOOK_SECRET,
+  supportAiModel: process.env.SUPPORT_AI_MODEL || "openai/gpt-5.4",
   appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
 };
 

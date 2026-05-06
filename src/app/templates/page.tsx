@@ -30,12 +30,12 @@ export default function PublicTemplatesPage() {
             />
             <span className="ml-3 text-base font-semibold tracking-[-0.02em] text-white">Saint AGI</span>
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="grid gap-2 sm:flex sm:items-center sm:gap-3">
             <Button asChild variant="ghost" size="sm">
               <Link href="/login">Sign in</Link>
             </Button>
             <Button asChild size="sm">
-              <Link href="/signup">Get started</Link>
+              <Link href="/#contact">Request access</Link>
             </Button>
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function PublicTemplatesPage() {
             return (
               <Link
                 key={template.id}
-                href={`/signup?template=${template.id}`}
+                href="/#contact"
                 className="group flex flex-col gap-4 rounded-2xl border border-border-subtle bg-surface-1 p-6 transition-colors hover:border-border hover:bg-surface-2"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -80,15 +80,15 @@ export default function PublicTemplatesPage() {
           })}
         </div>
 
-        <div className="mt-16 flex flex-wrap items-center justify-between gap-6 rounded-2xl border border-border-subtle bg-surface-1 p-8">
-          <div>
+        <div className="mt-16 flex flex-col gap-6 rounded-2xl border border-border-subtle bg-surface-1 p-5 sm:p-8 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0">
             <p className="text-lg font-medium text-white">Don&apos;t see your role?</p>
             <p className="mt-1 text-sm text-zinc-400">
               Start from a custom agent and define your own business outcome, persona, and rollout scope.
             </p>
           </div>
           <Button asChild size="lg">
-            <Link href="/signup">Get started free</Link>
+            <Link href="/#contact">Request access</Link>
           </Button>
         </div>
       </section>

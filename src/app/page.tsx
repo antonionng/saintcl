@@ -21,7 +21,7 @@ export default async function HomePage() {
   return (
     <main className="landing-page min-h-screen bg-black text-white">
       <header className="sticky top-0 z-20 border-b border-[#1f1f23] bg-black/95 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-4 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:px-14">
+        <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:px-14">
           <Link href="/" className="inline-flex items-center gap-2.5">
             <Image
               src="/saint-agi-mark.svg"
@@ -47,7 +47,7 @@ export default async function HomePage() {
               </Link>
             ))}
           </nav>
-          <div className="flex items-center gap-3 lg:justify-self-end">
+          <div className="flex shrink-0 items-center gap-3 lg:justify-self-end">
             {session ? (
               <UserDropdownMenu
                 email={profile?.email ?? session.email}
@@ -66,7 +66,7 @@ export default async function HomePage() {
                   Log in
                 </Link>
                 <Button asChild size="sm">
-                  <Link href="/signup">Start</Link>
+                  <Link href="/#contact">Request access</Link>
                 </Button>
               </>
             )}

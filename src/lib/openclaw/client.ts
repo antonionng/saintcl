@@ -152,6 +152,28 @@ function readAgentDefaults(snapshot: OpenClawConfigSnapshot | undefined) {
   return plainObject(agents?.defaults);
 }
 
+function buildDormantMemorySearchConfig() {
+  return {
+    enabled: false,
+    sync: {
+      onSessionStart: false,
+      onSearch: false,
+      watch: false,
+    },
+  };
+}
+
+function memorySearchDormant(config: unknown, options?: { requireExplicit?: boolean }) {
+  const memorySearch = plainObject(config);
+  if (!memorySearch) {
+    return options?.requireExplicit ? false : true;
+  }
+  if (memorySearch.enabled !== false) return false;
+  const sync = plainObject(memorySearch.sync);
+  if (!sync) return true;
+  return sync.onSessionStart !== true && sync.onSearch !== true && sync.watch !== true;
+}
+
 /**
  * Returns true when the snapshot already encodes the desired governance state.
  * We compare the primary model id and the set of approved model ids; the
@@ -164,6 +186,9 @@ export function governanceMatchesSnapshot(
 ): boolean {
   const defaults = readAgentDefaults(snapshot);
   if (!defaults) return false;
+  if (defaults.skipBootstrap !== true) return false;
+  if (defaults.thinkingDefault !== "off") return false;
+  if (!memorySearchDormant(defaults.memorySearch, { requireExplicit: true })) return false;
   const model = plainObject(defaults.model);
   if (!model || model.primary !== desired.defaultModel) return false;
   const currentModels = Array.isArray(defaults.models) ? defaults.models : [];
@@ -222,9 +247,36 @@ export function buildModelGovernancePatch(input: {
       defaults: {
         model: { primary: input.defaultModel },
         models,
+        skipBootstrap: true,
+        thinkingDefault: "off",
+        memorySearch: buildDormantMemorySearchConfig(),
       },
     },
   };
+}
+
+export function managedBootstrapDefaultsMatchSnapshot(snapshot: OpenClawConfigSnapshot | undefined) {
+  const defaults = readAgentDefaults(snapshot);
+  return (
+    defaults?.skipBootstrap === true &&
+    defaults.thinkingDefault === "off" &&
+    memorySearchDormant(defaults.memorySearch, { requireExplicit: true })
+  );
+}
+
+export function agentKnowledgeSearchDormantMatchesSnapshot(
+  snapshot: OpenClawConfigSnapshot | undefined,
+  agentId: string,
+) {
+  const entry = readAgentsList(snapshot).find((candidate) => candidate.id === agentId);
+  return memorySearchDormant(entry?.memorySearch);
+}
+
+export function managedAgentRuntimeConfigMatchesSnapshot(
+  snapshot: OpenClawConfigSnapshot | undefined,
+  desired: { agentId: string; workspace: string; model: string },
+) {
+  return managedBootstrapDefaultsMatchSnapshot(snapshot) && agentMatchesSnapshot(snapshot, desired);
 }
 
 export class OpenClawClient {
@@ -232,7 +284,7 @@ export class OpenClawClient {
     private readonly runtime?: Pick<OpenClawRuntimeDescriptor, "gatewayUrl" | "gatewayToken">,
     private readonly context?: {
       orgId?: string;
-      source?: "env" | "runtime";
+      source?: "env" | "runtime" | "shard";
     },
   ) {}
 
@@ -337,6 +389,75 @@ export class OpenClawClient {
       ...result,
       dangerouslyDisableDeviceAuth: false,
     };
+  }
+
+  async ensureManagedBootstrapDisabled(
+    runner?: GatewayRpcRunner,
+    options?: { currentSnapshot?: OpenClawConfigSnapshot },
+  ): Promise<{ changed: boolean }> {
+    if (!isOpenClawConfigured()) {
+      throw new Error("Runtime gateway is not configured.");
+    }
+
+    const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
+    const snapshot = options?.currentSnapshot ?? (await this.getConfigSnapshot(exec));
+    if (managedBootstrapDefaultsMatchSnapshot(snapshot)) {
+      return { changed: false };
+    }
+
+    const raw = JSON.stringify({
+      agents: {
+        defaults: {
+          skipBootstrap: true,
+          thinkingDefault: "off",
+          memorySearch: buildDormantMemorySearchConfig(),
+        },
+      },
+    });
+    await exec("config.patch", { raw, baseHash: snapshot.hash });
+    return { changed: true };
+  }
+
+  async ensureManagedAgentRuntimeConfig(
+    input: { agentId: string; workspace: string; model: string; name?: string; avatar?: AgentAvatarConfig },
+    runner?: GatewayRpcRunner,
+    options?: { currentSnapshot?: OpenClawConfigSnapshot },
+  ): Promise<{ changed: boolean }> {
+    if (!isOpenClawConfigured()) {
+      throw new Error("Runtime gateway is not configured.");
+    }
+
+    const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
+    const snapshot = options?.currentSnapshot ?? (await this.getConfigSnapshot(exec));
+    if (managedAgentRuntimeConfigMatchesSnapshot(snapshot, input)) {
+      return { changed: false };
+    }
+
+    const raw = JSON.stringify({
+      agents: {
+        defaults: {
+          skipBootstrap: true,
+          thinkingDefault: "off",
+          memorySearch: buildDormantMemorySearchConfig(),
+        },
+        list: [
+          {
+            id: input.agentId,
+            workspace: input.workspace,
+            model: input.model,
+            fastModeDefault: true,
+            identity: input.name && (!input.avatar?.imagePath || input.avatar.imageDataUrl)
+              ? {
+                  name: input.name,
+                  avatar: getAgentAvatarDataUri(input.agentId, input.name, input.avatar),
+                }
+              : undefined,
+          },
+        ],
+      },
+    });
+    await exec("config.patch", { raw, baseHash: snapshot.hash });
+    return { changed: true };
   }
 
   async provisionAgent(
@@ -461,6 +582,7 @@ export class OpenClawClient {
                 },
               },
               sync: {
+                onSessionStart: false,
                 onSearch: true,
                 watch: true,
               },
@@ -471,6 +593,35 @@ export class OpenClawClient {
     });
 
     return this.call("config.patch", { raw, baseHash });
+  }
+
+  async disableAgentKnowledgeSearch(
+    input: { agentId: string },
+    runner?: GatewayRpcRunner,
+    options?: { currentSnapshot?: OpenClawConfigSnapshot },
+  ): Promise<{ changed: boolean }> {
+    if (!isOpenClawConfigured()) {
+      throw new Error("Runtime gateway is not configured.");
+    }
+
+    const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
+    const snapshot = options?.currentSnapshot ?? (await this.getConfigSnapshot(exec));
+    if (agentKnowledgeSearchDormantMatchesSnapshot(snapshot, input.agentId)) {
+      return { changed: false };
+    }
+
+    const raw = JSON.stringify({
+      agents: {
+        list: [
+          {
+            id: input.agentId,
+            memorySearch: buildDormantMemorySearchConfig(),
+          },
+        ],
+      },
+    });
+    await exec("config.patch", { raw, baseHash: snapshot.hash });
+    return { changed: true };
   }
 
   async applyModelGovernance(
@@ -509,6 +660,7 @@ export class OpenClawClient {
     const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
     const baseHash = await this.getConfigHash(exec);
     const raw = JSON.stringify({
+      plugins: { entries: { telegram: { enabled: true } } },
       channels: { telegram: { botToken: input.botToken } },
       bindings: [{ agentId: input.agentId, match: { channel: "telegram", accountId: "default" } }],
     });
@@ -524,6 +676,7 @@ export class OpenClawClient {
     const exec: GatewayRpcRunner = runner ?? ((method, params) => this.call(method, params));
     const baseHash = await this.getConfigHash(exec);
     const raw = JSON.stringify({
+      plugins: { entries: { slack: { enabled: true } } },
       bindings: [{ agentId: input.agentId, match: { channel: "slack", accountId: input.teamId } }],
     });
 

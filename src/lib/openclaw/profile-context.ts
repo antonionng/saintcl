@@ -5,6 +5,8 @@ import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { renderAgentBootstrapFiles } from "@/lib/openclaw/templates";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+const BOOTSTRAP_FILE_RETRY_DELAYS_MS = [500, 1_500, 3_000, 5_000] as const;
+
 type ProfileContextInput = {
   displayName?: string | null;
   email?: string | null;
@@ -82,6 +84,43 @@ async function persistAgentPersona(input: {
     .eq("org_id", input.orgId);
 }
 
+function isTransientGatewayBootstrapError(error: unknown) {
+  const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+  return (
+    message.includes("runtime gateway connection closed unexpectedly") ||
+    message.includes("runtime gateway timeout") ||
+    message.includes("socket hang up") ||
+    message.includes("fetch failed") ||
+    message.includes("unknown agent id")
+  );
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function setAgentBootstrapFileWithRetry(
+  client: Awaited<ReturnType<typeof getTenantOpenClawClient>>["client"],
+  input: { agentId: string; name: string; content: string },
+) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= BOOTSTRAP_FILE_RETRY_DELAYS_MS.length; attempt += 1) {
+    try {
+      await client.setAgentFile(input);
+      return;
+    } catch (error) {
+      lastError = error;
+      const retryDelayMs = BOOTSTRAP_FILE_RETRY_DELAYS_MS[attempt];
+      if (retryDelayMs === undefined || !isTransientGatewayBootstrapError(error)) {
+        throw error;
+      }
+      await delay(retryDelayMs);
+    }
+  }
+
+  throw lastError;
+}
+
 export async function writeAgentBootstrapFiles(input: {
   orgId: string;
   agentId: string;
@@ -113,38 +152,42 @@ export async function writeAgentBootstrapFiles(input: {
     user: input.profile ?? null,
   });
 
-  await Promise.all([
-    client.setAgentFile({
+  const bootstrapFiles = [
+    {
       agentId: input.agentId,
       name: "AGENTS.md",
       content: files.agents,
-    }),
-    client.setAgentFile({
+    },
+    {
       agentId: input.agentId,
       name: "SOUL.md",
       content: files.soul,
-    }),
-    client.setAgentFile({
+    },
+    {
       agentId: input.agentId,
       name: "USER.md",
       content: files.user,
-    }),
-    client.setAgentFile({
+    },
+    {
       agentId: input.agentId,
       name: "TOOLS.md",
       content: files.tools,
-    }),
+    },
     // Pre-populate IDENTITY.md so the vendored gateway never falls back to its
     // packaged template at /app/docs/reference/templates/IDENTITY.md, which is
     // fragile (depends on the gateway docker image shipping the docs tree) and
     // would otherwise crash the chat UI with "Missing workspace template:
     // IDENTITY.md" the first time the agent runtime starts.
-    client.setAgentFile({
+    {
       agentId: input.agentId,
       name: "IDENTITY.md",
       content: files.identity,
-    }),
-  ]);
+    },
+  ];
+
+  for (const file of bootstrapFiles) {
+    await setAgentBootstrapFileWithRetry(client, file);
+  }
 }
 
 export async function syncProfileContextToAssignedAgents(input: {

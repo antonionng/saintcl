@@ -114,9 +114,9 @@ function LoginPageContent() {
           Need an account?{" "}
           <Link
             className="text-white transition-colors hover:text-zinc-200"
-            href={nextPath ? `/signup?next=${encodeURIComponent(nextPath)}` : "/signup"}
+            href="/#contact"
           >
-            Create one
+            Request access
           </Link>
         </>
       }

@@ -6,8 +6,61 @@ export const SELF_SERVE_PLAN_ORDER = ["starter", "pro", "business"] as const sat
 export const TRIAL_LENGTH_DAYS = 7;
 export const TRIAL_AGENT_LIMIT = 1;
 export const TRIAL_MESSAGE_LIMIT = 150;
-export const TRIAL_FREE_MODEL_ID = "openrouter/meta-llama/llama-3.3-70b:free";
-export const TRIAL_FREE_MODEL_LABEL = "Llama 3.3 70B Free";
+// Primary trial default: a fast paid model so first-run chat feels responsive.
+// Trial cost is absorbed by SaintAGI inside the 150-message cap, so this acts as
+// the "trial-included" model from the user's perspective.
+//
+// This is env-overridable via TRIAL_DEFAULT_MODEL_ID so we can swap to a faster
+// reliable text model based on benchmark evidence without redeploying. The label
+// can be overridden via TRIAL_DEFAULT_MODEL_LABEL. Candidates worth benchmarking:
+//   - openrouter/anthropic/claude-haiku-4.5      (current default)
+//   - openrouter/google/gemini-2.5-flash         (typically lowest TTFT)
+//   - openrouter/openai/gpt-4.1-mini             (no mandatory reasoning)
+const FALLBACK_TRIAL_DEFAULT_MODEL_ID = "openrouter/anthropic/claude-haiku-4.5";
+const FALLBACK_TRIAL_DEFAULT_MODEL_LABEL = "Claude Haiku 4.5 (trial)";
+export const TRIAL_DEFAULT_MODEL_ID =
+  process.env.TRIAL_DEFAULT_MODEL_ID?.trim() || FALLBACK_TRIAL_DEFAULT_MODEL_ID;
+export const TRIAL_DEFAULT_MODEL_LABEL =
+  process.env.TRIAL_DEFAULT_MODEL_LABEL?.trim() ||
+  (TRIAL_DEFAULT_MODEL_ID === FALLBACK_TRIAL_DEFAULT_MODEL_ID
+    ? FALLBACK_TRIAL_DEFAULT_MODEL_LABEL
+    : `${TRIAL_DEFAULT_MODEL_ID} (trial)`);
+
+// Secondary fallback. Still available so trial users can opt into a free model
+// for non-latency-critical exploration, but never the default first-run model.
+export const TRIAL_FALLBACK_FREE_MODEL_ID = "openrouter/openrouter/free";
+export const TRIAL_FALLBACK_FREE_MODEL_LABEL = "OpenRouter Free Models Router";
+
+// Backward-compatible aliases so call sites that still import the old names
+// keep working until they are migrated to the new constants. New code should
+// use TRIAL_DEFAULT_MODEL_ID / TRIAL_DEFAULT_MODEL_LABEL instead.
+export const TRIAL_FREE_MODEL_ID = TRIAL_DEFAULT_MODEL_ID;
+export const TRIAL_FREE_MODEL_LABEL = TRIAL_DEFAULT_MODEL_LABEL;
+
+// Models we want to migrate existing trial agents away from, because they were
+// either invalid, heavily rate-limited, or too slow for first-run chat. Past
+// trial defaults belong here so flipping TRIAL_DEFAULT_MODEL_ID via env still
+// migrates existing agents to the new default on next workspace load.
+export const LEGACY_TRIAL_FREE_MODEL_IDS = [
+  "openrouter/meta-llama/llama-3.3-70b:free",
+  "openrouter/meta-llama/llama-3.3-70b-instruct:free",
+  "openrouter/openrouter/free",
+  "openrouter/openai/gpt-5-mini",
+  "openrouter/anthropic/claude-haiku-4.5",
+] as const;
+
+export function normalizeTrialFreeModelId(modelId?: string | null) {
+  const normalized = modelId?.trim();
+  if (!normalized) {
+    return normalized;
+  }
+  if (normalized === TRIAL_DEFAULT_MODEL_ID) {
+    return TRIAL_DEFAULT_MODEL_ID;
+  }
+  return LEGACY_TRIAL_FREE_MODEL_IDS.some((legacyId) => legacyId === normalized)
+    ? TRIAL_DEFAULT_MODEL_ID
+    : normalized;
+}
 
 type PlanCatalogEntry = {
   id: PlanTier;
@@ -220,7 +273,7 @@ export function hasTrialMessageCapacity(
 }
 
 export function getTrialMessageLimitMessage() {
-  return `Your trial includes ${TRIAL_MESSAGE_LIMIT} messages on the free trial model. Upgrade and top up your wallet to continue.`;
+  return `Your trial includes ${TRIAL_MESSAGE_LIMIT} included messages on the trial model. Upgrade and top up your wallet to continue.`;
 }
 
 export function getPlanIntervalLabel(interval: BillingInterval) {

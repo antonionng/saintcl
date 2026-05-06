@@ -28,13 +28,13 @@ function SectionHeader({
 }) {
   return (
     <div className="flex flex-col gap-2 pb-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
-      <div>
+      <div className="min-w-0">
         <h3 className="text-[length:var(--text-base)] font-medium text-white">{title}</h3>
         {description ? (
           <p className="mt-0.5 text-[length:var(--text-xs)] text-white/55">{description}</p>
         ) : null}
       </div>
-      {action ? <div className="shrink-0">{action}</div> : null}
+      {action ? <div className="w-full shrink-0 sm:w-auto [&_button]:w-full sm:[&_button]:w-auto">{action}</div> : null}
     </div>
   );
 }
@@ -109,7 +109,7 @@ export function SettingsMembersForm({
               {members.map((member) => (
                 <li
                   key={member.userId}
-                  className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0"
+                  className="flex flex-col gap-2 border-b border-border-subtle px-4 py-2.5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-[length:var(--text-sm)] text-white">
@@ -154,7 +154,7 @@ export function SettingsMembersForm({
               {activeInvites.map((invite) => (
                 <li
                   key={invite.id}
-                  className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0"
+                  className="flex flex-col gap-2 border-b border-border-subtle px-4 py-2.5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-[length:var(--text-sm)] text-white">
@@ -175,6 +175,7 @@ export function SettingsMembersForm({
                     size="sm"
                     onClick={() => revokeInvite(invite.id)}
                     disabled={revokingId === invite.id || invite.status === "accepted"}
+                    className="w-full sm:w-auto"
                   >
                     {revokingId === invite.id ? (
                       <LoaderCircle className="h-3.5 w-3.5 animate-spin" />

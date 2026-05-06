@@ -124,6 +124,8 @@ export const howItWorksSteps = [
     description:
       "Choose from 14 pre-built roles, or design your own. Maya, Marcus, Priya, or someone you design from scratch.",
     preview: "Step 1 preview screen",
+    imageSrc: "/landing/step-1-persona.png",
+    imageAlt: "Saint AGI persona selection screen showing Maya, Marcus, Priya, James, Elena, and a custom agent option.",
   },
   {
     number: "2",
@@ -132,6 +134,8 @@ export const howItWorksSteps = [
     description:
       "Authorize the systems your agent can touch. Xero, HubSpot, Slack, WhatsApp, whatever your team already uses. Toggle off what should stay off-limits.",
     preview: "Step 2 preview screen",
+    imageSrc: "/landing/step-2-tools.png",
+    imageAlt: "Saint AGI connections screen showing Xero, Stripe, HSBC Business Banking, Gmail, and Payroll access toggles.",
   },
   {
     number: "3",
@@ -140,6 +144,8 @@ export const howItWorksSteps = [
     description:
       "Decide what needs your approval, what gets logged, and what stays off-limits. Set it once, enforced everywhere your agent works.",
     preview: "Step 3 preview screen",
+    imageSrc: "/landing/step-3-guardrails.png",
+    imageAlt: "Saint AGI policy screen showing approval, spend, PII, model routing, notification, and audit stream guardrails.",
   },
   {
     number: "4",
@@ -148,6 +154,8 @@ export const howItWorksSteps = [
     description:
       "Your agent lives in the apps your team already uses. WhatsApp, Telegram, Slack, Teams. Message it like a coworker. It gets things done.",
     preview: "Step 4 preview screen",
+    imageSrc: "/landing/step-4-channels.png",
+    imageAlt: "Saint AGI channels screen showing active WhatsApp, Slack, Telegram, and Microsoft Teams conversations.",
   },
 ] as const;
 
@@ -254,9 +262,9 @@ export const trustPillars = [
 
 export const finalCtaContent = {
   headline: "Two years of research. Built with enterprises across the globe. Available today.",
-  subhead: "Launch your first governed agent in 10 minutes. No card required.",
-  primary: { href: "/signup", label: "Start now" },
-  secondary: { href: `mailto:${"hello@neuralnetworkgroup.com"}`, label: "Talk to sales" },
+  subhead: "Request access and our team will help set up your first governed agent.",
+  primary: { href: "/#contact", label: "Request access" },
+  secondary: { href: "/#contact", label: "Talk to sales" },
 };
 
 export const productSystemIntro = {
@@ -458,8 +466,8 @@ export const articleCta = {
   description:
     "Launch agents from proven recipes, connect them to work, and keep approvals, visibility, runtime health, and policy in one place.",
   primary: {
-    href: "/signup",
-    label: "Start free",
+    href: "/#contact",
+    label: "Request access",
   },
   secondary: {
     href: "/pricing",
@@ -482,9 +490,9 @@ export const footerLinkGroups = [
   {
     title: "Company",
     links: [
-      { href: "/signup", label: "Start free" },
+      { href: "/#contact", label: "Request access" },
       { href: "/login", label: "Log in" },
-      { href: `mailto:${companyProfile.contactEmail}`, label: "Contact" },
+      { href: "/#contact", label: "Contact" },
     ],
   },
   {

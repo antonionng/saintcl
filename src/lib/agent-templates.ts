@@ -28,6 +28,7 @@ export type AgentTemplate = {
   suggestedAppIds: string[];
   suggestedKnowledgeType: "support-docs" | "sales-collateral" | "internal-docs" | "code-repos" | "marketing-assets" | "hr-policies" | null;
   defaultModel?: string;
+  trialNote?: string;
 };
 
 export const AGENT_TEMPLATES: readonly AgentTemplate[] = [
@@ -42,6 +43,8 @@ export const AGENT_TEMPLATES: readonly AgentTemplate[] = [
     personaId: "customer-support",
     suggestedAppIds: ["telegram-channel", "slack-channel", "brave-search"],
     suggestedKnowledgeType: "support-docs",
+    trialNote:
+      "Support quality jumps with Claude Sonnet 4.5: longer context for full ticket histories and sharper tone control. Trial gives you a working agent on the free model.",
   },
   {
     id: "sales-sdr",
@@ -54,6 +57,8 @@ export const AGENT_TEMPLATES: readonly AgentTemplate[] = [
     personaId: "sales-representative",
     suggestedAppIds: ["slack-channel", "brave-search"],
     suggestedKnowledgeType: "sales-collateral",
+    trialNote:
+      "Sales reaches its potential on GPT-5 / Claude Sonnet 4.5 for outreach that converts. Trial ships a working version on the free model so you can wire it up today.",
   },
   {
     id: "recruiter",
@@ -102,6 +107,8 @@ export const AGENT_TEMPLATES: readonly AgentTemplate[] = [
     personaId: "software-engineer",
     suggestedAppIds: ["browser", "diffs"],
     suggestedKnowledgeType: "code-repos",
+    trialNote:
+      "Code review benefits most from frontier models with long context. Trial keeps you on the free model; upgrade to unlock GPT-5 for deeper reviews.",
   },
   {
     id: "qa-triage",

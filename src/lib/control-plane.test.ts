@@ -5,10 +5,18 @@ import {
   getAuthenticatedHomePath,
   getRoleCapabilities,
 } from "./access";
+import {
+  BillingGateError,
+  billingGateErrorToJson,
+  isBillingGateError,
+} from "./billing/errors";
 import { applyLlmUsageMarkup, calculateNextBalance, LLM_USAGE_MARKUP_PERCENT } from "./billing/math";
 import { isBillableModel, requiresWalletBalance } from "./model-pricing";
 import { buildObservabilityDedupeKey, projectSessionUsageLogs } from "./observability-shared";
-import { buildModelCatalogSnapshotFromDiscovery } from "./openclaw/model-catalog";
+import {
+  buildModelCatalogSnapshotFromDiscovery,
+  restrictSnapshotToTrialFreeModels,
+} from "./openclaw/model-catalog";
 import {
   getAgentTerminalConfig,
   normalizeAgentTerminalRepoPaths,
@@ -131,6 +139,10 @@ describe("super admin detection", () => {
     ).toBe(true);
   });
 
+  it("recognizes the support super admin email allowlist", () => {
+    expect(getIsSuperAdmin({ email: "ag@experrt.com", app_metadata: {} })).toBe(true);
+  });
+
   it("ignores regular auth metadata", () => {
     expect(
       getIsSuperAdmin({
@@ -147,7 +159,7 @@ describe("model billing classification", () => {
   it("does not require wallet funding for free models", () => {
     expect(
       isBillableModel({
-        id: "openrouter/meta-llama/llama-3.3-70b:free",
+        id: "openrouter/openrouter/free",
         label: "Free model",
         provider: "openrouter",
         isFree: true,
@@ -210,19 +222,19 @@ describe("model catalog snapshot", () => {
   it("preserves free metadata when policy entries are minimal", () => {
     const snapshot = buildModelCatalogSnapshotFromDiscovery(
       {
-        default_model: "openrouter/meta-llama/llama-3.3-70b:free",
+        default_model: "openrouter/openrouter/free",
         approved_models: [
           {
-            id: "openrouter/meta-llama/llama-3.3-70b:free",
-            label: "Llama 3.3 70B Free",
+            id: "openrouter/openrouter/free",
+            label: "OpenRouter Free Models Router",
             provider: "openrouter",
           },
         ],
       },
       [
         {
-          id: "openrouter/meta-llama/llama-3.3-70b:free",
-          label: "Llama 3.3 70B Free",
+          id: "openrouter/openrouter/free",
+          label: "OpenRouter Free Models Router",
           provider: "openrouter",
           inputCostPerMillionCents: 0,
           outputCostPerMillionCents: 0,
@@ -233,7 +245,7 @@ describe("model catalog snapshot", () => {
       "openrouter/auto",
     );
 
-    expect(snapshot.defaultModel).toBe("openrouter/meta-llama/llama-3.3-70b:free");
+    expect(snapshot.defaultModel).toBe("openrouter/openrouter/free");
     expect(snapshot.approvedModels).toHaveLength(1);
     expect(snapshot.approvedModels[0]?.isFree).toBe(true);
     expect(snapshot.approvedModels[0]?.inputCostPerMillionCents).toBe(0);
@@ -660,6 +672,149 @@ describe("provisioning role requirements", () => {
   it("requires canManageConsole for gateway console access", () => {
     expect(getRoleCapabilities("owner").canManageConsole).toBe(true);
     expect(getRoleCapabilities("employee").canManageConsole).toBe(false);
+  });
+});
+
+describe("billing gate errors", () => {
+  it("packs trial paid model rejection into upgrade cta", () => {
+    const error = new BillingGateError({
+      code: "TRIAL_PAID_MODEL_BLOCKED",
+      message: "Paid models unlock when you upgrade.",
+    });
+
+    expect(isBillingGateError(error)).toBe(true);
+    expect(error.cta).toBe("upgrade");
+    expect(error.status).toBe(402);
+    expect(billingGateErrorToJson(error)).toEqual({
+      error: {
+        code: "TRIAL_PAID_MODEL_BLOCKED",
+        message: "Paid models unlock when you upgrade.",
+        cta: "upgrade",
+      },
+    });
+  });
+
+  it("packs wallet-empty rejection into topup cta", () => {
+    const error = new BillingGateError({
+      code: "WALLET_INSUFFICIENT",
+      message: "Wallet is empty.",
+    });
+
+    expect(error.cta).toBe("topup");
+    expect(error.status).toBe(402);
+  });
+
+  it("packs premium-approval rejection into approval cta with 403", () => {
+    const error = new BillingGateError({
+      code: "PREMIUM_REQUIRES_APPROVAL",
+      message: "Needs admin approval.",
+      status: 403,
+    });
+
+    expect(error.cta).toBe("approval");
+    expect(error.status).toBe(403);
+  });
+
+  it("recognises gate errors thrown across realms via the symbol flag", () => {
+    const plain = Object.assign(new Error("forged"), {
+      name: "BillingGateError",
+      code: "TRIAL_PAID_MODEL_BLOCKED",
+      cta: "upgrade",
+      status: 402,
+      [Symbol.for("saintagi.billing-gate-error")]: true,
+    });
+    expect(isBillingGateError(plain)).toBe(true);
+  });
+});
+
+describe("trial model snapshot", () => {
+  function buildSnapshotForTrial() {
+    return buildModelCatalogSnapshotFromDiscovery(
+      {
+        default_model: "openrouter/anthropic/claude-haiku-4.5",
+        approved_models: [
+          { id: "openrouter/anthropic/claude-haiku-4.5", label: "Claude Haiku 4.5", provider: "openrouter" },
+          { id: "openrouter/openai/gpt-5-mini", label: "GPT-5 Mini", provider: "openrouter" },
+          { id: "openrouter/anthropic/claude-sonnet-4-5", label: "Claude Sonnet 4.5", provider: "openrouter" },
+          { id: "openrouter/openrouter/free", label: "OpenRouter Free Models Router", provider: "openrouter" },
+        ],
+      },
+      [
+        {
+          id: "openrouter/openai/gpt-5-mini",
+          label: "GPT-5 Mini",
+          provider: "openrouter",
+          inputCostPerMillionCents: 50,
+          outputCostPerMillionCents: 150,
+          source: "openrouter",
+        },
+        {
+          id: "openrouter/anthropic/claude-haiku-4.5",
+          label: "Claude Haiku 4.5",
+          provider: "openrouter",
+          inputCostPerMillionCents: 80,
+          outputCostPerMillionCents: 400,
+          source: "openrouter",
+        },
+        {
+          id: "openrouter/anthropic/claude-sonnet-4-5",
+          label: "Claude Sonnet 4.5",
+          provider: "openrouter",
+          inputCostPerMillionCents: 80,
+          outputCostPerMillionCents: 240,
+          source: "openrouter",
+        },
+        {
+          id: "openrouter/openrouter/free",
+          label: "OpenRouter Free Models Router",
+          provider: "openrouter",
+          inputCostPerMillionCents: 0,
+          outputCostPerMillionCents: 0,
+          isFree: true,
+          source: "openrouter",
+        },
+      ],
+      "openrouter/auto",
+    );
+  }
+
+  it("pins defaultModel to the fast trial default model", () => {
+    const restricted = restrictSnapshotToTrialFreeModels(buildSnapshotForTrial());
+    expect(restricted.defaultModel).toBe("openrouter/anthropic/claude-haiku-4.5");
+  });
+
+  it("keeps the trial default unlocked at the head of approvedModels", () => {
+    const restricted = restrictSnapshotToTrialFreeModels(buildSnapshotForTrial());
+    const head = restricted.approvedModels[0];
+    expect(head?.id).toBe("openrouter/anthropic/claude-haiku-4.5");
+    expect(head?.lockedReason ?? null).toBeNull();
+    expect(head?.isFree).toBe(true);
+  });
+
+  it("includes the free router as an unlocked trial fallback", () => {
+    const restricted = restrictSnapshotToTrialFreeModels(buildSnapshotForTrial());
+    const fallback = restricted.approvedModels.find(
+      (entry) => entry.id === "openrouter/openrouter/free",
+    );
+    expect(fallback).toBeTruthy();
+    expect(fallback?.lockedReason ?? null).toBeNull();
+    expect(fallback?.isFree).toBe(true);
+  });
+
+  it("surfaces paid models as locked rows so the UI can render the upgrade signal", () => {
+    const restricted = restrictSnapshotToTrialFreeModels(buildSnapshotForTrial());
+    const lockedIds = restricted.approvedModels
+      .filter((entry) => entry.lockedReason === "trial_paid_model")
+      .map((entry) => entry.id);
+    expect(lockedIds).toContain("openrouter/anthropic/claude-sonnet-4-5");
+  });
+
+  it("does not advertise more than the locked-row cap to keep the picker tidy", () => {
+    const restricted = restrictSnapshotToTrialFreeModels(buildSnapshotForTrial());
+    const lockedRows = restricted.approvedModels.filter(
+      (entry) => entry.lockedReason === "trial_paid_model",
+    );
+    expect(lockedRows.length).toBeLessThanOrEqual(12);
   });
 });
 

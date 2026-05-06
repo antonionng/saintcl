@@ -58,6 +58,11 @@ export async function syncKnowledgeToAgent(agent: {
     assigneeRef,
     userId: agent.user_id ?? null,
   });
+
+  if (docs.length === 0) {
+    return;
+  }
+
   const { snapshot } = await getOrgModelCatalogState(agent.org_id);
   const { client } = await getTenantOpenClawClient(agent.org_id, {
     orgId: agent.org_id,
@@ -87,6 +92,32 @@ export async function syncKnowledgeToAgent(agent: {
     agentId: agent.openclaw_agent_id,
     extraPaths: resolveKnowledgeDirectories(scope),
   });
+}
+
+export async function disableAgentKnowledgeSearchIfNoDocs(agent: {
+  org_id: string;
+  user_id?: string | null;
+  openclaw_agent_id: string;
+  name: string;
+  model: string;
+  config?: unknown;
+  assignment?: { assignee_type?: string; assignee_ref?: string } | null;
+}) {
+  const { scope, assigneeRef } = resolveAgentScope(agent);
+  const docs = await getKnowledgeDocsForAgentScope({
+    orgId: agent.org_id,
+    scope,
+    assigneeRef,
+    userId: agent.user_id ?? null,
+  });
+
+  if (docs.length > 0) {
+    return { changed: false, reason: "has_docs" as const };
+  }
+
+  const { client } = await getTenantOpenClawClient(agent.org_id, { orgId: agent.org_id });
+  const result = await client.disableAgentKnowledgeSearch({ agentId: agent.openclaw_agent_id });
+  return { ...result, reason: "no_docs" as const };
 }
 
 export async function syncKnowledgeToRelevantAgents(input: {

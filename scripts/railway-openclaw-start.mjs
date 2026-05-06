@@ -4,7 +4,7 @@ import { constants } from "node:fs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-const DEFAULT_BOOTSTRAP_CHANNELS = [
+const HOSTED_CHANNEL_IDS = [
   "telegram",
   "whatsapp",
   "discord",
@@ -13,6 +13,7 @@ const DEFAULT_BOOTSTRAP_CHANNELS = [
   "matrix",
   "nostr",
 ];
+const DEFAULT_BOOTSTRAP_CHANNELS = [];
 
 async function fileExists(targetPath) {
   try {
@@ -194,7 +195,7 @@ function mergeConfig(existingConfig, options) {
   if (typeof defaults.model === "string" && !currentModel.primary) {
     currentModel.primary = defaults.model;
   }
-  if (!currentModel.primary && options.defaultModel) {
+  if (options.defaultModel) {
     currentModel.primary = options.defaultModel;
   }
   if (!Array.isArray(currentModel.fallbacks)) {
@@ -205,6 +206,65 @@ function mergeConfig(existingConfig, options) {
   }
   defaults.model = currentModel;
   defaults.models = models;
+  // ---- Real Chat Latency profile -----------------------------------------
+  // The settings below collectively form the "low-latency text turn" profile
+  // for hosted SaintAGI tenants: the gateway never pays for thinking, never
+  // pre-runs memory bootstrap, runs the model in fastMode, ships only a small
+  // chat history default, and lets multiple WebChat turns run in parallel.
+  // No setting here is required for correctness; each one trades a feature
+  // we do not need on cold/short text turns for measurable latency.
+  // ------------------------------------------------------------------------
+  defaults.skipBootstrap = true;
+  defaults.thinkingDefault = "off";
+  delete defaults.fastModeDefault;
+  // Real Chat Latency: keep multiple WebChat turns from serializing behind
+  // each other on CommandLane.Main. The lane default is 4; bumping per-tenant
+  // defaults to 8 keeps small bursts (e.g. WebChat refresh + send + history
+  // fetch) from queueing. Override with OPENCLAW_AGENT_MAX_CONCURRENT if a
+  // tenant needs different headroom.
+  const agentMaxConcurrentEnv = Number.parseInt(
+    process.env.OPENCLAW_AGENT_MAX_CONCURRENT?.trim() ?? "",
+    10,
+  );
+  defaults.maxConcurrent =
+    Number.isFinite(agentMaxConcurrentEnv) && agentMaxConcurrentEnv > 0
+      ? agentMaxConcurrentEnv
+      : 8;
+  if (currentModel.primary && models[currentModel.primary]) {
+    const primaryModelEntry =
+      models[currentModel.primary] &&
+      typeof models[currentModel.primary] === "object" &&
+      !Array.isArray(models[currentModel.primary])
+        ? { ...models[currentModel.primary] }
+        : {};
+    const primaryModelParams =
+      primaryModelEntry.params &&
+      typeof primaryModelEntry.params === "object" &&
+      !Array.isArray(primaryModelEntry.params)
+        ? { ...primaryModelEntry.params }
+        : {};
+    primaryModelEntry.params = {
+      ...primaryModelParams,
+      fastMode: true,
+    };
+    models[currentModel.primary] = primaryModelEntry;
+  }
+  const memorySearch =
+    defaults.memorySearch && typeof defaults.memorySearch === "object" && !Array.isArray(defaults.memorySearch)
+      ? { ...defaults.memorySearch }
+      : {};
+  const memorySearchSync =
+    memorySearch.sync && typeof memorySearch.sync === "object" && !Array.isArray(memorySearch.sync)
+      ? { ...memorySearch.sync }
+      : {};
+  memorySearch.enabled = false;
+  memorySearch.sync = {
+    ...memorySearchSync,
+    onSessionStart: false,
+    onSearch: false,
+    watch: false,
+  };
+  defaults.memorySearch = memorySearch;
 
   if (options.allowedOrigins.length > 0) {
     const existingAllowedOrigins = Array.isArray(controlUi.allowedOrigins)
@@ -242,13 +302,25 @@ function mergeConfig(existingConfig, options) {
       !Array.isArray(pluginEntries[channelId])
         ? { ...pluginEntries[channelId] }
         : {};
-    if (existingPluginEntry.enabled === undefined) {
-      existingPluginEntry.enabled = true;
-    }
+    existingPluginEntry.enabled = true;
     pluginEntries[channelId] = existingPluginEntry;
 
     if (pluginAllow && !pluginAllow.includes(channelId)) {
       pluginAllow.push(channelId);
+    }
+  }
+
+  if (options.bootstrapChannels.length === 0) {
+    for (const channelId of HOSTED_CHANNEL_IDS) {
+      const existingPluginEntry =
+        pluginEntries[channelId] &&
+        typeof pluginEntries[channelId] === "object" &&
+        !Array.isArray(pluginEntries[channelId])
+          ? { ...pluginEntries[channelId] }
+          : null;
+      if (existingPluginEntry?.enabled === true) {
+        pluginEntries[channelId] = { ...existingPluginEntry, enabled: false };
+      }
     }
   }
 
@@ -264,7 +336,25 @@ function mergeConfig(existingConfig, options) {
     agents: {
       ...agents,
       defaults,
-      list: Array.isArray(agents.list) ? agents.list : [],
+      list: Array.isArray(agents.list)
+        ? agents.list.map((agent) => {
+            if (!agent || typeof agent !== "object" || Array.isArray(agent)) {
+              return agent;
+            }
+            return {
+              ...agent,
+              fastModeDefault: true,
+              memorySearch: {
+                enabled: false,
+                sync: {
+                  onSessionStart: false,
+                  onSearch: false,
+                  watch: false,
+                },
+              },
+            };
+          })
+        : [],
     },
     bindings: Array.isArray(config.bindings) ? config.bindings : [],
     gateway: {

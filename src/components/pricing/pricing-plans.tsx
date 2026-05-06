@@ -150,7 +150,7 @@ export function PricingPlans(props: PricingPlansProps) {
           const monthlyPrice = getPlanPriceCents(plan.id, "monthly");
           const displayPrice = getPlanPriceCents(plan.id, interval);
           const annualEquivalent = getPlanAnnualEquivalentMonthlyCents(plan.id);
-          const marketingHref = `/signup?plan=${plan.id}&interval=${interval}`;
+          const marketingHref = "/#contact";
           const hasSubscription = Boolean(props.stripeSubscriptionStatus && props.stripeSubscriptionStatus !== "canceled");
           const actionLabel =
             props.mode === "settings"
@@ -231,7 +231,7 @@ export function PricingPlans(props: PricingPlansProps) {
                 {props.mode === "marketing" ? (
                   plan.contactSales ? (
                     <Button asChild className="w-full" variant="secondary">
-                      <Link href="mailto:founder@saintagi.ai?subject=Saint%20AGI%20Enterprise">{actionLabel}</Link>
+                      <Link href={marketingHref}>{actionLabel}</Link>
                     </Button>
                   ) : (
                     <Button asChild className="w-full">

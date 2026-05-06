@@ -32,8 +32,11 @@ export default async function DashboardLayout({
   let orgLogoUrl: string | null = null;
   let role: string | null = null;
   let currentOrgId: string | null = null;
+  let isSuperAdmin = false;
   let workspaces: WorkspaceMembership[] = [];
   let visibleAgents: Array<{ id: string; name: string }> = [];
+  let trialStatus: string | null = null;
+  let trialEndsAt: string | null = null;
   let capabilities = {
     canManageBilling: false,
     canManagePolicies: false,
@@ -63,6 +66,9 @@ export default async function DashboardLayout({
     email = result.email ?? null;
     role = result.role ?? null;
     currentOrgId = result.org.id ?? null;
+    isSuperAdmin = result.isSuperAdmin;
+    trialStatus = result.org.trial_status ?? null;
+    trialEndsAt = result.org.trial_ends_at ?? null;
     capabilities = result.capabilities ?? capabilities;
 
     if (result.role && !isAdminRole(result.role, { isSuperAdmin: result.isSuperAdmin })) {
@@ -93,9 +99,12 @@ export default async function DashboardLayout({
     avatarUrl,
     role,
     currentOrgId,
+    isSuperAdmin,
     workspaces,
     visibleAgents,
     capabilities,
+    trialStatus,
+    trialEndsAt,
   };
 
   return <DashboardShell platformStatus={platformStatus}>{children}</DashboardShell>;

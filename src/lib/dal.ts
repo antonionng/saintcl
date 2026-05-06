@@ -24,6 +24,7 @@ import {
   mergeAccountProfileMetadata,
 } from "@/lib/account-profile";
 import { ORG_LOGO_BUCKET } from "@/lib/org-profile";
+import { notifyAdminOfSignup } from "@/lib/admin-notifications";
 import {
   ACTIVE_ORG_COOKIE_NAME,
   LEGACY_ACTIVE_ORG_COOKIE_NAMES,
@@ -540,6 +541,21 @@ export const getCurrentOrg = cache(async (): Promise<CurrentOrgSession | null> =
 
   await admin.from("org_members").insert({ org_id: org.id, user_id: user.id, role: "owner" });
   await ensureOrgFoundation(admin, org.id);
+
+  await notifyAdminOfSignup({
+    userId: user.id,
+    email: user.email ?? null,
+    createdAt: canonicalUser.created_at ?? user.created_at ?? null,
+    orgId: org.id,
+    orgName: org.name,
+    orgSlug: org.slug,
+    role: "owner",
+    trialPlan,
+    billingInterval,
+    trialEndsAt,
+    userMetadata: canonicalUser.user_metadata ?? user.user_metadata ?? {},
+    appMetadata: canonicalUser.app_metadata ?? {},
+  }).catch(() => null);
 
   return {
     org: org as CurrentOrgSession["org"],

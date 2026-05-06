@@ -58,6 +58,7 @@ export async function bootstrapAgentWorkspace(
     writeFileIfMissing(path.join(workspacePath, "SOUL.md"), files.soul),
     writeFileIfMissing(path.join(workspacePath, "USER.md"), files.user),
     writeFileIfMissing(path.join(workspacePath, "TOOLS.md"), files.tools),
+    writeFileIfMissing(path.join(workspacePath, "IDENTITY.md"), files.identity),
   ]);
 
   return workspacePath;

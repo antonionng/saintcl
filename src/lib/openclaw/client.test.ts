@@ -6,6 +6,7 @@ import {
   agentMatchesSnapshot,
   buildModelGovernancePatch,
   governanceMatchesSnapshot,
+  managedBootstrapDefaultsMatchSnapshot,
   parseRateLimitError,
   RuntimeRateLimitError,
   shouldRetryWithLegacyOperatorScopes,
@@ -89,6 +90,16 @@ describe("governanceMatchesSnapshot", () => {
         { id: "openrouter/auto", label: "Auto" },
         { id: "anthropic/claude-sonnet-4-6", label: "Claude" },
       ],
+      skipBootstrap: true,
+      thinkingDefault: "off",
+      memorySearch: {
+        enabled: false,
+        sync: {
+          onSessionStart: false,
+          onSearch: false,
+          watch: false,
+        },
+      },
     });
     expect(
       governanceMatchesSnapshot(snapshot, {
@@ -99,6 +110,19 @@ describe("governanceMatchesSnapshot", () => {
         ],
       }),
     ).toBe(true);
+  });
+
+  it("returns false when managed bootstrap skipping is missing", () => {
+    const snapshot = snapshotWith({
+      model: { primary: "openrouter/auto" },
+      models: [{ id: "openrouter/auto" }],
+    });
+    expect(
+      governanceMatchesSnapshot(snapshot, {
+        defaultModel: "openrouter/auto",
+        approvedModels: [{ id: "openrouter/auto" }],
+      }),
+    ).toBe(false);
   });
 
   it("returns false when the primary model differs", () => {
@@ -194,6 +218,48 @@ describe("buildModelGovernancePatch", () => {
     expect(patch.agents.defaults.model).toEqual({ primary: "openrouter/auto" });
     expect(patch.agents.defaults.models).toHaveProperty("openrouter/auto");
     expect(patch.agents.defaults.models).toHaveProperty("anthropic/claude-sonnet-4-6");
+    expect(patch.agents.defaults.skipBootstrap).toBe(true);
+    expect(patch.agents.defaults.thinkingDefault).toBe("off");
+    expect(patch.agents.defaults.memorySearch).toEqual({
+      enabled: false,
+      sync: {
+        onSessionStart: false,
+        onSearch: false,
+        watch: false,
+      },
+    });
+  });
+});
+
+describe("managedBootstrapDefaultsMatchSnapshot", () => {
+  it("requires the live gateway defaults to skip vendored bootstrap templates, thinking, and memory search", () => {
+    expect(
+      managedBootstrapDefaultsMatchSnapshot({
+        hash: "h",
+        config: {
+          agents: {
+            defaults: {
+              skipBootstrap: true,
+              thinkingDefault: "off",
+              memorySearch: {
+                enabled: false,
+                sync: {
+                  onSessionStart: false,
+                  onSearch: false,
+                  watch: false,
+                },
+              },
+            },
+          },
+        },
+      }),
+    ).toBe(true);
+    expect(
+      managedBootstrapDefaultsMatchSnapshot({
+        hash: "h",
+        config: { agents: { defaults: {} } },
+      }),
+    ).toBe(false);
   });
 });
 

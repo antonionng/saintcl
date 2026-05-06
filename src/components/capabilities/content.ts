@@ -4,8 +4,8 @@ export const capabilitiesPageHero = {
   description:
     "Saint AGI gives every team governed agents that can plan, act, route, and follow through across the tools, channels, and systems where employees already work.",
   primary: {
-    href: "/signup",
-    label: "Start free",
+    href: "/#contact",
+    label: "Request access",
   },
   secondary: {
     href: "/pricing",

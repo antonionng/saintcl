@@ -73,7 +73,7 @@ export default async function AgentDetailPage({
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 pb-2 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-4 pb-2 md:flex-row md:items-start md:justify-between">
         <div className="flex min-w-0 items-start gap-3">
           <AgentAvatar
             agentId={agent.openclaw_agent_id}
@@ -90,8 +90,8 @@ export default async function AgentDetailPage({
             className="pb-0"
           />
         </div>
-        <div className="shrink-0">
-          <div className="flex flex-wrap items-center gap-2 [&_button]:h-8 [&_a]:h-8">
+        <div className="w-full shrink-0 md:w-auto">
+          <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center md:justify-end [&_button]:h-8 [&_a]:h-8">
             <Badge
               variant={displayStatus === "online" ? "success" : "default"}
               className="h-8 px-3 text-[length:var(--text-sm)]"
@@ -115,7 +115,7 @@ export default async function AgentDetailPage({
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <section className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
+        <section className="rounded-2xl border border-white/8 bg-white/[0.02] p-4 sm:p-5">
           <div className="mb-4">
             <h2 className="text-lg font-medium tracking-[-0.03em] text-white">Model controls</h2>
           </div>
@@ -134,14 +134,14 @@ export default async function AgentDetailPage({
           </div>
         </section>
 
-        <section className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
+        <section className="rounded-2xl border border-white/8 bg-white/[0.02] p-4 sm:p-5">
           <div className="mb-4">
             <h2 className="text-lg font-medium tracking-[-0.03em] text-white">Details</h2>
           </div>
           <div className="space-y-4 text-sm leading-7 text-zinc-400">
             <div className="rounded-xl border border-white/8 bg-white/[0.02] p-4">
               <p className="app-kicker">Created</p>
-              <p className="mt-2 text-white">
+              <p className="mt-2 break-words text-white">
                 {new Date(agent.created_at).toLocaleString()}
               </p>
             </div>
@@ -182,11 +182,11 @@ export default async function AgentDetailPage({
               <div className="mt-3 space-y-3">
                 <div>
                   <p className="app-kicker">Agent ID</p>
-                  <p className="mt-1 font-mono text-xs text-white">{agent.id}</p>
+                <p className="mt-1 break-all font-mono text-xs text-white">{agent.id}</p>
                 </div>
                 <div>
                   <p className="app-kicker">Organization ID</p>
-                  <p className="mt-1 font-mono text-xs text-white">{agent.org_id}</p>
+                <p className="mt-1 break-all font-mono text-xs text-white">{agent.org_id}</p>
                 </div>
                 {config.workspace ? (
                   <div>

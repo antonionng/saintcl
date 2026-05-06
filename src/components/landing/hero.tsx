@@ -4,7 +4,7 @@ import Link from "next/link";
 export function HeroSection() {
   return (
     <section className="relative flex min-h-[calc(100svh-5rem)] items-center justify-center overflow-hidden bg-black md:min-h-[calc(100dvh-5rem)]">
-      <div className="relative mx-auto w-full max-w-[1440px] px-6 py-10 lg:px-20">
+      <div className="relative mx-auto w-full max-w-[1440px] px-4 py-10 sm:px-6 lg:px-20">
         <div className="flex flex-col items-center gap-7">
           <div className="relative flex h-[min(34vw,380px)] w-full min-h-[220px] max-w-[1100px] items-center justify-center sm:h-[320px]">
             <div
@@ -83,7 +83,7 @@ export function HeroSection() {
             </span>
           </div>
 
-          <h1 className="text-center text-5xl font-bold leading-[1.04] tracking-[-0.04em] text-white sm:text-6xl lg:text-[96px] lg:leading-[92px] lg:tracking-[-0.045em]">
+          <h1 className="text-center text-4xl font-bold leading-[1.04] tracking-[-0.04em] text-white sm:text-6xl lg:text-[96px] lg:leading-[92px] lg:tracking-[-0.045em]">
             An agent for
             <br />
             every employee.
@@ -94,30 +94,21 @@ export function HeroSection() {
             across your systems. One per person. Set up in minutes. Governed forever.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-3 pt-1">
+          <div className="grid w-full max-w-sm gap-3 pt-1 sm:flex sm:max-w-none sm:flex-wrap sm:justify-center">
             <Link
-              href="/signup"
-              className="inline-flex items-center rounded-[10px] bg-white px-6 py-3.5 text-[15px] font-semibold !text-black transition-colors hover:bg-white/90"
+              href="/#contact"
+              className="inline-flex items-center justify-center rounded-[10px] bg-white px-6 py-3.5 text-[15px] font-semibold !text-black transition-colors hover:bg-white/90"
             >
-              Launch your first agent
+              Request access
             </Link>
             <Link
               href="#how-it-works"
-              className="inline-flex items-center rounded-[10px] border border-[#2a2a30] bg-[rgba(20,20,26,0.4)] px-6 py-3.5 text-[15px] font-medium text-white transition-colors hover:border-[#3a3a40] hover:bg-[rgba(30,30,36,0.6)]"
+              className="inline-flex items-center justify-center rounded-[10px] border border-[#2a2a30] bg-[rgba(20,20,26,0.4)] px-6 py-3.5 text-[15px] font-medium text-white transition-colors hover:border-[#3a3a40] hover:bg-[rgba(30,30,36,0.6)]"
             >
               Watch a 90-second demo
             </Link>
           </div>
 
-          <div className="flex items-center gap-2.5 pt-2">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            </span>
-            <p className="text-[12px] tracking-[0.06em] text-[#6e6e78]">
-              47 agents live across 23 companies · 0 incidents this month
-            </p>
-          </div>
         </div>
       </div>
     </section>

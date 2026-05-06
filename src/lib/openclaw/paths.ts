@@ -71,9 +71,9 @@ export function getHostedWorkspaceBasePath() {
 
 export function getGatewayWorkspaceRoot(
   orgId: string,
-  options?: { source?: "runtime" | "env" },
+  options?: { source?: "runtime" | "env" | "shard" },
 ) {
-  if (options?.source === "env") {
+  if (options?.source === "env" || options?.source === "shard") {
     return path.join(getHostedWorkspaceBasePath(), slugifyPathSegment(orgId));
   }
 
@@ -83,7 +83,7 @@ export function getGatewayWorkspaceRoot(
 export function getAgentWorkspacePath(
   orgId: string,
   agentId: string,
-  options?: { source?: "runtime" | "env" },
+  options?: { source?: "runtime" | "env" | "shard" },
 ) {
   return path.join(getGatewayWorkspaceRoot(orgId, options), slugifyPathSegment(agentId));
 }

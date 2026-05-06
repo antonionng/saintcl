@@ -33,10 +33,11 @@ export function PricingSection() {
         <div className="flex flex-col items-center gap-[18px] pb-[60px] pt-[100px] text-center">
           <SectionEyebrow label="PRICING" />
           <h2 className="max-w-[1100px] text-3xl font-bold leading-tight tracking-[-0.04em] text-white sm:text-5xl lg:text-[64px] lg:leading-[64px]">
-            £25 per agent. Less than a daily coffee.
+            Agent pricing that scales with your team.
           </h2>
           <p className="max-w-[720px] text-[15px] leading-7 text-[#b5b5bd] lg:text-[18px] lg:leading-[27px]">
-            Provision one. Provision a hundred. The price stays the same. The value compounds.
+            Starter add-ons are £22/month, Pro add-ons are £19/month, and Business add-ons are
+            £16/month.
           </p>
         </div>
 
@@ -128,8 +129,8 @@ function PlanCta({
 }) {
   const href =
     tier === "enterprise"
-      ? "mailto:hello@neuralnetworkgroup.com"
-      : `/signup?plan=${tier}`;
+      ? "/#contact"
+      : "/#contact";
 
   const className = popular
     ? "mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-white text-[13px] font-semibold !text-black transition-colors hover:bg-white/90"

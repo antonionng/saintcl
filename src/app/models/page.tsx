@@ -27,7 +27,7 @@ export default async function ModelsPage() {
   return (
     <main className="min-h-screen bg-black text-white">
       <header className="sticky top-0 z-20 bg-black">
-        <div className="site-shell flex items-center justify-between py-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
+        <div className="site-shell flex items-center justify-between gap-4 py-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
           <Link href="/" className="inline-flex h-10 items-center">
             <Image
               src="/saint-agi-mark.svg"
@@ -46,7 +46,7 @@ export default async function ModelsPage() {
               </Link>
             ))}
           </nav>
-          <div className="flex items-center gap-2.5 sm:gap-3 lg:justify-self-end">
+          <div className="flex shrink-0 items-center gap-2.5 sm:gap-3 lg:justify-self-end">
             {session ? (
               <UserDropdownMenu
                 email={profile?.email ?? session.email}
@@ -62,7 +62,7 @@ export default async function ModelsPage() {
                   <Link href="/login">Log in</Link>
                 </Button>
                 <Button asChild size="sm">
-                  <Link href="/signup">Start</Link>
+                  <Link href="/#contact">Request access</Link>
                 </Button>
               </>
             )}

@@ -1,11 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { ContactForm } from "@/components/landing/contact-form";
 import { finalCtaContent } from "@/components/landing/content";
 
 export function CtaBanner() {
   return (
-    <section id="start" className="border-t border-[#1f1f23] bg-black">
+    <section id="contact" className="border-t border-[#1f1f23] bg-black">
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center px-6 py-[120px] lg:px-20">
         <div className="flex h-[45px] w-[75px] items-center justify-center">
           <Image
@@ -40,6 +41,8 @@ export function CtaBanner() {
             {finalCtaContent.secondary.label}
           </a>
         </div>
+        <div className="h-12" />
+        <ContactForm />
       </div>
     </section>
   );

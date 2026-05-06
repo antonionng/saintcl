@@ -34,6 +34,29 @@ type SendTemplatedEmailInput = {
   usageAlert?: UsageAlertDetails | null;
 };
 
+type SendSupportEmailInput = {
+  to: string | string[];
+  subject: string;
+  html: string;
+  text: string;
+  replyTo?: string | string[] | null;
+  bcc?: string | string[] | null;
+  headers?: Record<string, string>;
+};
+
+type ResendEmailResponse = {
+  id?: string;
+  message?: string;
+  error?: { message?: string };
+};
+
+function toAddressArray(value?: string | string[] | null) {
+  if (!value) {
+    return undefined;
+  }
+  return Array.isArray(value) ? value : [value];
+}
+
 export function buildUnsubscribeUrl(input: {
   orgId: string;
   userId: string;
@@ -212,7 +235,7 @@ export async function sendTemplatedEmail(input: SendTemplatedEmailInput) {
     }),
   });
 
-  const body = (await response.json()) as { id?: string; message?: string; error?: { message?: string } };
+  const body = (await response.json()) as ResendEmailResponse;
   if (!response.ok || !body.id) {
     const errorMessage = body.error?.message || body.message || "Unable to send email.";
     await updateEmailEvent(event.id, {
@@ -228,4 +251,42 @@ export async function sendTemplatedEmail(input: SendTemplatedEmailInput) {
   });
 
   return { ok: true as const, eventId: event.id, duplicate: false, resendMessageId: body.id };
+}
+
+export async function sendSupportEmail(input: SendSupportEmailInput) {
+  if (!isResendConfigured() || !env.resendApiKey) {
+    throw new Error("Resend is not configured.");
+  }
+
+  const payload: Record<string, unknown> = {
+    from: env.emailFrom,
+    reply_to: input.replyTo ?? env.emailReplyTo,
+    to: toAddressArray(input.to),
+    subject: input.subject,
+    html: input.html,
+    text: input.text,
+  };
+  const bcc = toAddressArray(input.bcc);
+  if (bcc?.length) {
+    payload.bcc = bcc;
+  }
+  if (input.headers && Object.keys(input.headers).length > 0) {
+    payload.headers = input.headers;
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.resendApiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const body = (await response.json()) as ResendEmailResponse;
+  if (!response.ok || !body.id) {
+    throw new Error(body.error?.message || body.message || "Unable to send email.");
+  }
+
+  return { ok: true as const, resendMessageId: body.id };
 }

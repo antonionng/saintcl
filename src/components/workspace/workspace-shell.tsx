@@ -138,7 +138,7 @@ export function WorkspaceShell({
   const [onboardingError, setOnboardingError] = useState<string | null>(null);
   const [provisioning, setProvisioning] = useState(false);
   const [provisioningError, setProvisioningError] = useState<string | null>(null);
-  const [guideOpen, setGuideOpen] = useState(true);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [agentNoticeOpen, setAgentNoticeOpen] = useState(true);
 
   const normalizedOnboardingProfile = useMemo(
@@ -155,6 +155,7 @@ export function WorkspaceShell({
   const displayOrgName = orgName?.trim() || "your company";
   const trialUsageRatio = trialMessageLimit > 0 ? trialMessageCount / trialMessageLimit : 0;
   const showTrialUsageWarning = trialActive && trialUsageRatio >= 0.8;
+  const showWorkspaceActions = !onboardingActive && hasProvisionedAgent;
   const agentNoticeStorageKey = useMemo(
     () => `${WORKSPACE_AGENT_NOTICE_DISMISSED_KEY}:${displayOrgName}:${displayAgentName}`,
     [displayAgentName, displayOrgName],
@@ -164,6 +165,11 @@ export function WorkspaceShell({
     seedManagedWorkspaceSettings(gatewayUrl, sessionKey);
     setReady(true);
   }, [gatewayUrl, sessionKey]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 640px)");
+    setGuideOpen(mediaQuery.matches);
+  }, []);
 
   useLayoutEffect(() => {
     try {
@@ -324,33 +330,11 @@ export function WorkspaceShell({
   }
 
   return (
-    <div className="relative min-h-screen bg-[#05060a]">
-      {ready && !onboardingActive && hasProvisionedAgent && embeddedConsoleUrl ? (
-        <iframe
-          ref={iframeRef}
-          src={embeddedConsoleUrl}
-          title="Saint AGI Workspace"
-          className="min-h-screen w-full border-0 bg-[#05060a]"
-          onLoad={() => hideManagedSessionControls(iframeRef.current)}
-        />
-      ) : (
-        <div className="min-h-screen w-full bg-[#05060a]" aria-hidden="true" />
-      )}
-      {error ? (
-        <div className="pointer-events-none fixed bottom-4 left-4 z-10 rounded-2xl border border-amber-400/30 bg-black/70 px-4 py-3 text-sm text-amber-200 backdrop-blur">
-          {error}
-        </div>
-      ) : null}
-      {showTrialUsageWarning && !error ? (
-        <div className="fixed bottom-4 left-4 z-10 max-w-md rounded-2xl border border-amber-400/30 bg-black/80 px-4 py-3 text-sm text-amber-100 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur">
-          Trial usage: {trialMessageCount} of {trialMessageLimit} messages used. Upgrade and top up before the trial
-          workspace locks.
-        </div>
-      ) : null}
-      {!onboardingActive && hasProvisionedAgent ? (
-        <div className="fixed left-4 right-4 top-4 z-20 flex flex-wrap items-start justify-between gap-3">
+    <div className="relative flex min-h-screen flex-col bg-[#05060a]">
+      {showWorkspaceActions ? (
+        <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-white/10 bg-[#05060a]/90 px-3 py-2 shadow-[0_16px_60px_rgba(0,0,0,0.35)] backdrop-blur sm:flex-wrap sm:items-start sm:gap-3 sm:px-4 sm:py-3">
           {agentNoticeOpen ? (
-            <div className="max-w-xl rounded-2xl border border-white/10 bg-black/70 px-4 py-3 text-white shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur">
+            <div className="hidden max-w-xl rounded-2xl border border-white/10 bg-black/70 px-4 py-3 text-white shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur sm:block">
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
                   <Bot className="size-4" />
@@ -378,24 +362,73 @@ export function WorkspaceShell({
           ) : (
             <div aria-hidden="true" />
           )}
-          <div className="flex items-center gap-3">
-            <Button type="button" variant="secondary" onClick={() => setGuideOpen((current) => !current)}>
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:hidden">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-white">
+              <Bot className="size-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-white/45">Assistant</p>
+              <p className="truncate text-sm font-semibold text-white">{displayAgentName}</p>
+            </div>
+          </div>
+          <div className="ml-auto flex shrink-0 items-center justify-end gap-2 sm:flex-wrap sm:gap-3">
+            <Button
+              type="button"
+              variant="secondary"
+              className="hidden sm:inline-flex"
+              onClick={() => setGuideOpen((current) => !current)}
+            >
               {guideOpen ? "Hide guide" : "Show guide"}
             </Button>
-            <Button type="button" variant="secondary" asChild>
+            <Button type="button" variant="secondary" size="sm" asChild>
               <Link href="/workspace/knowledge">
                 <BookOpen className="size-4" />
                 <span>Knowledge</span>
               </Link>
             </Button>
-            <Button type="button" variant="secondary" onClick={() => setPanelOpen((current) => !current)}>
-              {panelOpen ? "Hide activity" : "View activity"}
+            <Button type="button" variant="secondary" size="sm" onClick={() => setPanelOpen((current) => !current)}>
+              {panelOpen ? "Hide activity" : "Activity"}
             </Button>
           </div>
         </div>
       ) : null}
-      {guideOpen && !onboardingActive && hasProvisionedAgent ? (
-        <div className="fixed bottom-4 left-4 z-20 w-[min(92vw,28rem)] rounded-[1.5rem] border border-white/10 bg-[#090b10]/95 p-4 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur">
+      <div className="relative min-h-0 flex-1">
+        {ready && !onboardingActive && hasProvisionedAgent && embeddedConsoleUrl ? (
+          <iframe
+            ref={iframeRef}
+            src={embeddedConsoleUrl}
+            title="Saint AGI Workspace"
+            className={
+              showWorkspaceActions
+                ? "h-[calc(100svh-3.5rem)] min-h-[34rem] w-full border-0 bg-[#05060a] sm:h-[calc(100svh-5rem)] sm:min-h-[36rem] md:h-[calc(100dvh-5rem)]"
+                : "min-h-screen w-full border-0 bg-[#05060a]"
+            }
+            onLoad={() => hideManagedSessionControls(iframeRef.current)}
+          />
+        ) : (
+          <div
+            className={
+              showWorkspaceActions
+                ? "h-[calc(100svh-3.5rem)] min-h-[34rem] w-full bg-[#05060a] sm:h-[calc(100svh-5rem)] sm:min-h-[36rem] md:h-[calc(100dvh-5rem)]"
+                : "min-h-screen w-full bg-[#05060a]"
+            }
+            aria-hidden="true"
+          />
+        )}
+      </div>
+      {error ? (
+        <div className="pointer-events-none fixed bottom-4 left-4 z-10 rounded-2xl border border-amber-400/30 bg-black/70 px-4 py-3 text-sm text-amber-200 backdrop-blur">
+          {error}
+        </div>
+      ) : null}
+      {showTrialUsageWarning && !error ? (
+        <div className="fixed bottom-4 left-4 z-10 max-w-md rounded-2xl border border-amber-400/30 bg-black/80 px-4 py-3 text-sm text-amber-100 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur">
+          Trial usage: {trialMessageCount} of {trialMessageLimit} messages used. Upgrade and top up before the trial
+          workspace locks.
+        </div>
+      ) : null}
+      {guideOpen && showWorkspaceActions ? (
+        <div className="fixed bottom-4 left-4 z-20 hidden w-[min(92vw,28rem)] rounded-[1.5rem] border border-white/10 bg-[#090b10]/95 p-4 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur sm:block">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.12em] text-white/55">Workspace guide</p>
@@ -423,7 +456,7 @@ export function WorkspaceShell({
           </div>
         </div>
       ) : null}
-      {panelOpen && !onboardingActive && hasProvisionedAgent ? (
+      {panelOpen && showWorkspaceActions ? (
         <div className="fixed inset-y-4 right-4 z-20 w-[min(92vw,32rem)] overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#090b10]/95 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur">
           <div className="flex h-full flex-col gap-4 overflow-hidden p-4">
             <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-3">

@@ -1734,7 +1734,7 @@ export const chatHandlers: GatewayRequestHandlers = {
     const sessionAgentId = resolveSessionAgentId({ sessionKey, config: cfg });
     const resolvedSessionModel = resolveSessionModelRef(cfg, entry, sessionAgentId);
     const hardMax = 1000;
-    const defaultLimit = 200;
+    const defaultLimit = 50;
     const requested = typeof limit === "number" ? limit : defaultLimit;
     const max = Math.min(hardMax, requested);
     const maxHistoryBytes = getMaxChatHistoryMessagesBytes();

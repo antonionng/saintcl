@@ -344,12 +344,12 @@ export function PolicyForm({
                 </div>
 
                 <div className="space-y-4 pt-2">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                    <div className="min-w-0">
                       <p className="text-[length:var(--text-sm)] font-medium text-white">Approved model catalog</p>
                       <p className="text-[length:var(--text-xs)] text-white/55">Admins control the allowlist users can pick from.</p>
                     </div>
-                    <span className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/45">
+                    <span className="shrink-0 text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/45">
                       {nextApprovedModels.length} approved
                     </span>
                   </div>
@@ -375,7 +375,7 @@ export function PolicyForm({
                     onChange={(event) => setSearchInput(event.target.value)}
                     placeholder="Search full OpenRouter catalog"
                   />
-                  <div className="flex items-center justify-between gap-3 text-xs text-zinc-500">
+                  <div className="flex flex-col gap-2 text-xs text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                     <p>
                       {catalogLoading
                         ? "Loading OpenRouter catalog..."

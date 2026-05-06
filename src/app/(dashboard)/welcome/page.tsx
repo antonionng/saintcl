@@ -93,7 +93,7 @@ export default async function WelcomePage() {
   return (
     <div className="space-y-8">
       <section className="settings-panel overflow-hidden">
-        <div className="grid gap-6 p-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
+        <div className="grid gap-6 p-4 sm:p-5 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-center">
           <div className="space-y-3">
             <p className="app-kicker">Command center</p>
             <h1 className="max-w-3xl text-[length:var(--text-2xl)] font-semibold tracking-[-0.03em] text-white sm:text-[length:var(--text-3xl)]">
@@ -114,7 +114,7 @@ export default async function WelcomePage() {
                 ? "Start in chat, then expand connectors and policies from the admin area."
                 : "Provision one recipe-backed agent before inviting teammates."}
             </p>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 grid gap-2 sm:flex sm:flex-wrap">
               <Button asChild size="sm" variant="secondary">
                 <Link href="/workspace">Open chat</Link>
               </Button>
@@ -126,7 +126,7 @@ export default async function WelcomePage() {
         </div>
       </section>
 
-      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-4">
         <StatusCard
           icon={Bot}
           label="First agent"
@@ -203,15 +203,15 @@ export default async function WelcomePage() {
         </div>
       </section>
 
-      <section className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border-subtle bg-surface-1 p-4">
-        <div>
+      <section className="flex flex-col gap-3 rounded-md border border-border-subtle bg-surface-1 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <p className="text-sm font-medium text-white">Ready to expand?</p>
           <p className="mt-1 text-sm text-zinc-400">
             {agents.length} {agents.length === 1 ? "agent" : "agents"} in this workspace. Add recipes only after the
             first flow is working.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="grid gap-2 sm:flex sm:shrink-0 sm:items-center">
           <Button asChild variant="secondary" size="sm">
             <Link href="/workspace">Open chat</Link>
           </Button>

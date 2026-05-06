@@ -75,7 +75,7 @@ export function resolveAgentWorkspaceFromConfig(input: {
   orgId: string;
   openClawAgentId: string;
   config?: unknown;
-  source?: "runtime" | "env";
+  source?: "runtime" | "env" | "shard";
 }) {
   const record = asConfigRecord(input.config);
   const configuredWorkspace = typeof record.workspace === "string" ? record.workspace.trim() : "";

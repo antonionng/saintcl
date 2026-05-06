@@ -19,7 +19,7 @@ COPY openclaw-vendored/scripts ./scripts
 COPY openclaw-vendored/extensions ./extensions
 COPY openclaw-vendored/packages ./packages
 
-RUN NODE_OPTIONS=--max-old-space-size=2048 pnpm install --no-frozen-lockfile
+RUN NODE_OPTIONS=--max-old-space-size=2048 pnpm --config.minimum-release-age=0 install --no-frozen-lockfile
 
 COPY openclaw-vendored/. .
 

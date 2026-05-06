@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { howItWorksIntro, howItWorksSteps } from "@/components/landing/content";
 
 export function HowItWorksSection() {
@@ -32,7 +34,7 @@ export function HowItWorksSection() {
                 {step.title}
               </h3>
               <p className="text-[14.5px] leading-[22px] text-[#b5b5bd]">{step.description}</p>
-              <BrowserPreview label={step.preview} />
+              <StepImagePreview alt={step.imageAlt} src={step.imageSrc} />
             </article>
           ))}
         </div>
@@ -51,18 +53,16 @@ function SectionEyebrow({ label }: { label: string }) {
   );
 }
 
-function BrowserPreview({ label }: { label: string }) {
+function StepImagePreview({ alt, src }: { alt: string; src: string }) {
   return (
-    <div className="flex h-[180px] flex-col gap-3 rounded-[10px] border border-[#1f1f23] bg-black px-[18px] py-3.5">
-      <div className="flex items-center gap-1.5">
-        <span className="h-2 w-2 rounded-full bg-[#1f1f23]" />
-        <span className="h-2 w-2 rounded-full bg-[#1f1f23]" />
-        <span className="h-2 w-2 rounded-full bg-[#1f1f23]" />
-        <span className="ml-1 text-[11px] font-medium tracking-[0.05em] text-[#6e6e78]">
-          saintagi.com
-        </span>
-      </div>
-      <p className="text-[11.5px] leading-[18px] text-[#6e6e78]">[ {label} ]</p>
+    <div className="relative aspect-[1000/360] overflow-hidden rounded-[10px] border border-[#1f1f23] bg-black">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className="object-cover"
+        sizes="(min-width: 1024px) 50vw, 100vw"
+      />
     </div>
   );
 }

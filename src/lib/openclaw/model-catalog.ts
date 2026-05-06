@@ -1,7 +1,14 @@
 import { env } from "../env";
 import { inferFreeModel } from "../model-pricing";
-import { TRIAL_FREE_MODEL_ID, TRIAL_FREE_MODEL_LABEL } from "../plans";
+import {
+  TRIAL_DEFAULT_MODEL_ID,
+  TRIAL_DEFAULT_MODEL_LABEL,
+  TRIAL_FALLBACK_FREE_MODEL_ID,
+  TRIAL_FALLBACK_FREE_MODEL_LABEL,
+} from "../plans";
 import { parseProviderFromModelRef } from "./session-keys";
+
+export type ModelLockedReason = "trial_paid_model";
 
 export type ModelCatalogEntry = {
   id: string;
@@ -14,6 +21,7 @@ export type ModelCatalogEntry = {
   isFree?: boolean;
   source: "policy" | "openrouter" | "fallback";
   isPremium?: boolean;
+  lockedReason?: ModelLockedReason | null;
 };
 
 export type ModelGuardrails = {
@@ -50,6 +58,29 @@ const FALLBACK_DISCOVERY_MODELS: ModelCatalogEntry[] = [
     source: "fallback",
   },
   {
+    id: TRIAL_DEFAULT_MODEL_ID,
+    label: TRIAL_DEFAULT_MODEL_LABEL,
+    provider: parseProviderFromModelRef(TRIAL_DEFAULT_MODEL_ID),
+    description:
+      "Fast low-latency model. Used as the SaintAGI trial default for instant first-run chat.",
+    source: "fallback",
+  },
+  {
+    id: "openrouter/google/gemini-2.5-flash",
+    label: "Gemini 2.5 Flash",
+    provider: "openrouter",
+    description:
+      "Low-latency Gemini Flash class model, typically the lowest TTFT for short text turns.",
+    source: "fallback",
+  },
+  {
+    id: "openrouter/anthropic/claude-haiku-4.5",
+    label: "Claude Haiku 4.5",
+    provider: "openrouter",
+    description: "Fast low-latency Claude model.",
+    source: "fallback",
+  },
+  {
     id: "openrouter/anthropic/claude-sonnet-4-5",
     label: "Claude Sonnet 4.5",
     provider: "openrouter",
@@ -71,10 +102,10 @@ const FALLBACK_DISCOVERY_MODELS: ModelCatalogEntry[] = [
     source: "fallback",
   },
   {
-    id: "openrouter/meta-llama/llama-3.3-70b:free",
-    label: "Llama 3.3 70B Free",
+    id: TRIAL_FALLBACK_FREE_MODEL_ID,
+    label: TRIAL_FALLBACK_FREE_MODEL_LABEL,
     provider: "openrouter",
-    description: "Popular free-tier option for lower-cost experimentation.",
+    description: "Routes requests across currently available free OpenRouter models. Slower than the trial default.",
     isFree: true,
     source: "fallback",
   },
@@ -90,10 +121,25 @@ function createMinimalEntry(id: string, source: ModelCatalogEntry["source"]): Mo
   };
 }
 
-function createTrialFreeEntry(): ModelCatalogEntry {
+function createTrialDefaultEntry(): ModelCatalogEntry {
   return {
-    ...createMinimalEntry(TRIAL_FREE_MODEL_ID, "policy"),
-    label: TRIAL_FREE_MODEL_LABEL,
+    ...createMinimalEntry(TRIAL_DEFAULT_MODEL_ID, "policy"),
+    label: TRIAL_DEFAULT_MODEL_LABEL,
+    description: "Trial-included fast model. SaintAGI absorbs the cost during the trial message cap.",
+    // Marked free at the gate so trial users without wallet funds can chat.
+    // Actual provider cost is absorbed by SaintAGI during the trial window
+    // (see usage-sync trial absorption).
+    inputCostPerMillionCents: 0,
+    outputCostPerMillionCents: 0,
+    isFree: true,
+  };
+}
+
+function createTrialFallbackFreeEntry(): ModelCatalogEntry {
+  return {
+    ...createMinimalEntry(TRIAL_FALLBACK_FREE_MODEL_ID, "policy"),
+    label: TRIAL_FALLBACK_FREE_MODEL_LABEL,
+    description: "Backup free router. Slower and more variable than the trial default.",
     inputCostPerMillionCents: 0,
     outputCostPerMillionCents: 0,
     isFree: true,
@@ -410,22 +456,64 @@ export async function buildModelCatalogSnapshot(policy: OrgPolicyLike | null | u
 }
 
 export function restrictSnapshotToTrialFreeModels(snapshot: Awaited<ReturnType<typeof buildModelCatalogSnapshot>>) {
-  const trialModel =
-    snapshot.discoveryModels.find((entry) => entry.id === TRIAL_FREE_MODEL_ID) ??
-    snapshot.approvedModels.find((entry) => entry.id === TRIAL_FREE_MODEL_ID) ??
-    createTrialFreeEntry();
-
-  const normalizedTrialModel: ModelCatalogEntry = {
-    ...trialModel,
-    label: trialModel.label || TRIAL_FREE_MODEL_LABEL,
+  // Trial primary: the fast Haiku-class model. Marked isFree=true so the
+  // wallet check inside requiresWalletBalance is bypassed during the trial.
+  // The actual provider cost is absorbed by SaintAGI inside the trial message
+  // cap (see syncOpenClawUsageForOrg trial absorption).
+  const trialDefaultBase =
+    snapshot.discoveryModels.find((entry) => entry.id === TRIAL_DEFAULT_MODEL_ID) ??
+    snapshot.approvedModels.find((entry) => entry.id === TRIAL_DEFAULT_MODEL_ID) ??
+    createTrialDefaultEntry();
+  const trialDefault: ModelCatalogEntry = {
+    ...trialDefaultBase,
+    label: trialDefaultBase.label || TRIAL_DEFAULT_MODEL_LABEL,
     isFree: true,
+    inputCostPerMillionCents: 0,
+    outputCostPerMillionCents: 0,
+    lockedReason: null,
   };
+
+  // Trial fallback: the free OpenRouter router. Kept available so trial users
+  // can opt into pure-free routing for non-latency-critical exploration. Not
+  // the default because it is rate-limited and slow.
+  const trialFallbackBase =
+    snapshot.discoveryModels.find((entry) => entry.id === TRIAL_FALLBACK_FREE_MODEL_ID) ??
+    snapshot.approvedModels.find((entry) => entry.id === TRIAL_FALLBACK_FREE_MODEL_ID) ??
+    createTrialFallbackFreeEntry();
+  const trialFallback: ModelCatalogEntry = {
+    ...trialFallbackBase,
+    label: trialFallbackBase.label || TRIAL_FALLBACK_FREE_MODEL_LABEL,
+    isFree: true,
+    inputCostPerMillionCents: 0,
+    outputCostPerMillionCents: 0,
+    lockedReason: null,
+  };
+
+  // Show a curated set of paid models as "locked" so the UI can render the
+  // upgrade signal without exposing them to the runtime allowlist. Callers
+  // building the OpenClaw allowlist (or matching a requested model) must
+  // filter on lockedReason to avoid routing to a locked entry.
+  const trialAllowedIds = new Set([trialDefault.id, trialFallback.id]);
+  const lockedPaidModels = uniqueById(
+    [...snapshot.approvedModels, ...snapshot.discoveryModels].filter(
+      (entry) => !trialAllowedIds.has(entry.id) && entry.isFree !== true,
+    ),
+  )
+    .slice(0, 12)
+    .map<ModelCatalogEntry>((entry) => ({
+      ...entry,
+      lockedReason: "trial_paid_model",
+    }));
 
   return {
     ...snapshot,
-    defaultModel: normalizedTrialModel.id,
-    approvedModels: [normalizedTrialModel],
-    discoveryModels: snapshot.discoveryModels.filter((entry) => entry.isFree),
+    defaultModel: trialDefault.id,
+    approvedModels: [trialDefault, trialFallback, ...lockedPaidModels],
+    discoveryModels: snapshot.discoveryModels.map((entry) => {
+      if (trialAllowedIds.has(entry.id)) return { ...entry, isFree: true, lockedReason: null };
+      if (entry.isFree) return { ...entry, lockedReason: null };
+      return { ...entry, lockedReason: "trial_paid_model" };
+    }),
   };
 }
 

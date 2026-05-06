@@ -67,9 +67,9 @@ export default async function DashboardPage() {
             ) : (
               <div className="space-y-phi-3">
                 {runtimes.map((runtime) => (
-                  <Card key={runtime.id} variant="inset" className="p-phi-5">
-                    <div className="flex items-center justify-between gap-phi-3">
-                      <div>
+                  <Card key={runtime.id} variant="inset" className="p-4 sm:p-phi-5">
+                    <div className="flex flex-col gap-phi-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
                         <p className="text-[length:var(--text-sm)] font-medium text-white">
                           {session?.org.name ?? "Workspace"}
                         </p>
@@ -77,7 +77,7 @@ export default async function DashboardPage() {
                           {runtime.status === "online" ? "Ready for assigned workspaces" : "Connecting"}
                         </p>
                       </div>
-                      <Badge variant={runtime.status === "online" ? "success" : "warning"}>
+                      <Badge variant={runtime.status === "online" ? "success" : "warning"} className="self-start sm:self-center">
                         {runtime.status}
                       </Badge>
                     </div>
@@ -108,12 +108,12 @@ export default async function DashboardPage() {
             ) : (
               <div className="space-y-phi-3">
                 {approvals.map((approval) => (
-                  <Card key={approval.id} variant="inset" className="flex items-center justify-between px-phi-5 py-phi-5">
-                    <div>
-                      <p className="text-[length:var(--text-sm)] font-medium text-white">{approval.command}</p>
+                  <Card key={approval.id} variant="inset" className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-phi-5 sm:py-phi-5">
+                    <div className="min-w-0">
+                      <p className="truncate text-[length:var(--text-sm)] font-medium text-white">{approval.command}</p>
                       <p className="text-[length:var(--text-sm)] text-zinc-400">{approval.requested_by ?? "system"}</p>
                     </div>
-                    <div className="flex items-center gap-phi-3 text-[length:var(--text-sm)] text-zinc-400">
+                    <div className="flex shrink-0 items-center gap-phi-3 text-[length:var(--text-sm)] text-zinc-400">
                       <Activity className="size-4 text-emerald-400" />
                       {approval.status}
                       <ArrowRight className="size-4" />
@@ -151,8 +151,8 @@ export default async function DashboardPage() {
             <div className="space-y-phi-3">
               {logs.map((log) => (
                 <Card key={log.id} variant="inset" className="p-phi-5">
-                  <div className="flex items-center justify-between text-[length:var(--text-sm)] text-zinc-400">
-                    <span className="text-[length:var(--text-xs)] uppercase tracking-[0.08em]">
+                  <div className="flex flex-col gap-1 text-[length:var(--text-sm)] text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
+                    <span className="break-all text-[length:var(--text-xs)] uppercase tracking-[0.08em] sm:break-normal">
                       {log.role ?? "system"} · {log.session_key ?? "-"}
                     </span>
                     <span className="text-[length:var(--text-xs)]">{new Date(log.occurred_at ?? log.created_at).toLocaleTimeString()}</span>

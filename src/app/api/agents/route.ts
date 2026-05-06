@@ -25,9 +25,10 @@ import {
   upsertRuntimeMetadata,
 } from "@/lib/openclaw/runtime-store";
 import { writeAgentBootstrapFiles } from "@/lib/openclaw/profile-context";
-import { resolveModelSelection } from "@/lib/openclaw/model-governance";
+import { getRuntimeAllowedModels, resolveModelSelection } from "@/lib/openclaw/model-governance";
 import { RuntimeRateLimitError } from "@/lib/openclaw/client";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
+import { billingGateErrorToJson, isBillingGateError } from "@/lib/billing/errors";
 import { canProvisionAnotherAgent, getAgentProvisionLimitMessage, getResolvedTrialStatus } from "@/lib/plans";
 
 const createAgentSchema = z.object({
@@ -291,13 +292,14 @@ export async function POST(request: Request) {
       context: "agent",
     });
 
+    const runtimeAllowed = getRuntimeAllowedModels(snapshot).map((entry) => ({
+      id: entry.id,
+      label: entry.label,
+    }));
     const { client, runtime, source } = await getTenantOpenClawClient(orgId, {
       orgId,
       defaultModel: snapshot.defaultModel,
-      approvedModels: snapshot.approvedModels.map((entry) => ({
-        id: entry.id,
-        label: entry.label,
-      })),
+      approvedModels: runtimeAllowed,
     });
     const runtimeMetadata = runtime ? await upsertRuntimeMetadata(runtime) : null;
     const workspacePath = getAgentWorkspacePath(orgId, slug, { source });
@@ -307,10 +309,7 @@ export async function POST(request: Request) {
       await client.applyModelGovernance(
         {
           defaultModel: snapshot.defaultModel,
-          approvedModels: snapshot.approvedModels.map((entry) => ({
-            id: entry.id,
-            label: entry.label,
-          })),
+          approvedModels: runtimeAllowed,
         },
         rpc,
         { currentSnapshot },
@@ -473,6 +472,9 @@ export async function POST(request: Request) {
       },
     });
   } catch (err) {
+    if (isBillingGateError(err)) {
+      return NextResponse.json(billingGateErrorToJson(err), { status: err.status });
+    }
     if (err instanceof RuntimeRateLimitError) {
       const retryAfterSeconds = Math.max(1, Math.ceil(err.retryAfterMs / 1000));
       return NextResponse.json(

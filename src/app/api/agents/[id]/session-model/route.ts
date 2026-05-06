@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { billingGateErrorToJson, isBillingGateError } from "@/lib/billing/errors";
 import { getCurrentOrg, getVisibleAgentForSession } from "@/lib/dal";
-import { assertModelSelectionAllowed, getOrgModelCatalogState } from "@/lib/openclaw/model-governance";
+import {
+  assertModelSelectionAllowed,
+  getOrgModelCatalogState,
+  getRuntimeAllowedModels,
+} from "@/lib/openclaw/model-governance";
 import { RuntimeRateLimitError } from "@/lib/openclaw/client";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import { buildAgentSessionKey, parseProviderFromModelRef } from "@/lib/openclaw/session-keys";
@@ -73,23 +78,21 @@ export async function PATCH(
     });
 
     const sessionKey = payload.sessionKey?.trim() || buildAgentSessionKey(agent.openclaw_agent_id);
+    const runtimeAllowed = getRuntimeAllowedModels(snapshot).map((entry) => ({
+      id: entry.id,
+      label: entry.label,
+    }));
     const { client } = await getTenantOpenClawClient(session.org.id, {
       orgId: session.org.id,
       defaultModel: snapshot.defaultModel,
-      approvedModels: snapshot.approvedModels.map((entry) => ({
-        id: entry.id,
-        label: entry.label,
-      })),
+      approvedModels: runtimeAllowed,
     });
     const result = await client.withSession(async (rpc) => {
       const currentSnapshot = await client.getConfigSnapshot(rpc);
       await client.applyModelGovernance(
         {
           defaultModel: snapshot.defaultModel,
-          approvedModels: snapshot.approvedModels.map((entry) => ({
-            id: entry.id,
-            label: entry.label,
-          })),
+          approvedModels: runtimeAllowed,
         },
         rpc,
         { currentSnapshot },
@@ -124,6 +127,9 @@ export async function PATCH(
       },
     });
   } catch (error) {
+    if (isBillingGateError(error)) {
+      return NextResponse.json(billingGateErrorToJson(error), { status: error.status });
+    }
     if (error instanceof RuntimeRateLimitError) {
       const retryAfterSeconds = Math.max(1, Math.ceil(error.retryAfterMs / 1000));
       return NextResponse.json(

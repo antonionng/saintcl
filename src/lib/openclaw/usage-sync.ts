@@ -5,6 +5,7 @@ import {
   recordRequestEvents,
   recordSessionActivityEvents,
 } from "@/lib/observability";
+import { isTrialModelRestrictionActive } from "@/lib/plans";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
 import {
@@ -136,7 +137,7 @@ export async function syncOpenClawUsageForOrg(
   }
 
   try {
-    const [{ client }, checkpointsResult, agentsResult] = await Promise.all([
+    const [{ client }, checkpointsResult, agentsResult, orgResult] = await Promise.all([
       getTenantOpenClawClient(orgId, { orgId, defaultModel: options.defaultModel }),
       admin
         .from("session_usage_checkpoints")
@@ -146,7 +147,21 @@ export async function syncOpenClawUsageForOrg(
         .from("agents")
         .select("id, user_id, name, openclaw_agent_id")
         .eq("org_id", orgId),
+      admin
+        .from("orgs")
+        .select("trial_status, trial_ends_at")
+        .eq("id", orgId)
+        .maybeSingle(),
     ]);
+
+    // Trial users get included usage absorbed by SaintAGI inside the trial
+    // message cap (see plans.TRIAL_MESSAGE_LIMIT). We still want to track
+    // checkpoints and observability so the upgrade path knows how much usage
+    // happened, but we must not trip the wallet gate for empty trial wallets.
+    const trialAbsorbsCost = isTrialModelRestrictionActive({
+      trialStatus: orgResult.data?.trial_status ?? null,
+      trialEndsAt: orgResult.data?.trial_ends_at ?? null,
+    });
 
     const usage = await client.getSessionsUsage({
       days: options.days ?? 30,
@@ -184,16 +199,19 @@ export async function syncOpenClawUsageForOrg(
       let checkpointWritten = false;
 
       if (deltaCents > 0) {
+        const billedAmountCents = trialAbsorbsCost ? 0 : deltaCents;
         await recordUsageCharge({
           orgId,
           userId: agent?.user_id ?? null,
           agentId: agent?.id ?? null,
-          eventType: "usage_api",
-          amountCents: deltaCents,
+          eventType: trialAbsorbsCost ? "usage_api_trial" : "usage_api",
+          amountCents: billedAmountCents,
           quantity: Math.max(1, totalTokens),
           unit: "tokens",
           sessionKey: session.key,
-          description: `Runtime usage for ${agent?.name ?? session.key}`,
+          description: trialAbsorbsCost
+            ? `Trial usage absorbed for ${agent?.name ?? session.key}`
+            : `Runtime usage for ${agent?.name ?? session.key}`,
           metadata: {
             provider,
             model,
@@ -203,6 +221,8 @@ export async function syncOpenClawUsageForOrg(
             markupPercent: LLM_USAGE_MARKUP_PERCENT,
             totalTokens,
             source: "openclaw.sessions.usage",
+            trialAbsorbed: trialAbsorbsCost,
+            absorbedCents: trialAbsorbsCost ? deltaCents : 0,
           },
           checkpoint: {
             totalCostUsd,
@@ -212,11 +232,12 @@ export async function syncOpenClawUsageForOrg(
             metadata: {
               source: "openclaw.sessions.usage",
               channel: session.channel ?? null,
+              trialAbsorbed: trialAbsorbsCost,
             },
           },
         });
         chargedSessions += 1;
-        chargedCents += deltaCents;
+        chargedCents += billedAmountCents;
         checkpointWritten = true;
       } else {
         skippedSessions += 1;

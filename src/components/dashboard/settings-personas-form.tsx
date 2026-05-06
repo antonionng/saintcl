@@ -49,13 +49,13 @@ function SectionHeader({
 }) {
   return (
     <div className="flex flex-col gap-2 pb-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
-      <div>
+      <div className="min-w-0">
         <h3 className="text-[length:var(--text-base)] font-medium text-white">{title}</h3>
         {description ? (
           <p className="mt-0.5 text-[length:var(--text-xs)] text-white/55">{description}</p>
         ) : null}
       </div>
-      {action ? <div className="shrink-0">{action}</div> : null}
+      {action ? <div className="w-full shrink-0 sm:w-auto [&_button]:w-full sm:[&_button]:w-auto">{action}</div> : null}
     </div>
   );
 }
@@ -151,7 +151,7 @@ export function SettingsPersonasForm({
               {orgPersonas.map((persona) => (
                 <li
                   key={persona.id}
-                  className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0 hover:bg-white/[0.02]"
+                  className="flex flex-col gap-2 border-b border-border-subtle px-4 py-2.5 last:border-b-0 hover:bg-white/[0.02] sm:flex-row sm:items-center sm:justify-between sm:gap-3"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-[length:var(--text-sm)] text-white">{persona.name}</p>
@@ -159,7 +159,7 @@ export function SettingsPersonasForm({
                       {persona.description || "No description"}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="grid w-full shrink-0 grid-cols-2 gap-1 sm:flex sm:w-auto sm:items-center">
                     {canEdit ? (
                       <>
                         <Button
@@ -203,7 +203,7 @@ export function SettingsPersonasForm({
               {builtInPersonas.map((persona) => (
                 <li
                   key={persona.id}
-                  className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-2.5 last:border-b-0"
+                  className="flex flex-col gap-2 border-b border-border-subtle px-4 py-2.5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-[length:var(--text-sm)] text-white">{persona.name}</p>

@@ -77,7 +77,7 @@ export default async function AgentsPage() {
               return (
                 <article
                   key={agent.id}
-                  className="grid gap-4 px-4 py-4 transition-colors hover:bg-white/[0.02] lg:grid-cols-[minmax(0,1fr)_220px_auto] lg:items-center"
+                  className="grid gap-4 px-4 py-4 transition-colors hover:bg-white/[0.02] xl:grid-cols-[minmax(0,1fr)_220px_auto] xl:items-center"
                 >
                   <div className="flex min-w-0 items-start gap-3">
                     <AgentAvatar
@@ -106,7 +106,7 @@ export default async function AgentsPage() {
                     </div>
                   </div>
 
-                  <div className="min-w-0 lg:border-l lg:border-border-subtle lg:pl-4">
+                  <div className="min-w-0 xl:border-l xl:border-border-subtle xl:pl-4">
                     <p className="text-[length:var(--text-xs)] uppercase tracking-[0.08em] text-white/40">
                       Assigned to
                     </p>
@@ -117,7 +117,7 @@ export default async function AgentsPage() {
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2 lg:justify-end [&_button]:h-8 [&_a]:h-8">
+                  <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center xl:justify-end [&_button]:h-8 [&_a]:h-8">
                     <Button asChild size="sm" variant="secondary">
                       <Link href={`/agents/${agent.id}/chat`}>
                         <MessageSquare className="h-3.5 w-3.5" />

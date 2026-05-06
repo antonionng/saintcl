@@ -17,6 +17,7 @@ import {
   createDiagnosticTraceContextFromActiveScope,
   freezeDiagnosticTraceContext,
 } from "../../../infra/diagnostic-trace-context.js";
+import { withDiagnosticPhase } from "../../../logging/diagnostic-phase.js";
 import { isEmbeddedMode } from "../../../infra/embedded-mode.js";
 import { formatErrorMessage } from "../../../infra/errors.js";
 import { resolveHeartbeatSummaryForAgent } from "../../../infra/heartbeat-summary.js";
@@ -770,6 +771,13 @@ export async function runEmbeddedAttempt(
       type: "run.started",
       ...diagnosticRunBase,
     });
+    const markRunProgress = (reason: string) => {
+      emitTrustedDiagnosticEvent({
+        type: "run.progress",
+        ...diagnosticRunBase,
+        reason,
+      });
+    };
     const diagnosticRunStartedAt = Date.now();
     let diagnosticRunCompleted = false;
     emitDiagnosticRunCompleted = (outcome, err) => {
@@ -1367,11 +1375,15 @@ export async function runEmbeddedAttempt(
     let trajectoryRecorder: ReturnType<typeof createTrajectoryRuntimeRecorder> | null = null;
     let trajectoryEndRecorded = false;
     try {
-      await repairSessionFileIfNeeded({
-        sessionFile: params.sessionFile,
-        debug: (message) => log.debug(message),
-        warn: (message) => log.warn(message),
-      });
+      markRunProgress("attempt:repair-session-file:start");
+      await withDiagnosticPhase("attempt.repair-session-file", async () =>
+        repairSessionFileIfNeeded({
+          sessionFile: params.sessionFile,
+          debug: (message) => log.debug(message),
+          warn: (message) => log.warn(message),
+        }),
+      );
+      markRunProgress("attempt:repair-session-file:end");
       const hadSessionFile = await fs
         .stat(params.sessionFile)
         .then(() => true)
@@ -1386,62 +1398,76 @@ export async function runEmbeddedAttempt(
         env: process.env,
       });
 
-      await prewarmSessionFile(params.sessionFile);
-      sessionManager = guardSessionManager(SessionManager.open(params.sessionFile), {
-        agentId: sessionAgentId,
-        sessionKey: params.sessionKey,
-        config: params.config,
-        contextWindowTokens: params.contextTokenBudget,
-        inputProvenance: params.inputProvenance,
-        allowSyntheticToolResults: transcriptPolicy.allowSyntheticToolResults,
-        missingToolResultText:
-          params.model.api === "openai-responses" ||
-          params.model.api === "azure-openai-responses" ||
-          params.model.api === "openai-codex-responses"
-            ? "aborted"
-            : undefined,
-        allowedToolNames,
-        suppressNextUserMessagePersistence: params.suppressNextUserMessagePersistence,
-        onUserMessagePersisted: (message) => {
-          params.onUserMessagePersisted?.(message);
-        },
-      });
+      markRunProgress("attempt:session-manager-open:start");
+      await withDiagnosticPhase("attempt.session-file-prewarm", () =>
+        prewarmSessionFile(params.sessionFile),
+      );
+      sessionManager = await withDiagnosticPhase("attempt.session-manager-open", () =>
+        guardSessionManager(SessionManager.open(params.sessionFile), {
+          agentId: sessionAgentId,
+          sessionKey: params.sessionKey,
+          config: params.config,
+          contextWindowTokens: params.contextTokenBudget,
+          inputProvenance: params.inputProvenance,
+          allowSyntheticToolResults: transcriptPolicy.allowSyntheticToolResults,
+          missingToolResultText:
+            params.model.api === "openai-responses" ||
+            params.model.api === "azure-openai-responses" ||
+            params.model.api === "openai-codex-responses"
+              ? "aborted"
+              : undefined,
+          allowedToolNames,
+          suppressNextUserMessagePersistence: params.suppressNextUserMessagePersistence,
+          onUserMessagePersisted: (message) => {
+            params.onUserMessagePersisted?.(message);
+          },
+        }),
+      );
+      markRunProgress("attempt:session-manager-open:end");
       trackSessionManagerAccess(params.sessionFile);
 
-      await runAttemptContextEngineBootstrap({
-        hadSessionFile,
-        contextEngine: activeContextEngine,
-        sessionId: params.sessionId,
-        sessionKey: params.sessionKey,
-        sessionFile: params.sessionFile,
-        sessionManager,
-        runtimeContext: buildAfterTurnRuntimeContext({
-          attempt: params,
-          workspaceDir: effectiveWorkspace,
-          agentDir,
-          tokenBudget: params.contextTokenBudget,
-        }),
-        runMaintenance: async (contextParams) =>
-          await runContextEngineMaintenance({
-            contextEngine: contextParams.contextEngine as never,
-            sessionId: contextParams.sessionId,
-            sessionKey: contextParams.sessionKey,
-            sessionFile: contextParams.sessionFile,
-            reason: contextParams.reason,
-            sessionManager: contextParams.sessionManager as never,
-            runtimeContext: contextParams.runtimeContext,
-            config: params.config,
+      markRunProgress("attempt:context-engine-bootstrap:start");
+      await withDiagnosticPhase("attempt.context-engine-bootstrap", () =>
+        runAttemptContextEngineBootstrap({
+          hadSessionFile,
+          contextEngine: activeContextEngine,
+          sessionId: params.sessionId,
+          sessionKey: params.sessionKey,
+          sessionFile: params.sessionFile,
+          sessionManager,
+          runtimeContext: buildAfterTurnRuntimeContext({
+            attempt: params,
+            workspaceDir: effectiveWorkspace,
+            agentDir,
+            tokenBudget: params.contextTokenBudget,
           }),
-        warn: (message) => log.warn(message),
-      });
+          runMaintenance: async (contextParams) =>
+            await runContextEngineMaintenance({
+              contextEngine: contextParams.contextEngine as never,
+              sessionId: contextParams.sessionId,
+              sessionKey: contextParams.sessionKey,
+              sessionFile: contextParams.sessionFile,
+              reason: contextParams.reason,
+              sessionManager: contextParams.sessionManager as never,
+              runtimeContext: contextParams.runtimeContext,
+              config: params.config,
+            }),
+          warn: (message) => log.warn(message),
+        }),
+      );
+      markRunProgress("attempt:context-engine-bootstrap:end");
 
-      await prepareSessionManagerForRun({
-        sessionManager,
-        sessionFile: params.sessionFile,
-        hadSessionFile,
-        sessionId: params.sessionId,
-        cwd: effectiveWorkspace,
-      });
+      markRunProgress("attempt:prepare-session-manager:start");
+      await withDiagnosticPhase("attempt.prepare-session-manager", () =>
+        prepareSessionManagerForRun({
+          sessionManager,
+          sessionFile: params.sessionFile,
+          hadSessionFile,
+          sessionId: params.sessionId,
+          cwd: effectiveWorkspace,
+        }),
+      );
+      markRunProgress("attempt:prepare-session-manager:end");
 
       const settingsManager = createPreparedEmbeddedPiSettingsManager({
         cwd: effectiveWorkspace,
@@ -1475,7 +1501,9 @@ export async function runEmbeddedAttempt(
         settingsManager,
         extensionFactories,
       });
-      await resourceLoader.reload();
+      markRunProgress("attempt:resource-loader-reload:start");
+      await withDiagnosticPhase("attempt.resource-loader-reload", () => resourceLoader.reload());
+      markRunProgress("attempt:resource-loader-reload:end");
       // DefaultResourceLoader.reload() rehydrates settings from disk and can drop OpenClaw
       // compaction overrides applied in createPreparedEmbeddedPiSettingsManager — same
       // rehydration also restores Pi's auto-compaction (openclaw#75799), so re-apply
@@ -1604,25 +1632,29 @@ export async function runEmbeddedAttempt(
         collectRegisteredToolNames(allCustomTools),
       );
 
-      const createdSession = await createEmbeddedAgentSessionWithResourceLoader<
-        Awaited<ReturnType<typeof createAgentSession>>
-      >({
-        createAgentSession: async (options) =>
-          await createAgentSession(options as unknown as Parameters<typeof createAgentSession>[0]),
-        options: {
-          cwd: resolvedWorkspace,
-          agentDir,
-          authStorage: params.authStorage,
-          modelRegistry: params.modelRegistry,
-          model: params.model,
-          thinkingLevel: mapThinkingLevel(params.thinkLevel),
-          tools: sessionToolAllowlist,
-          customTools: allCustomTools,
-          sessionManager,
-          settingsManager,
-          resourceLoader,
-        },
-      });
+      markRunProgress("attempt:create-agent-session:start");
+      const createdSession = await withDiagnosticPhase("attempt.create-agent-session", () =>
+        createEmbeddedAgentSessionWithResourceLoader<
+          Awaited<ReturnType<typeof createAgentSession>>
+        >({
+          createAgentSession: async (options) =>
+            await createAgentSession(options as unknown as Parameters<typeof createAgentSession>[0]),
+          options: {
+            cwd: resolvedWorkspace,
+            agentDir,
+            authStorage: params.authStorage,
+            modelRegistry: params.modelRegistry,
+            model: params.model,
+            thinkingLevel: mapThinkingLevel(params.thinkLevel),
+            tools: sessionToolAllowlist,
+            customTools: allCustomTools,
+            sessionManager,
+            settingsManager,
+            resourceLoader,
+          },
+        }),
+      );
+      markRunProgress("attempt:create-agent-session:end");
       session = createdSession.session;
       applySystemPromptOverrideToSession(session, systemPromptText);
       if (!session) {
@@ -3003,7 +3035,11 @@ export async function runEmbeddedAttempt(
               inFlightPrompt: promptForModel,
             });
             if (promptSubmission.runtimeOnly) {
-              await abortable(activeSession.prompt(promptForModel));
+              markRunProgress("attempt:active-session-prompt:start");
+              await withDiagnosticPhase("attempt.active-session-prompt", () =>
+                abortable(activeSession.prompt(promptForModel)),
+              );
+              markRunProgress("attempt:active-session-prompt:end");
             } else {
               const runtimeContext = promptSubmission.runtimeContext?.trim();
               await queueRuntimeContextForNextTurn({
@@ -3014,11 +3050,17 @@ export async function runEmbeddedAttempt(
               // Only pass images option if there are actually images to pass
               // This avoids potential issues with models that don't expect the images parameter
               if (imageResult.images.length > 0) {
-                await abortable(
-                  activeSession.prompt(promptForModel, { images: imageResult.images }),
+                markRunProgress("attempt:active-session-prompt:start");
+                await withDiagnosticPhase("attempt.active-session-prompt", () =>
+                  abortable(activeSession.prompt(promptForModel, { images: imageResult.images })),
                 );
+                markRunProgress("attempt:active-session-prompt:end");
               } else {
-                await abortable(activeSession.prompt(promptForModel));
+                markRunProgress("attempt:active-session-prompt:start");
+                await withDiagnosticPhase("attempt.active-session-prompt", () =>
+                  abortable(activeSession.prompt(promptForModel)),
+                );
+                markRunProgress("attempt:active-session-prompt:end");
               }
             }
           }
