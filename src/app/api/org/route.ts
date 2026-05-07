@@ -227,7 +227,13 @@ export async function PATCH(request: Request) {
     }).catch(() => null);
   }
 
-  const sync = await runOrgContextSync({
+  // Org context sync touches every agent's workspace and used to block this
+  // PATCH for tens of seconds on cold gateways, which made the onboarding
+  // "Save and continue" button feel stuck. Fire and forget so the user can
+  // move forward immediately. The next workspace render's repair path will
+  // reapply the latest org context to the agent we just opened, so the
+  // ux-visible result still converges quickly.
+  void runOrgContextSync({
     orgId: session.org.id,
     org: {
       name: finalOrgRow.name,
@@ -240,7 +246,11 @@ export async function PATCH(request: Request) {
   const response = NextResponse.json({
     data: {
       org: finalOrgRow,
-      sync,
+      sync: {
+        status: "queued" as const,
+        message:
+          "Company context will be synced to existing agents in the background; new agents pick it up automatically.",
+      },
       ...(enrichmentForClient ? { enrichment: enrichmentForClient } : {}),
     },
   });

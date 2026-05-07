@@ -164,6 +164,17 @@ Notes:
 - If `OPENCLAW_ALLOWED_ORIGINS` is not set yet, the service falls back to host-header origin mode so you can bootstrap the first deploy, then tighten origins afterward.
 - SaintAGI launches the advanced admin console against the hosted gateway directly, while the main product experience remains inside the SaintAGI UI.
 
+### Verifying the gateway fleet
+
+After any `openclaw-vendored` change ships to Railway, run the fleet verifier before relying on new RPC behavior in production:
+
+```bash
+OPENCLAW_GATEWAY_SHARDS='[{"id":"gw-1","wsUrl":"wss://...","token":"..."}]' \
+  npm run openclaw:verify-fleet
+```
+
+For a single-shard setup it is enough to set `OPENCLAW_GATEWAY_URL` and `OPENCLAW_GATEWAY_TOKEN`. The script exercises `/healthz`, `/readyz`, and an authenticated `config.get` RPC against every configured shard, so a stale image (one shard still on an older OpenClaw build) shows up as a hard failure instead of a silent split-brain. Add `--expected-build=<hash>` to surface the build you intended to ship in the report, or `--json` for machine-readable output in CI.
+
 ## Vendored OpenClaw
 
 The OpenClaw snapshot is stored in `openclaw-vendored`. It is pinned to upstream version `2026.4.24` (see `openclaw-vendored/package.json`). When bumping this snapshot, smoke-test the RPC paths used in `src/lib/openclaw/client.ts` (`config.patch`, `agent.create`, `skills.install`, `chat.*`) and the proxy in `src/app/api/openclaw/proxy-to-gateway.ts`.

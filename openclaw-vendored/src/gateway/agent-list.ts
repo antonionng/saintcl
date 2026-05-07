@@ -12,7 +12,15 @@ type GatewayAgentListRow = {
   name?: string;
 };
 
-function listExistingAgentIdsFromDisk(): string[] {
+/**
+ * Lists agent directories present on disk under the gateway's state root.
+ *
+ * Exported as the single source of truth so disk-discovery logic cannot drift
+ * between the listing surface and the file-write resolver. Anyone who needs
+ * to know which agent IDs the gateway has materialized state for must call
+ * this helper rather than re-implementing the readdir + normalize sequence.
+ */
+export function listExistingAgentIdsFromDisk(): string[] {
   const root = resolveStateDir();
   const agentsDir = path.join(root, "agents");
   try {
@@ -26,7 +34,17 @@ function listExistingAgentIdsFromDisk(): string[] {
   }
 }
 
-function listConfiguredAgentIds(cfg: OpenClawConfig): string[] {
+/**
+ * Lists every agent ID the gateway considers "configured" before any
+ * explicit-list filtering is applied: the resolved default ID, every entry
+ * from `cfg.agents.list`, and every disk-discovered agent directory.
+ *
+ * Exported so consumers (server-methods, session routing, registry probes)
+ * share a single definition. Previously each consumer maintained a private
+ * copy of this routine, which was the original source of the agent registry
+ * drift the gateway hardening work is closing out.
+ */
+export function listConfiguredAgentIds(cfg: OpenClawConfig): string[] {
   const ids = new Set<string>();
   const defaultId = normalizeAgentId(resolveDefaultAgentId(cfg));
   ids.add(defaultId);

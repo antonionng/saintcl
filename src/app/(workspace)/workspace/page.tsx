@@ -13,6 +13,7 @@ import { injectAgentContext } from "@/lib/openclaw/context-injection";
 import { resolveAgentWorkspaceFromConfig } from "@/lib/openclaw/agent-terminal";
 import { recordRuntimePressureSample } from "@/lib/openclaw/runtime-pressure";
 import { getTenantOpenClawClient } from "@/lib/openclaw/runtime-client";
+import { GatewayAssignmentDriftError } from "@/lib/openclaw/gateway-assignments";
 import { buildAgentSessionKey } from "@/lib/openclaw/session-keys";
 import { buildGatewayWorkspaceProxyPath, resolveTenantGatewayTarget } from "@/lib/openclaw/tenant-gateway";
 import {
@@ -200,6 +201,13 @@ async function repairManagedRuntimeConfig(
     }
     return { ok: true, model: repairedModel ?? null };
   } catch (error) {
+    if (error instanceof GatewayAssignmentDriftError) {
+      return {
+        ok: false,
+        model: null,
+        error: `Gateway routing drift: ${error.message}. Contact support so we can repair the assignment.`,
+      };
+    }
     return {
       ok: false,
       model: null,
@@ -217,7 +225,19 @@ async function getWorkspaceSurface(
     return { configured: false, healthy: false } as const;
   }
 
-  const target = await resolveTenantGatewayTarget(orgId);
+  let target: Awaited<ReturnType<typeof resolveTenantGatewayTarget>>;
+  try {
+    target = await resolveTenantGatewayTarget(orgId);
+  } catch (error) {
+    if (error instanceof GatewayAssignmentDriftError) {
+      return {
+        configured: true,
+        healthy: false,
+        error: `Gateway routing drift: ${error.message}. Contact support so we can repair the assignment.`,
+      } as const;
+    }
+    throw error;
+  }
   if (!target) {
     return { configured: false, healthy: false } as const;
   }

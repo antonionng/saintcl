@@ -26,7 +26,12 @@ vi.mock("../agents/agent-scope.js", () => ({
   },
 }));
 
-import { listEffectiveGatewayAgentIds, listGatewayAgentsBasic } from "./agent-list.js";
+import {
+  listConfiguredAgentIds,
+  listEffectiveGatewayAgentIds,
+  listExistingAgentIdsFromDisk,
+  listGatewayAgentsBasic,
+} from "./agent-list.js";
 
 function dirent(name: string) {
   return { name, isDirectory: () => true };
@@ -100,5 +105,38 @@ describe("listGatewayAgentsBasic", () => {
     const listing = listGatewayAgentsBasic(cfg).agents.map((row) => row.id);
     const effective = listEffectiveGatewayAgentIds(cfg);
     expect([...listing].sort()).toEqual([...effective].sort());
+  });
+});
+
+describe("shared agent-id helpers", () => {
+  afterEach(() => {
+    fsMocks.readdirSync.mockReset();
+  });
+
+  it("exports a single source of truth for disk-discovered agents", () => {
+    fsMocks.readdirSync.mockReturnValue([
+      dirent("disk-only-agent"),
+      dirent("ant-agent"),
+      { name: "not-a-dir", isDirectory: () => false } as never,
+    ]);
+    expect(listExistingAgentIdsFromDisk().sort()).toEqual([
+      "ant-agent",
+      "disk-only-agent",
+    ]);
+  });
+
+  it("exports listConfiguredAgentIds with the default id pinned at the head", () => {
+    fsMocks.readdirSync.mockReturnValue([dirent("disk-only-agent")]);
+    const cfg = {
+      agents: {
+        list: [
+          { id: "ops-agent" },
+          { id: "ant-agent", default: true },
+        ],
+      },
+    } as never;
+    const ids = listConfiguredAgentIds(cfg);
+    expect(ids[0]).toBe("ant-agent");
+    expect(ids).toEqual(expect.arrayContaining(["ops-agent", "disk-only-agent"]));
   });
 });

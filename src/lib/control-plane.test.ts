@@ -23,7 +23,10 @@ import {
   managedAgentRuntimeConfigMatchesSnapshot,
   whatsappAgentBindingMatchesSnapshot,
 } from "./openclaw/client";
-import { resolveTenantGatewayAssignmentFromRow } from "./openclaw/gateway-assignments";
+import {
+  GatewayAssignmentDriftError,
+  resolveTenantGatewayAssignmentFromRow,
+} from "./openclaw/gateway-assignments";
 import {
   getAgentTerminalConfig,
   normalizeAgentTerminalRepoPaths,
@@ -722,6 +725,32 @@ describe("tenant gateway assignments", () => {
     ).toBeNull();
 
     delete process.env.OPENCLAW_TEST_GATEWAY_TOKEN;
+  });
+
+  it("returns null when an active row pins a missing shard but provides no ws_url fallback", () => {
+    expect(
+      resolveTenantGatewayAssignmentFromRow({
+        org_id: "org_drift",
+        shard_id: "shard-vanished",
+        status: "active",
+      }),
+    ).toBeNull();
+  });
+
+  it("constructs a drift error that names the orphaned shard id", () => {
+    const error = new GatewayAssignmentDriftError({
+      orgId: "org_drift",
+      shardId: "shard-vanished",
+      assignmentReason: "trial",
+      reason: 'shard "shard-vanished" is not present in OPENCLAW_GATEWAY_SHARDS and the row has no fallback ws_url',
+    });
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.name).toBe("GatewayAssignmentDriftError");
+    expect(error.shardId).toBe("shard-vanished");
+    expect(error.assignmentReason).toBe("trial");
+    expect(error.message).toContain("org_drift");
+    expect(error.message).toContain("shard-vanished");
   });
 });
 

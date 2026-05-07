@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { resolveAgentRuntimeMetadata } from "../agents/agent-runtime-metadata.js";
+import { listEffectiveGatewayAgentIds } from "./agent-list.js";
 import {
   listAgentIds,
   resolveAgentConfig,
@@ -43,7 +44,6 @@ import {
 import { listThinkingLevelOptions } from "../auto-reply/thinking.js";
 import { getRuntimeConfig } from "../config/io.js";
 import { resolveAgentModelFallbackValues } from "../config/model-input.js";
-import { resolveStateDir } from "../config/paths.js";
 import {
   buildGroupDisplayName,
   loadSessionStore,
@@ -822,41 +822,11 @@ function isStorePathTemplate(store?: string): boolean {
   return typeof store === "string" && store.includes("{agentId}");
 }
 
-function listExistingAgentIdsFromDisk(): string[] {
-  const root = resolveStateDir();
-  const agentsDir = path.join(root, "agents");
-  try {
-    const entries = fs.readdirSync(agentsDir, { withFileTypes: true });
-    return entries
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => normalizeAgentId(entry.name))
-      .filter(Boolean);
-  } catch {
-    return [];
-  }
-}
-
-function listConfiguredAgentIds(cfg: OpenClawConfig): string[] {
-  const ids = new Set<string>();
-  const defaultId = normalizeAgentId(resolveDefaultAgentId(cfg));
-  ids.add(defaultId);
-
-  for (const entry of cfg.agents?.list ?? []) {
-    if (entry?.id) {
-      ids.add(normalizeAgentId(entry.id));
-    }
-  }
-
-  for (const id of listExistingAgentIdsFromDisk()) {
-    ids.add(id);
-  }
-
-  const sorted = Array.from(ids).filter(Boolean);
-  sorted.sort((a, b) => a.localeCompare(b));
-  return sorted.includes(defaultId)
-    ? [defaultId, ...sorted.filter((id) => id !== defaultId)]
-    : sorted;
-}
+// Disk + configured agent ID resolution lives in `./agent-list.js` so the
+// listing surface, session routing, and `agents.files.set` resolver share a
+// single source of truth. Removing the previous local copies here is what
+// closes the registry-drift bug that produced "unknown agent id" failures
+// against agents that `agents.list` had already reported as visible.
 
 function normalizeFallbackList(values: readonly string[]): string[] {
   const out: string[] = [];
@@ -928,18 +898,10 @@ export function listAgentsForGateway(cfg: OpenClawConfig): {
       identity,
     });
   }
-  const explicitIds = new Set(
-    (cfg.agents?.list ?? [])
-      .map((entry) => (entry?.id ? normalizeAgentId(entry.id) : ""))
-      .filter(Boolean),
-  );
-  const allowedIds = explicitIds.size > 0 ? new Set([...explicitIds, defaultId]) : null;
-  let agentIds = listConfiguredAgentIds(cfg).filter((id) =>
-    allowedIds ? allowedIds.has(id) : true,
-  );
-  if (mainKey && !agentIds.includes(mainKey) && (!allowedIds || allowedIds.has(mainKey))) {
-    agentIds = [...agentIds, mainKey];
-  }
+  // Use the shared helper so every consumer of the gateway agent registry
+  // (listing, session routing, file-write resolution) ends up with the same
+  // ID set.
+  const agentIds = listEffectiveGatewayAgentIds(cfg);
   const agents = agentIds.map((id) => {
     const meta = configuredById.get(id);
     const model = resolveGatewayAgentModel(cfg, id);

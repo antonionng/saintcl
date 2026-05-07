@@ -4,7 +4,10 @@ import { getCurrentOrg, getPreferredAgentForSession, loadCurrentUserProfile } fr
 import { sendAgentIntroductionEmail } from "@/lib/email/service";
 import { isOpenClawConfigured } from "@/lib/env";
 import { injectAgentContext } from "@/lib/openclaw/context-injection";
-import { ensureTenantGatewayAssignment } from "@/lib/openclaw/gateway-assignments";
+import {
+  ensureTenantGatewayAssignment,
+  GatewayAssignmentDriftError,
+} from "@/lib/openclaw/gateway-assignments";
 import { resolveAgentWorkspaceFromConfig } from "@/lib/openclaw/agent-terminal";
 import { getAgentWorkspacePath } from "@/lib/openclaw/paths";
 import { resolveModelSelection } from "@/lib/openclaw/model-governance";
@@ -205,48 +208,13 @@ export async function POST() {
         rpc,
       );
     });
+    // Critical path for opening chat: register the agent in DB and the
+    // assignment so tenant lookup works, then write the bootstrap workspace
+    // files the gateway needs. Knowledge mirroring + memorySearch governance
+    // happen on the next workspace render via repairManagedRuntimeConfig, so
+    // the user is not blocked behind background indexing during signup.
     let row: Awaited<ReturnType<typeof insertAgentMetadata>>;
     try {
-      // Workspace files only at this stage. Knowledge mirroring + memorySearch
-      // happen after the assignment is upserted below so the scope is known.
-      const initialInjection = await injectAgentContext(
-        {
-          id: slug,
-          org_id: orgId,
-          user_id: session.userId,
-          openclaw_agent_id: slug,
-          name: agentName,
-          model,
-          config: { persona },
-          assignment: null,
-        },
-        {
-          client,
-          persona,
-          org: {
-            name: session.org.name,
-            website: session.org.website,
-            companySummary: session.org.company_summary,
-            agentBrief: session.org.agent_brief,
-          },
-          profile: profile
-            ? {
-                displayName: profile.displayName,
-                email: profile.email,
-                role: profile.role,
-                whatIDo: profile.whatIDo,
-                agentBrief: profile.agentBrief,
-              }
-            : null,
-          syncKnowledge: false,
-          applySafeMemoryConfig: false,
-          writeHeartbeat: true,
-        },
-      );
-      if (initialInjection.status === "failed") {
-        throw new Error(initialInjection.message);
-      }
-
       row = await insertAgentMetadata({
         orgId,
         userId: session.userId,
@@ -267,22 +235,20 @@ export async function POST() {
           },
         },
       });
-    } catch (error) {
-      await client.deleteAgent({ agentId: slug, deleteFiles: true }).catch(() => null);
-      throw error;
-    }
 
-    if (row?.id) {
-      await upsertAgentAssignment({
-        orgId,
-        agentId: row.id,
-        assigneeType: "employee",
-        assigneeRef: session.userId,
-        createdBy: session.userId,
-      });
-      const assignedInjection = await injectAgentContext(
+      if (row?.id) {
+        await upsertAgentAssignment({
+          orgId,
+          agentId: row.id,
+          assigneeType: "employee",
+          assigneeRef: session.userId,
+          createdBy: session.userId,
+        });
+      }
+
+      const bootstrapInjection = await injectAgentContext(
         {
-          id: row.id,
+          id: row?.id ?? slug,
           org_id: orgId,
           user_id: session.userId,
           openclaw_agent_id: slug,
@@ -312,15 +278,23 @@ export async function POST() {
                 agentBrief: profile.agentBrief,
               }
             : null,
-          syncKnowledge: true,
-          applySafeMemoryConfig: true,
-          writeHeartbeat: false,
+          // Defer non-critical background work to the workspace page repair
+          // path. Bootstrap only writes the files chat actually needs.
+          syncKnowledge: false,
+          applySafeMemoryConfig: false,
+          writeHeartbeat: true,
         },
       );
-      if (assignedInjection.status === "failed") {
-        throw new Error(assignedInjection.message);
+      if (bootstrapInjection.status === "failed") {
+        throw new Error(bootstrapInjection.message);
       }
+    } catch (error) {
+      await client.deleteAgent({ agentId: slug, deleteFiles: true }).catch(() => null);
+      throw error;
+    }
 
+    if (row?.id) {
+      // Best effort: introduction email is not required for chat to open.
       sendAgentIntroductionEmail({
         orgId,
         orgName: session.org.name,
@@ -359,6 +333,18 @@ export async function POST() {
           status: 429,
           headers: { "Retry-After": String(retryAfterSeconds) },
         },
+      );
+    }
+    if (error instanceof GatewayAssignmentDriftError) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "gateway_assignment_drift",
+            shardId: error.shardId,
+            message: `Gateway assignment for this workspace cannot be resolved (${error.message}). Contact support so we can repair the assignment.`,
+          },
+        },
+        { status: 503 },
       );
     }
     const message = error instanceof Error ? error.message : "Bootstrap failed";

@@ -15,6 +15,35 @@ export type TenantGatewayAssignment = {
   assignmentReason?: string;
 };
 
+/**
+ * Thrown when an org has an active gateway assignment row that cannot be
+ * resolved to a real gateway target. The most common cause is shard config
+ * drift: the row pins the org to a shard id that is no longer present in
+ * `OPENCLAW_GATEWAY_SHARDS` and the row has no fallback `ws_url` either.
+ *
+ * We surface this as a hard error rather than silently falling back to hash
+ * sharding or `OPENCLAW_GATEWAY_URL`, because falling back routes control-plane
+ * writes (config.patch) and data-plane writes (agents.files.set) to a
+ * different gateway than the one the assignment promised. That split-brain
+ * routing is exactly what produced the production "unknown agent id" failure
+ * the gateway agent persistence work was chasing.
+ */
+export class GatewayAssignmentDriftError extends Error {
+  readonly orgId: string;
+  readonly shardId?: string;
+  readonly assignmentReason?: string;
+
+  constructor(input: { orgId: string; shardId?: string; assignmentReason?: string; reason: string }) {
+    super(
+      `Gateway assignment for org ${input.orgId} cannot be resolved: ${input.reason}`,
+    );
+    this.name = "GatewayAssignmentDriftError";
+    this.orgId = input.orgId;
+    this.shardId = input.shardId;
+    this.assignmentReason = input.assignmentReason;
+  }
+}
+
 function isMissingGatewayAssignmentsSchemaError(
   error: { code?: string | null; message?: string | null } | null | undefined,
 ) {
@@ -95,7 +124,35 @@ export async function getActiveTenantGatewayAssignment(
   }
   if (!data) return null;
 
-  return resolveTenantGatewayAssignmentFromRow(data as Record<string, unknown>);
+  const row = data as Record<string, unknown>;
+  const resolved = resolveTenantGatewayAssignmentFromRow(row);
+  if (resolved) {
+    return resolved;
+  }
+
+  // We have an active row that the resolver could not turn into a target.
+  // Fail closed instead of letting the caller silently fall through to hash
+  // sharding or the global env URL, which would route writes to a different
+  // gateway than the one the assignment intended.
+  const shardIdRaw = typeof row.shard_id === "string" ? row.shard_id.trim() : "";
+  const wsUrlRaw = typeof row.ws_url === "string" ? row.ws_url.trim() : "";
+  const reasonRaw = typeof row.assignment_reason === "string" ? row.assignment_reason.trim() : "";
+  let driftReason: string;
+  if (shardIdRaw && !wsUrlRaw) {
+    driftReason = `shard "${shardIdRaw}" is not present in OPENCLAW_GATEWAY_SHARDS and the row has no fallback ws_url`;
+  } else if (shardIdRaw) {
+    driftReason = `shard "${shardIdRaw}" cannot be resolved from current configuration`;
+  } else if (wsUrlRaw) {
+    driftReason = `ws_url "${wsUrlRaw}" did not parse to a usable gateway target`;
+  } else {
+    driftReason = "row has neither a known shard_id nor a ws_url";
+  }
+  throw new GatewayAssignmentDriftError({
+    orgId,
+    shardId: shardIdRaw || undefined,
+    assignmentReason: reasonRaw || undefined,
+    reason: driftReason,
+  });
 }
 
 function pickLeastLoadedShard(

@@ -12,14 +12,19 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-type SyncResult = {
-  status: "ok" | "skipped" | "partial" | "failed";
-  totalAgents: number;
-  syncedAgents: number;
-  failedAgents: number;
-  failures: Array<{ agentId: string; name: string; message: string }>;
-  reason?: string;
-};
+type SyncResult =
+  | {
+      status: "ok" | "skipped" | "partial" | "failed";
+      totalAgents: number;
+      syncedAgents: number;
+      failedAgents: number;
+      failures: Array<{ agentId: string; name: string; message: string }>;
+      reason?: string;
+    }
+  | {
+      status: "queued";
+      message?: string;
+    };
 
 type EnrichmentResponse =
   | {

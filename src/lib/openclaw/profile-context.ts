@@ -86,12 +86,15 @@ async function persistAgentPersona(input: {
 
 function isTransientGatewayBootstrapError(error: unknown) {
   const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+  // Mirrors the policy in context-injection.ts: now that we verify the agent
+  // is registered before writing files, "unknown agent id" indicates a hard
+  // gateway consistency issue rather than propagation lag, so we surface it
+  // immediately instead of burning the retry budget on a doomed sequence.
   return (
     message.includes("runtime gateway connection closed unexpectedly") ||
     message.includes("runtime gateway timeout") ||
     message.includes("socket hang up") ||
     message.includes("fetch failed") ||
-    message.includes("unknown agent id") ||
     message.includes("unexpected server response: 502") ||
     message.includes("bad gateway")
   );
@@ -186,6 +189,18 @@ export async function writeAgentBootstrapFiles(input: {
       content: files.identity,
     },
   ];
+
+  // Same guard as injectAgentContext: confirm the gateway has reloaded the
+  // patched cfg before any agents.files.set call. Without this, profile
+  // sync against a freshly registered agent can race the gateway reload and
+  // get a hard "unknown agent id" rejection. This used to be hidden by the
+  // transient retry classifier but is now classified as hard.
+  const verification = await client.verifyAgentRegistered({ agentId: input.agentId });
+  if (!verification.ok) {
+    throw new Error(
+      `Gateway did not register agent "${input.agentId}" in time: ${verification.reason}`,
+    );
+  }
 
   for (const file of bootstrapFiles) {
     await setAgentBootstrapFileWithRetry(client, file);

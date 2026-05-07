@@ -12,7 +12,8 @@
     "openclaw:install": "cd openclaw-vendored && pnpm install",
     "openclaw:build": "cd openclaw-vendored && pnpm ui:build && pnpm build",
     "openclaw:gateway:watch": "cd openclaw-vendored && pnpm gateway:watch",
-    "openclaw:inject-context": "node scripts/inject-openclaw-agent-context.mjs"
+    "openclaw:inject-context": "node scripts/inject-openclaw-agent-context.mjs",
+    "openclaw:verify-fleet": "node scripts/verify-openclaw-fleet.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
